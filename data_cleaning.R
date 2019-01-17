@@ -26,6 +26,11 @@ writeLines(capture.output(sessionInfo()), "sessionInfo_data_cleaning.txt")
 # Read in data template, teams were asked to format their data in a similar fashion. Key found in data.key.docx.
 template <- read.csv("data.template.csv", header = TRUE, stringsAsFactor = FALSE)
 
+# Below, I reformat all data from individual sites into this format.
+# Note: For in-house sites, they often have variables corresponding
+# to those above, but they are not always in a clear format. When in doubt,
+# I left them out, although these could be added later with closer examination.
+
 # Read in Occidental College Expert data
 occid <- read.csv("./data/raw_site_data/Occidental College Expert/Oxy_TMT_data.csv", header = TRUE, stringsAsFactor = FALSE)
 # add column indicating it's from the expert condition, 1 = expert 0 = in-house
@@ -240,6 +245,8 @@ upenn$location <- "upenn"
 # upenn <- readRDS("./data/raw_site_data/upenn inhouse/upenn.rds")
 
 # read in UWmadison inhouse data
+# note: this was giving me encoding errors so I manually recoded to UTF-8,
+# original .csv in /old
 uwmadison_inhouse <- read.csv("./data/raw_site_data/UWmadison inhouse/Terror_Management.csv", header = TRUE, stringsAsFactor = FALSE)
 # add column indicating it's from the inhouse condition
 uwmadison_inhouse$expert <- 0
@@ -266,7 +273,7 @@ names(uwmadison_inhouse)[names(uwmadison_inhouse) == 'How.old.are.you.'] <- 'age
 # no condition variable exists, so creating one based on whether they responded to the tv or ms prompt
 uwmadison_inhouse$ms_condition <- NA
 uwmadison_inhouse$ms_condition[nchar(uwmadison_inhouse$Please.briefly.describe.the.emotions.that.the.thought.of.your.own.death.arouses.in.you.) > 1] <- "ms"
-uwmadison_inhouse$ms_condition[nchar(uwmadison_inhouse$Please.briefly.describe.the.emotions.that.the.thought.of.watching.television.arouses.in.you.) > 1] <- "tv"
+uwmadison_inhouse$ms_condition[nchar(uwmadison_inhouse$X.Please.briefly.describe.the.emotions.that.the.thought.of.watching.television.arouses.in.you.) > 1] <- "tv"
 # Note: One R user was having issues with some .csv files.
 # If that happens, you can uncomment the below line to simply read in the pre-processed .rds file.
 # uwmadison_inhouse <- readRDS("./data/raw_site_data/UWmadison inhouse/uwmadison_inhouse.rds")
@@ -387,6 +394,37 @@ byui$source <- "byui"
 # add location, usually identical to source
 byui$location <- "byui"
 
+# read in Pace in-house data
+# Note: I saved the original data (TMT.xlsx) but did some manual reformatting
+# to TMT.csv
+pace_inhouse <- read.csv("./data/raw_site_data/pace_inhouse/TMT.csv", sep = ";", header = TRUE, stringsAsFactor = FALSE)
+# add column indicating it's from the in-house condition
+pace_inhouse$expert <- 0
+# add site identifier
+pace_inhouse$source <- "pace_inhouse"
+# add location, usually identical to source
+pace_inhouse$location <- "pace"
+# change column names to match template
+# author A is always anti-us and author P is always pro-us
+names(pace_inhouse)[names(pace_inhouse) == 'How.much.do.you.like.Author.P.'] <- 'prous4'
+names(pace_inhouse)[names(pace_inhouse) == 'How.intelligent.is.Author.P.'] <- 'prous3'
+names(pace_inhouse)[names(pace_inhouse) == 'How.knowledgeable.about.America.is.Author.P.'] <- 'prous5'
+names(pace_inhouse)[names(pace_inhouse) == 'How.much.do.you.agree.with.Author.P.s.essay.'] <- 'prous2'
+names(pace_inhouse)[names(pace_inhouse) == 'How.valid..true.or.logical..are.Author.P.s.arguments.'] <- 'prous1'
+names(pace_inhouse)[names(pace_inhouse) == 'How.much.do.you.like.Author.A.'] <- 'antius4'
+names(pace_inhouse)[names(pace_inhouse) == 'How.intelligent.is.Author.A.'] <- 'antius3'
+names(pace_inhouse)[names(pace_inhouse) == 'How.knowledgeable.about.America.is.Author.A.'] <- 'antius5'
+names(pace_inhouse)[names(pace_inhouse) == 'How.much.do.you.agree.with.Author.A.s.essay.'] <- 'antius2'
+names(pace_inhouse)[names(pace_inhouse) == 'How.valid..true.or.logical..are.Author.A.s.arguments.'] <- 'antius1'
+names(pace_inhouse)[names(pace_inhouse) == 'What.is.your.gender.'] <- 'gender'
+names(pace_inhouse)[names(pace_inhouse) == 'What.is.your.age.'] <- 'age'
+# no condition variable exists, so creating one based on whether they responded to the tv or ms prompt
+pace_inhouse$ms_condition <- NA
+pace_inhouse$ms_condition[nchar(pace_inhouse$Please.briefly.describe.the.emotions.that.the.thought.of.your.own.death.arouses.in.you.) > 1] <- "ms"
+pace_inhouse$ms_condition[nchar(pace_inhouse$Please.briefly.describe.the.emotions.that.the.thought.of.watching.television.arouses.in.you.) > 1] <- "tv"
+# For users having trouble with .csv: can uncomment below line and read processed .rds
+# pace_inhouse <- readRDS("./data/raw_site_data/pace_inhouse/TMT.rds")
+
 # convert all dataframe columns to character for easier merging
 riverside <- data.frame(lapply(riverside, as.character), stringsAsFactors=FALSE)
 uwmadison_expert <- data.frame(lapply(uwmadison_expert, as.character), stringsAsFactors=FALSE)
@@ -408,6 +446,7 @@ plu <- data.frame(lapply(plu, as.character), stringsAsFactors=FALSE)
 ashland <- data.frame(lapply(ashland, as.character), stringsAsFactors=FALSE)
 vcu <- data.frame(lapply(vcu, as.character), stringsAsFactors=FALSE)
 byui <- data.frame(lapply(byui, as.character), stringsAsFactors=FALSE)
+pace_inhouse <- data.frame(lapply(pace_inhouse, as.character), stringsAsFactors=FALSE)
 
 # merging data frames vertically
 merged <- bind_rows(template,
@@ -430,7 +469,8 @@ merged <- bind_rows(template,
                     plu,
                     ashland,
                     vcu,
-                    byui
+                    byui,
+                    pace_inhouse
 )
 
 # convert columns back to numeric/factor where needed
@@ -496,14 +536,21 @@ merged_deidentified$Jot.down..as.specifically.as.you.can..what.you.think.happens
 merged_deidentified$The.one.thing.I.fear.most.about.television.is. <- NULL
 merged_deidentified$My.scariest.thoughts.about.television.are. <- NULL
 merged_deidentified$Language <- NULL
+merged_deidentified$Jot.down..as.specifically.as.you.can..what.you.think.will.happen.to.you.physically.as.you.die.and.once.you.are.physically.dead. <- NULL
+merged_deidentified$Jot.down..as.specifically.as.you.can..what.you.think.happens.to.you.as.you.watch.television..and.once.you.have.physically.watched.television. <- NULL
 
-# dropping Qualtrics-recorded location data
+
+
+# dropping Qualtrics-recorded location data, and similar
 merged_deidentified$LocationLatitude <- NULL
 merged_deidentified$LocationLongitude <- NULL
 merged_deidentified$LocationAccuracy <- NULL
+merged_deidentified$IP.Address <- NULL
 
-# dropping what appears to be college ID number
+# dropping what may be ID numbers of some kind
 merged_deidentified$WBL_ID <- NULL 
+merged_deidentified$Respondent.ID <- NULL
+merged_deidentified$Collector.ID <- NULL
 
 
 # save deidentified .csv

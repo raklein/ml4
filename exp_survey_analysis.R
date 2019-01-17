@@ -1,17 +1,22 @@
-#This is rcode for the Many Labs 4 analysis of data collected about the experimenters.
+# Many Labs 4 Analysis Script for Experimenter Survey data
+# Coder: Rick Klein raklein22@gmail.com
+# OSF: https://osf.io/8ccnw/
+
+# Written in RStudio Version 1.1.463, and R version 3.5.2
+
 #The dataset is inherently sensitive so no deidentified dataset was created.
 #Contact Rick Klein (raklein22@gmail.com) for more information or to possibly use the dataset.
 
-#Reproducibility: Change working directory, and datafiles are called from relative paths
-#Written in RStudio Version 1.0.136, and R version 3.3.3
-
 #ANALYSIS SCRIPT FOR EXPERIMENTER SURVEY
 
-#set working directory
-setwd("C:/Users/Rick/Desktop/Google Drive/Many Labs 4/data")
+# Open the .rproj file in R Studio to avoid setting the working directory.
+# Otherwise, call setwd() with a path to the /ml4/ folder
+# All file paths are relative from the working directory.
+
 
 #reading in experimenter survey, this was converted from .csv to .rds due to column names
-exp_surv <- readRDS("exp_surv.rds")
+# .csv is retained in the same directory
+exp_surv <- readRDS("./data/raw_site_data/experimenter survey/exp_surv.rds")
 names(exp_surv)
 mean(exp_surv$How.many.years.of.experience.do.you.have.in.psychological.research.)
 range(exp_surv$How.many.years.of.experience.do.you.have.in.psychological.research.)

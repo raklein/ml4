@@ -1,11 +1,14 @@
-#This is rcode for the Many Labs 4 analysis.
-#Reproducibility: Change working directory, and datafiles are called from relative paths
-#Written in RStudio Version 1.0.136, and R version 3.3.3
+# Many Labs 4 Analysis Script
+# Coder: Rick Klein raklein22@gmail.com
+# OSF: https://osf.io/8ccnw/
+
+# Written in RStudio Version 1.1.463, and R version 3.5.2
 
 #ANALYSIS SCRIPT
 
-#set working directory
-setwd("C:/Users/Rick/Desktop/Google Drive/Many Labs 4/data")
+# Open the .rproj file in R Studio to avoid setting the working directory.
+# Otherwise, call setwd() with a path to the /ml4/ folder
+# All file paths are relative from the working directory.
 
 library(metafor)
 library(metaSEM)
@@ -14,7 +17,7 @@ library(psych)
 library(dplyr)
 library(effsize)
 
-merged <- readRDS("merged_deidentified.rds")
+merged <- readRDS("./data/merged_deidentified.rds")
 
 ###ANALYSIS 0: no exclusions###
 
@@ -62,6 +65,7 @@ plu_results <- analysis0(merged, "plu")
 ashland_results <- analysis0(merged, "ashland")
 vcu_results <- analysis0(merged, "vcu")
 byui_results <- analysis0(merged, "byui")
+pace_inhouse_results <- analysis0(merged, "pace_inhouse")
 
 #merges results from above into a single data frame
 combined_analysis0 <- rbind(
@@ -84,7 +88,8 @@ combined_analysis0 <- rbind(
   vcu_results,
   wesleyan_inhouse_results,
   wpi_results,
-  byui_results
+  byui_results,
+  pace_inhouse_results
                     )
 
 #Computing SE and sampling variance with metafor package.
@@ -148,6 +153,7 @@ plu_results <- analysis1(merged, "plu")
 ashland_results <- analysis1(merged, "ashland")
 vcu_results <- analysis1(merged, "vcu")
 byui_results <- analysis1(merged, "byui")
+pace_inhouse_results <- analysis1(merged, "pace_inhouse")
 
 #merges results from above into a single data frame
 combined_analysis1 <- rbind(
@@ -170,7 +176,8 @@ combined_analysis1 <- rbind(
   vcu_results,
   wesleyan_inhouse_results,
   wpi_results,
-  byui_results
+  byui_results,
+  pace_inhouse_results
 )
 
 #This uses the metafor package to compute yi (the standardized mean difference effect size) and vi (the sampling variance) to be used in meta-analysis.
@@ -234,6 +241,7 @@ uwmadison_inhouse_results <- analysis1(merged, "uwmadison_inhouse")
 wesleyan_inhouse_results <- analysis1(merged, "wesleyan_inhouse")
 wpi_results <- analysis1(merged, "wpi")
 plu_results <- analysis1(merged, "plu")
+pace_inhouse_results <- analysis1(merged, "pace_inhouse")
 
 #merges results from above into a single data frame
 combined_analysis2 <- rbind(
@@ -256,7 +264,8 @@ combined_analysis2 <- rbind(
   vcu_results,
   wesleyan_inhouse_results,
   wpi_results,
-  byui_results
+  byui_results,
+  pace_inhouse_results
 )
 
 #This uses the metafor package to compute yi (the standardized mean difference effect size) and vi (the sampling variance) to be used in meta-analysis.
@@ -305,9 +314,9 @@ occid_results <- analysis3(merged, "occid")
 pace_expert_results <- analysis3(merged, "pace_expert")
 uwmadison_expert_results <- analysis3(merged, "uwmadison_expert")
 kansas_expert_results <- analysis3(merged, "kansas_expert")
-ashland_results <- analysis2(merged, "ashland")
-vcu_results <- analysis2(merged, "vcu")
-byui_results <- analysis2(merged, "byui")
+ashland_results <- analysis3(merged, "ashland")
+vcu_results <- analysis3(merged, "vcu")
+byui_results <- analysis3(merged, "byui")
 
 #inhouse sites
 azusa_results <- analysis1(merged, "azusa")
@@ -321,6 +330,7 @@ uwmadison_inhouse_results <- analysis1(merged, "uwmadison_inhouse")
 wesleyan_inhouse_results <- analysis1(merged, "wesleyan_inhouse")
 wpi_results <- analysis1(merged, "wpi")
 plu_results <- analysis1(merged, "plu")
+pace_inhouse_results <- analysis1(merged, "pace_inhouse")
 
 #merges results from above into a single data frame
 combined_analysis3 <- rbind(
@@ -343,7 +353,8 @@ combined_analysis3 <- rbind(
   vcu_results,
   wesleyan_inhouse_results,
   wpi_results,
-  byui_results
+  byui_results,
+  pace_inhouse_results
 )
 
 #This uses the metafor package to compute yi (the standardized mean difference effect size) and vi (the sampling variance) to be used in meta-analysis.
@@ -367,7 +378,7 @@ summary( meta3(y=yi, v=vi, cluster=location, data=combinedresults0))
 summary( meta3(y=yi, v=vi, cluster=location, data=combinedresults1))
 summary( meta3(y=yi, v=vi, cluster=location, data=combinedresults2))
 summary( meta3(y=yi, v=vi, cluster=location, data=combinedresults3))
-#Notes: I� for level 2 indicates the percent of total variance explained by effects within sites, and I� for level 3 indicates the percent of total variance accounted for by differences between sites. 
+#Notes: I? for level 2 indicates the percent of total variance explained by effects within sites, and I? for level 3 indicates the percent of total variance accounted for by differences between sites. 
 
 #forest plots for each
 data <- combinedresults1
@@ -409,7 +420,7 @@ summary( mixed0 <- meta3(y=yi, v=vi, cluster=location, x=expert, data=combinedre
 summary( mixed1 <- meta3(y=yi, v=vi, cluster=location, x=expert, data=combinedresults1))
 summary( mixed2 <- meta3(y=yi, v=vi, cluster=location, x=expert, data=combinedresults2))
 summary( mixed3 <- meta3(y=yi, v=vi, cluster=location, x=expert, data=combinedresults3))
-#Notes: The R� for the version predictor will be reported for both level 2 and level 3, although in this case version is a level 2 predictor so the level 3 R� will always be zero. 
+#Notes: The R? for the version predictor will be reported for both level 2 and level 3, although in this case version is a level 2 predictor so the level 3 R? will always be zero. 
 
 #constraining the variance to test if it significantly worsens the model
 summary( fixed0 <- meta3(y=yi, v=vi, cluster=location, x=expert, data=combinedresults0, RE2.constraints=0, RE3.constraints=0))
@@ -426,14 +437,24 @@ anova(mixed3, fixed3)
 #Repeating analyses of "expert" sites in the aggregate, ignoring site dependence.
 #This is a simple alternative and useful for most stringent exclusion criteria which drastically reduces overall N (exclusion set 3)
 #read in .rds data
-data <- readRDS("merged_deidentified.rds")
+data <- readRDS("./data/merged_deidentified.rds")
 #selecting only expert labs
 data <- subset(data, expert==1)
+
+# If you skip these lines, you'll later find we have an issue with the # of levels
+# in data$ms_condition. This is a common problem where a "phantom" level with
+# zero measurements will appear in a factor. I'll demonstrate the problem and 
+# fix it below.
+levels(data$ms_condition)
+summary(data$ms_condition)
+# Note the phantom third level with zero observations. Need to drop it.
+data$ms_condition <- factor(data$ms_condition, levels = c("ms", "tv"))
+
 ###ANALYSIS 0: no exclusions###
 #t.test and descriptive statistics per condition from psych package
 t.test(data$pro_minus_anti~data$ms_condition)
 describeBy(data$pro_minus_anti, group = data$ms_condition)
-cohen.d(data$pro_minus_anti~data$ms_condition,pooled=TRUE,paired=FALSE,
+effsize::cohen.d(data$pro_minus_anti~data$ms_condition,pooled=TRUE,paired=FALSE,
         na.rm=TRUE, hedges.correction=TRUE,
         conf.level=0.95)
 
@@ -445,7 +466,7 @@ data <- subset(data, (!is.na(data$prous3) & !is.na(data$prous4) & !is.na(data$pr
 #t.test and descriptive statistics per condition from psych package
 t.test(data$pro_minus_anti~data$ms_condition)
 describeBy(data$pro_minus_anti, group = data$ms_condition)
-cohen.d(data$pro_minus_anti~data$ms_condition,pooled=TRUE,paired=FALSE,
+effsize::cohen.d(data$pro_minus_anti~data$ms_condition,pooled=TRUE,paired=FALSE,
         na.rm=TRUE, hedges.correction=TRUE,
         conf.level=0.95)
 
@@ -459,7 +480,7 @@ data <- subset(data, data$countryofbirth == 1)
 #t.test and descriptive statistics per condition from psych package
 t.test(data$pro_minus_anti~data$ms_condition)
 describeBy(data$pro_minus_anti, group = data$ms_condition)
-cohen.d(data$pro_minus_anti~data$ms_condition,pooled=TRUE,paired=FALSE,
+effsize::cohen.d(data$pro_minus_anti~data$ms_condition,pooled=TRUE,paired=FALSE,
         na.rm=TRUE, hedges.correction=TRUE,
         conf.level=0.95) #this is incorrectly indicating a negative value, I'm not sure why but it should be positive from the group means
 
@@ -473,7 +494,7 @@ data <- subset(data, data$americanid >= 7)
 #t.test and descriptive statistics per condition from psych package
 t.test(data$pro_minus_anti~data$ms_condition)
 describeBy(data$pro_minus_anti, group = data$ms_condition)
-cohen.d(data$pro_minus_anti~data$ms_condition,pooled=TRUE,paired=FALSE,
+effsize::cohen.d(data$pro_minus_anti~data$ms_condition,pooled=TRUE,paired=FALSE,
         na.rm=TRUE, hedges.correction=TRUE,
         conf.level=0.95) #this is incorrectly indicating a positive value, reversing sign in the report
 
@@ -547,10 +568,13 @@ length(which(data$race == 6))/length(data$source)*100 #percent other
 #Pace University (expert)
 #Virginia Commonwealth University, Richmond, VA
 data <- subset(data, data$source=="uwmadison_inhouse" | data$source=="cnj" | data$source=="kansas_expert" | data$source=="kansas_inhouse" | data$source=="pace_expert" | data$source=="vcu")
+# Applying the same levels fix as earlier, only because it caused problems in 
+# cohen.d() below.
+data$ms_condition <- factor(data$ms_condition, levels = c("ms", "tv"))
 #Analyses using that subset
 t.test(data$pro_minus_anti~data$ms_condition)
 describeBy(data$pro_minus_anti, group = data$ms_condition)
-cohen.d(data$pro_minus_anti~data$ms_condition,pooled=TRUE,paired=FALSE,
+effsize::cohen.d(data$pro_minus_anti~data$ms_condition,pooled=TRUE,paired=FALSE,
         na.rm=TRUE, hedges.correction=TRUE,
         conf.level=0.95) #this is incorrectly indicating a positive value, reversing sign in the report
 
@@ -565,8 +589,10 @@ data <- subset(data, (!is.na(data$prous3) & !is.na(data$prous4) & !is.na(data$pr
 
 #create a data frame of only pro-us ratings for the alpha() function
 pro_df <- data.frame(data$prous3,data$prous4,data$prous5)
-alpha(pro_df)
+psych::alpha(pro_df)
+omega(pro_df) # Omega may be more appropriate
 
 #create a data frame of only anti-us ratings for the alpha() function
 anti_df <- data.frame(data$antius3,data$antius4,data$antius5)
-alpha(anti_df)
+psych::alpha(anti_df)
+omega(anti_df)
