@@ -10,6 +10,15 @@
 # Otherwise, call setwd() with a path to the /ml4/ folder
 # All file paths are relative from the working directory.
 
+# uncomment below lines to install packages
+
+# install.packages("metafor")
+# install.packages("metaSEM")
+# install.packages("haven")
+# install.packages("psych")
+# install.packages("dplyr")
+# install.packages("effsize")
+
 library(metafor)
 library(metaSEM)
 library(haven)

@@ -12,6 +12,15 @@
 
 # Written in RStudio Version 1.1.463, and R version 3.5.2
 
+# uncomment these lines to install required packages:
+
+# install.packages("metafor")
+# install.packages("metaSEM")
+# install.packages("haven")
+# install.packages("psych")
+# install.packages("tidyverse")
+# install.packages("effsize")
+
 library(metafor)
 library(metaSEM)
 library(haven)
