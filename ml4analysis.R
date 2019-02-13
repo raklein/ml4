@@ -19,6 +19,7 @@
 # install.packages("dplyr")
 # install.packages("effsize")
 # install.packages("GPArotation")
+# install.packages("tidyverse")
 
 library(metafor)
 library(metaSEM)
@@ -27,8 +28,20 @@ library(psych)
 library(dplyr)
 library(effsize)
 library(GPArotation)
+library(tidyverse)
 
 merged <- readRDS("./data/merged_deidentified.rds")
+
+# If you skip these lines, you'll later find we have an issue with the # of levels
+# in data$ms_condition. This is a common problem where a "phantom" level with
+# zero measurements will appear in a factor. I'll demonstrate the problem and 
+# fix it below.
+levels(merged$ms_condition)
+summary(merged$ms_condition)
+# Note the phantom third level with zero observations. Need to drop it.
+merged$ms_condition <- factor(merged$ms_condition, levels = c("ms", "tv"))
+
+merged <- filter(merged, ms_condition == "ms" | ms_condition == "tv")
 
 ###ANALYSIS 0: no exclusions###
 
@@ -451,15 +464,6 @@ anova(mixed3, fixed3)
 data <- readRDS("./data/merged_deidentified.rds")
 #selecting only expert labs
 data <- subset(data, expert==1)
-
-# If you skip these lines, you'll later find we have an issue with the # of levels
-# in data$ms_condition. This is a common problem where a "phantom" level with
-# zero measurements will appear in a factor. I'll demonstrate the problem and 
-# fix it below.
-levels(data$ms_condition)
-summary(data$ms_condition)
-# Note the phantom third level with zero observations. Need to drop it.
-data$ms_condition <- factor(data$ms_condition, levels = c("ms", "tv"))
 
 ###ANALYSIS 0: no exclusions###
 #t.test and descriptive statistics per condition from psych package

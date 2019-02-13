@@ -256,7 +256,7 @@ upenn$location <- "upenn"
 # read in UWmadison inhouse data
 # note: this was giving me encoding errors so I manually recoded to UTF-8,
 # original .csv in /old
-uwmadison_inhouse <- read.csv("./data/raw_site_data/UWmadison inhouse/Terror_Management.csv", header = TRUE, stringsAsFactor = FALSE)
+uwmadison_inhouse <- read.csv("./data/raw_site_data/UWmadison inhouse/Terror_Management.csv", header = TRUE, stringsAsFactor = FALSE, encoding = "UTF-8")
 # add column indicating it's from the inhouse condition
 uwmadison_inhouse$expert <- 0
 # add site identifier
