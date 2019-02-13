@@ -18,6 +18,7 @@
 # install.packages("psych")
 # install.packages("dplyr")
 # install.packages("effsize")
+# install.packages("GPArotation")
 
 library(metafor)
 library(metaSEM)
@@ -25,6 +26,7 @@ library(haven)
 library(psych)
 library(dplyr)
 library(effsize)
+library(GPArotation)
 
 merged <- readRDS("./data/merged_deidentified.rds")
 
