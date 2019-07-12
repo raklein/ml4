@@ -1,7 +1,10 @@
 # Private data files
-/data/*
-!data/readme.txt 
-.rds
+/data/processed_data/*
+/data/raw_site_data/*
+!data/readme.txt
+!data/raw_site_data/readme.txt
+!data/public/readme.txt
+!data/processed_data/readme.txt
 
 # Default ignores
 .Rproj.user
