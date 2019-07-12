@@ -1,0 +1,277 @@
+\documentclass[man]{apa6}
+\usepackage{lmodern}
+\usepackage{amssymb,amsmath}
+\usepackage{ifxetex,ifluatex}
+\usepackage{fixltx2e} % provides \textsubscript
+\ifnum 0\ifxetex 1\fi\ifluatex 1\fi=0 % if pdftex
+  \usepackage[T1]{fontenc}
+  \usepackage[utf8]{inputenc}
+\else % if luatex or xelatex
+  \ifxetex
+    \usepackage{mathspec}
+  \else
+    \usepackage{fontspec}
+  \fi
+  \defaultfontfeatures{Ligatures=TeX,Scale=MatchLowercase}
+\fi
+% use upquote if available, for straight quotes in verbatim environments
+\IfFileExists{upquote.sty}{\usepackage{upquote}}{}
+% use microtype if available
+\IfFileExists{microtype.sty}{%
+\usepackage{microtype}
+\UseMicrotypeSet[protrusion]{basicmath} % disable protrusion for tt fonts
+}{}
+\usepackage{hyperref}
+\hypersetup{unicode=true,
+            pdftitle={ML4 Results Section in rMarkdown},
+            pdfauthor={Richard A. Klein},
+            pdfkeywords={Terror Management Theory, mortality salience, replication, many labs},
+            pdfborder={0 0 0},
+            breaklinks=true}
+\urlstyle{same}  % don't use monospace font for urls
+\usepackage{graphicx,grffile}
+\makeatletter
+\def\maxwidth{\ifdim\Gin@nat@width>\linewidth\linewidth\else\Gin@nat@width\fi}
+\def\maxheight{\ifdim\Gin@nat@height>\textheight\textheight\else\Gin@nat@height\fi}
+\makeatother
+% Scale images if necessary, so that they will not overflow the page
+% margins by default, and it is still possible to overwrite the defaults
+% using explicit options in \includegraphics[width, height, ...]{}
+\setkeys{Gin}{width=\maxwidth,height=\maxheight,keepaspectratio}
+\IfFileExists{parskip.sty}{%
+\usepackage{parskip}
+}{% else
+\setlength{\parindent}{0pt}
+\setlength{\parskip}{6pt plus 2pt minus 1pt}
+}
+\setlength{\emergencystretch}{3em}  % prevent overfull lines
+\providecommand{\tightlist}{%
+  \setlength{\itemsep}{0pt}\setlength{\parskip}{0pt}}
+\setcounter{secnumdepth}{0}
+% Redefines (sub)paragraphs to behave more like sections
+\ifx\paragraph\undefined\else
+\let\oldparagraph\paragraph
+\renewcommand{\paragraph}[1]{\oldparagraph{#1}\mbox{}}
+\fi
+\ifx\subparagraph\undefined\else
+\let\oldsubparagraph\subparagraph
+\renewcommand{\subparagraph}[1]{\oldsubparagraph{#1}\mbox{}}
+\fi
+
+%%% Use protect on footnotes to avoid problems with footnotes in titles
+\let\rmarkdownfootnote\footnote%
+\def\footnote{\protect\rmarkdownfootnote}
+
+
+  \title{ML4 Results Section in rMarkdown}
+    \author{Richard A. Klein\textsuperscript{1}}
+    \date{}
+  
+\shorttitle{ML4 Results}
+\affiliation{
+\vspace{0.5cm}
+\textsuperscript{1} Université Grenoble Alpes}
+\keywords{Terror Management Theory, mortality salience, replication, many labs\newline\indent Word count: X}
+\usepackage{csquotes}
+\usepackage{upgreek}
+\captionsetup{font=singlespacing,justification=justified}
+
+\usepackage{longtable}
+\usepackage{lscape}
+\usepackage{multirow}
+\usepackage{tabularx}
+\usepackage[flushleft]{threeparttable}
+\usepackage{threeparttablex}
+
+\newenvironment{lltable}{\begin{landscape}\begin{center}\begin{ThreePartTable}}{\end{ThreePartTable}\end{center}\end{landscape}}
+
+\makeatletter
+\newcommand\LastLTentrywidth{1em}
+\newlength\longtablewidth
+\setlength{\longtablewidth}{1in}
+\newcommand{\getlongtablewidth}{\begingroup \ifcsname LT@\roman{LT@tables}\endcsname \global\longtablewidth=0pt \renewcommand{\LT@entry}[2]{\global\advance\longtablewidth by ##2\relax\gdef\LastLTentrywidth{##2}}\@nameuse{LT@\roman{LT@tables}} \fi \endgroup}
+
+
+\DeclareDelayedFloatFlavor{ThreePartTable}{table}
+\DeclareDelayedFloatFlavor{lltable}{table}
+\DeclareDelayedFloatFlavor*{longtable}{table}
+\makeatletter
+\renewcommand{\efloat@iwrite}[1]{\immediate\expandafter\protected@write\csname efloat@post#1\endcsname{}}
+\makeatother
+\usepackage{endnotes}
+\let\footnote\endnote
+
+\authornote{This script generates the participants + results sections for the main ML4 manuscript. To knit this document you must install the papaja package from GitHub.
+
+Correspondence concerning this article should be addressed to Richard A. Klein, Postal address. E-mail: \href{mailto:raklein22@gmail.com}{\nolinkurl{raklein22@gmail.com}}}
+
+\abstract{
+
+}
+
+\begin{document}
+\maketitle
+
+\hypertarget{participants}{%
+\subsection{Participants}\label{participants}}
+
+\textbf{NOTE: CONFIRM FOOTNOTES ARE SHOWING UP}
+
+21 labs participated and provided a total sample of 2,281 participants. In accordance with the pre-registration, we immediately excluded from all analyses participants who either failed to complete all 6 ratings of the essay authors, or who failed to complete both writing prompts within the mortality salience or control conditions (e.g., the between-subjects manipulation).\footnote{The latter exclusion critera applied only to participants from Author Advised sites, because the necessary data was not always available for In House sites.} Thus, the usable N = 2,220 (see Table XX for a summary of sites). 1,157 participants (52.12\%) reported being female and 708 participants (31.89\%) reported being male; the remaining participants did not respond to the item, were asked about gender in a non-standard way, or chose a different response. Mean age was 19.87 years (\emph{SD} = 2.79). Participant reported race was 910 (40.99\%) White, 221 (9.95\%) Asian, 120 (5.41\%) Black or African American, 36 (1.62\%) American Indian or Alaska Native, 20 (0.90\%) Native Hawaiian or Pacific Islander, 114 (5.14\%) Other. The remaining participants did not report their race, were not asked the item, or were asked the item in a non-standard way.
+
+\hypertarget{data-analysis}{%
+\subsection{Data analysis}\label{data-analysis}}
+
+We used R (Version 3.6.0; R Core Team, 2019) and the R-packages \emph{dplyr} (Version 0.8.1; Wickham et al., 2019), \emph{effsize} (Version 0.7.4; Torchiano, 2018), \emph{extrafont} (Version 0.17; Winston Chang, 2014), \emph{forcats} (Version 0.4.0; Wickham, 2019a), \emph{gginnards} (Version 0.0.2; Aphalo, 2016), \emph{ggplot2} (Version 3.1.1; Wickham, 2016), \emph{GPArotation} (Version 2014.11.1; Bernaards \& I.Jennrich, 2005), \emph{haven} (Version 2.1.0; Wickham \& Miller, 2019), \emph{Matrix} (Version 1.2.17; Bates \& Maechler, 2019), \emph{metafor} (Version 2.1.0; Viechtbauer, 2010), \emph{metaSEM} (Version 1.2.2; Cheung, 2015), \emph{metaviz} (Version 0.3.0; Kossmeier, Tran, \& Voracek, 2019), \emph{OpenMx} (Version 2.13.2; Neale et al., 2016; Hunter, 2018; Pritikin, Hunter, \& Boker, 2015), \emph{papaja} (Version 0.1.0.9842; Aust \& Barth, 2018), \emph{psych} (Version 1.8.12; Revelle, 2018), \emph{purrr} (Version 0.3.2; Henry \& Wickham, 2019), \emph{readr} (Version 1.3.1; Wickham, Hester, \& Francois, 2018), \emph{stringr} (Version 1.4.0; Wickham, 2019b), \emph{tibble} (Version 2.1.3; Müller \& Wickham, 2019), \emph{tidyr} (Version 0.8.3.9000; Wickham \& Henry, 2019), and \emph{tidyverse} (Version 1.2.1.9000; Wickham, 2017) for all our analyses.
+
+\hypertarget{results}{%
+\section{Results}\label{results}}
+
+\hypertarget{researcher-expectations-and-characteristics}{%
+\subsection{Researcher Expectations and Characteristics}\label{researcher-expectations-and-characteristics}}
+
+A total of 28 researchers from 21 participating sites completed the experimenter survey. Psychology research experience ranged from 0 to 28 years (\emph{M} = 9.32, \emph{SD} = 8.80). 1 (3.57\%) researcher indicated they were an expert in TMT, 5 (17.86\%) indicated they had \enquote{a lot} of TMT knowledge, 10 (35.71\%) indicated \enquote{some} knowledge, 5 (17.86\%) indicated little knowledge, 6 (21.43\%) indicated zero knowledge, and 1 (3.57\%) did not respond to the question.
+
+When asked what outcome they wanted to happen, 13 (46.43\%) indicated that they hoped for the project to successfully replicate the TMT effect, 10 (35.71\%) indicated no preference, and 3 (10.71\%) hoped the project would result in a failure to replicate, with 2 (7.14\%) researchers leaving the question blank. On average, the teams estimated a 54.37\% chance of successful replication with a wide range of estimates from 20\% to 95\% (\emph{SD} = 22.14).
+
+\hypertarget{tmt-replication-results}{%
+\subsection{TMT Replication Results}\label{tmt-replication-results}}
+
+The primary finding of interest from Greenberg et al., 1994, was that participants who underwent the mortality salience treatment showed greater preference for the pro-US essay author compared to the anti-US essay author. To assess whether the replication results support the original, we followed a similar analysis plan as in the original article. Scores from the three items evaluating the authors of the anti-American essays were averaged (\(\alpha\) = 0.90) and then subtracted from the average of the three items evaluating authors of the pro-American essays (\(\alpha\) = 0.89).\footnote{Supplemental analyses treating these as two separate dependent variables are available in the online supplement (\url{https://osf.io/xtg4u/}) but generally follow the same pattern of results reported below.} An independent samples t-test was then conducted comparing those in the \enquote{subtle own death salient} (MS) condition with scores from the \enquote{TV salient} (control) condition. Original authors were not entirely in agreement about what exclusions should be implemented. So, we repeated our analyses under different exclusion criteria suggested by original authors:
+
+\emph{Exclusion set 1:} Include all participants who completed the materials (e.g., wrote something for both writing prompts, and completed all six items evaluating the essay authors). Reduces the usable N from 2,281 to 2,220 participants.
+
+\emph{Exclusion set 2:} All prior exclusions, and further exclude participants who did not identify as White or who indicated they were born outside the United States. Reduces N to 1,874.
+
+\emph{Exclusion set 3:} All prior exclusions, and further exclude participant who responded lower than 7 on the American Identity item. Further reduces the usable N to 1,843 participants.
+
+Exclusion sets 2 and 3 were specifically recommended by original authors and these criteria were used to analyze the data from Author Advised labs. However, the data required to make these exclusions were often not collected at In House replication sites because they made independent decisions about design and demographic measures for potential exclusion, and these measures were not in the original article. Thus, for all analyses only Exclusion Set 1 was used for In House participants. The full data cleaning and analysis scripts are available on the OSF (\url{https://osf.io/8ccnw/}). All analysis plans and procedures were pre-registered on the OSF prior to data collection.
+
+\hypertarget{meta-analytic-results-across-all-labs-random-effects-meta-analysis.}{%
+\subsection{Meta-analytic results across all labs (random effects meta-analysis).}\label{meta-analytic-results-across-all-labs-random-effects-meta-analysis.}}
+
+Some labs administered both Author Advised and In House protocols. To account for this nesting of effect sizes within labs, a three-level random-effects meta-analysis was conducted using the MetaSEM package (Cheung, 2014) in R.\footnote{Sample code to run this analysis is: meta3(y=es, v=var, cluster=Location, data=dataset). In this sample code, \enquote{y=es} directs the program to the column of effect sizes, \enquote{v=var} indicates the variable to be used as the sampling variance for each effect size, and the \enquote{cluster=Location} command groups the effect sizes by a location variable in the dataset (in this case, a unique identifier assigned to each replication site).} This analysis produces the grand mean effect size across all sites and versions.
+
+The most basic question is whether we found the predicted effect of mortality salience. Regardless of which exclusion critera were used, we observed an effect that was not consistent with the predicted mortality salience effect: Exclusion set 1: \emph{Hedges' g} = 0.03, 95\% CI = {[}-0.05, 0.11{]}, \emph{SE} = 0.04, \emph{Z} = 0.71, \emph{p} = 0.48. Exclusion set 2: \emph{Hedges' g} = 0.07, 95\% CI = {[}-0.04, 0.19{]}, \emph{SE} = 0.06, \emph{Z} = 1.26, \emph{p} = 0.21. Exclusion set 3: \emph{Hedges' g} = 0.04, 95\% CI = {[}-0.09, 0.18{]}, \emph{SE} = 0.07, \emph{Z} = 0.61, \emph{p} = 0.54. Forest plots showing the effects for individual sites and the aggregate are available in Figure XX for exclusion set 1, and on the OSF page for the other two exclusion rules (which look very similar).
+
+We also examined how much variation was observed among effect sizes (e.g., heterogeneity). For example, there may have been a mortality salience effect at some sites and not others. For exclusion sets 1 and 3, this sort of variation did not exceed variation expected by chance (e.g., sampling variance), exclusion set 1: \emph{Q}(20) = 25.82, \emph{p} = 0.17; exclusion set 3: \emph{Q}(20) = 29.61, \emph{p} = 0.08. The amount of variation between did exceed chance for exclusion set 2, \emph{Q}(20) = 36.32, \emph{p} = 0.01. However, though statistically significant, it was small in magnitude, Tau\textsuperscript{2}\textsubscript{within~labs} = 0.00, Tau\textsuperscript{2}\textsubscript{between~labs} = 0.02.
+
+In sum, we observed no evidence for an overall effect of mortality salience in these replications. And, overall there was only weak evidence of heterogeneity in effect sizes. This lack of variation suggests that it is unlikely we will observe an effect of Author Advised versus In House protocols or other moderators such as differences in samples or TMT knowledge. Even so, the plausible moderation by Author Advised/In House protocol is examined in the following section.
+
+\hypertarget{research-question-2-moderation-by-author-advisedin-house-protocol}{%
+\subsection{Research Question 2: Moderation by Author Advised/In House protocol}\label{research-question-2-moderation-by-author-advisedin-house-protocol}}
+
+A covariate of protocol type was added to the random effects model to create a three-level mixed-effects meta-analysis. The addition of the argument \enquote{x = version} to the prior metaSEM R code can be seen here:
+
+meta3(y=es, v=var, cluster=Location, x=version, data=dataset)
+
+\textbf{NOTES: {[}Rick{]} This is the primary preregistered analysis}
+\textbf{NOTES: {[}Brian{]} See the prior section for some idea of shortening. Just provide the summary of the first analysis meaning and then show just the analytic outcomes for the 2nd and 3rd exclusion criteria. You also can remove description of those exclusions because you've said all that twice already. It can be one short paragraph of results.}
+
+This analysis again produces an overall grand mean effect size, and those were again null across all three exclusion sets: Exclusion set 1: \emph{Hedges' g} = 0.02, 95\% CI = {[}-0.10, 0.14{]}, \emph{SE} = 0.06, \emph{Z} = 0.32, \emph{p} = 0.75. Exclusion set 2: \emph{Hedges' g} = 0.04, 95\% CI = {[}-0.10, 0.17{]}, \emph{SE} = 0.07, \emph{Z} = 0.51, \emph{p} = 0.61. Exclusion set 3: \emph{Hedges' g} = 0.02, 95\% CI = {[}-0.11, 0.16{]}, \emph{SE} = 0.07, \emph{Z} = 0.34, \emph{p} = 0.73.
+
+This analysis additionally tests protocol version (In House vs Author Advised) as a moderator. Across the three exclusion sets, protocol version did not significantly predict replication effect size. Exclusion set 1: \emph{b} = 0.02, \emph{Z} = 0.29, \emph{p} = 0.77; exclusion set 2: \emph{b} = 0.11, \emph{Z} = 0.92, \emph{p} = 0.36; exclusion set 3: \emph{b} = 0.10, \emph{Z} = 0.57, \emph{p} = 0.57.
+
+Variation among effect sizes also followed the previously observed pattern. Modest (but statistically significant) heterogeneity for exclusion set 2, \emph{Q}(20) = 36.32, \emph{p} = 0.01, Tau\textsuperscript{2}\textsubscript{within~labs} = 0.00, Tau\textsuperscript{2}\textsubscript{between~labs} = 0.02; while variation did not exceed chance for exclusion sets 1 \emph{Q}(20) = 25.82, \emph{p} = 0.17; or exclusion set 3: \emph{Q}(20) = 29.61, \emph{p} = 0.08.
+
+\hypertarget{research-question-3-effect-of-standardization}{%
+\subsection{Research Question 3: Effect of Standardization}\label{research-question-3-effect-of-standardization}}
+
+Finally, we tested whether In House protocols displayed greater variability in effect size than Author Advised protocols. To test this hypothesis, we ran the mixed-effects models but constrained the variances at both level 2 and level 3 to 0, effectively creating fixed-effects models. These models were then compared with a chi-squared differences test to assess whether the fit significantly changed. In this case, none of the three models significantly decreased in fit: Exclusion rule \#1: \emph{\(\chi\)²} (2) = 0.16, \emph{p} = 0.92; Exclusion rules \#2: \emph{\(\chi\)²} (2) = 0.85, \emph{p} = 0.65; Exclusion rules \#3: \emph{\(\chi\)²} (2) = 0.27, \emph{p} = 0.87. Overall, there was no evidence that In House protocols elicited greater variability than Author Advised protocols.
+
+\hypertarget{follow-up-exploratory-analyses}{%
+\subsection{Follow-Up Exploratory Analyses}\label{follow-up-exploratory-analyses}}
+
+\textbf{Results for TMT-knowledgeable sites.} One principal investigator reported being an expert in TMT, while 5 others indicated having \enquote{a lot} of knowledge about TMT. One might expect that these locations would have greater success at replicating the mortality salience effect. Aggregating across these sites, and using only the first exclusion rule, these sites did not detect a difference between the mortality salience group (\emph{M} = 1.05, \emph{SD} = 2.22) and the control group (\emph{M} = 0.97, \emph{SD} = 2.19), \emph{t}(522.61) = 0.45, \emph{p} = 0.66, \emph{Hedges' g} = 0.04, 95\% CI = {[}-0.13, 0.21{]}.
+
+\hypertarget{discussion}{%
+\section{Discussion}\label{discussion}}
+
+\newpage
+
+\hypertarget{references}{%
+\section{References}\label{references}}
+
+\begingroup
+\setlength{\parindent}{-0.5in}
+\setlength{\leftskip}{0.5in}
+
+\hypertarget{refs}{}
+\leavevmode\hypertarget{ref-R-gginnards}{}%
+Aphalo, P. J. (2016). \emph{Learn r ...as you learnt your mother tongue}. Leanpub. Retrieved from \url{https://leanpub.com/learnr}
+
+\leavevmode\hypertarget{ref-R-papaja}{}%
+Aust, F., \& Barth, M. (2018). \emph{papaja: Create APA manuscripts with R Markdown}. Retrieved from \url{https://github.com/crsh/papaja}
+
+\leavevmode\hypertarget{ref-R-Matrix}{}%
+Bates, D., \& Maechler, M. (2019). \emph{Matrix: Sparse and dense matrix classes and methods}. Retrieved from \url{https://CRAN.R-project.org/package=Matrix}
+
+\leavevmode\hypertarget{ref-R-GPArotation}{}%
+Bernaards, C. A., \& I.Jennrich, R. (2005). Gradient projection algorithms and software for arbitrary rotation criteria in factor analysis. \emph{Educational and Psychological Measurement}, \emph{65}, 676--696.
+
+\leavevmode\hypertarget{ref-R-metaSEM}{}%
+Cheung, M. W.-L. (2015). metaSEM: An r package for meta-analysis using structural equation modeling. \emph{Frontiers in Psychology}, \emph{5}(1521). doi:\href{https://doi.org/10.3389/fpsyg.2014.01521}{10.3389/fpsyg.2014.01521}
+
+\leavevmode\hypertarget{ref-R-purrr}{}%
+Henry, L., \& Wickham, H. (2019). \emph{Purrr: Functional programming tools}. Retrieved from \url{https://CRAN.R-project.org/package=purrr}
+
+\leavevmode\hypertarget{ref-R-OpenMx_c}{}%
+Hunter, M. D. (2018). State space modeling in an open source, modular, structural equation modeling environment. \emph{Structural Equation Modeling}, \emph{25}(2), 307--324. doi:\href{https://doi.org/10.1080/10705511.2017.1369354}{10.1080/10705511.2017.1369354}
+
+\leavevmode\hypertarget{ref-R-metaviz}{}%
+Kossmeier, M., Tran, U. S., \& Voracek, M. (2019). \emph{Metaviz: Forest plots, funnel plots, and visual funnel plot inference for meta-analysis}. Retrieved from \url{https://CRAN.R-project.org/package=metaviz}
+
+\leavevmode\hypertarget{ref-R-tibble}{}%
+Müller, K., \& Wickham, H. (2019). \emph{Tibble: Simple data frames}. Retrieved from \url{https://CRAN.R-project.org/package=tibble}
+
+\leavevmode\hypertarget{ref-R-OpenMx_a}{}%
+Neale, M. C., Hunter, M. D., Pritikin, J. N., Zahery, M., Brick, T. R., Kirkpatrick, R. M., \ldots{} Boker, S. M. (2016). OpenMx 2.0: Extended structural equation and statistical modeling. \emph{Psychometrika}, \emph{81}(2), 535--549. doi:\href{https://doi.org/10.1007/s11336-014-9435-8}{10.1007/s11336-014-9435-8}
+
+\leavevmode\hypertarget{ref-R-OpenMx_b}{}%
+Pritikin, J. N., Hunter, M. D., \& Boker, S. M. (2015). Modular open-source software for Item Factor Analysis. \emph{Educational and Psychological Measurement}, \emph{75}(3), 458--474.
+
+\leavevmode\hypertarget{ref-R-base}{}%
+R Core Team. (2019). \emph{R: A language and environment for statistical computing}. Vienna, Austria: R Foundation for Statistical Computing. Retrieved from \url{https://www.R-project.org/}
+
+\leavevmode\hypertarget{ref-R-psych}{}%
+Revelle, W. (2018). \emph{Psych: Procedures for psychological, psychometric, and personality research}. Evanston, Illinois: Northwestern University. Retrieved from \url{https://CRAN.R-project.org/package=psych}
+
+\leavevmode\hypertarget{ref-R-effsize}{}%
+Torchiano, M. (2018). \emph{Effsize: Efficient effect size computation}. doi:\href{https://doi.org/10.5281/zenodo.1480624}{10.5281/zenodo.1480624}
+
+\leavevmode\hypertarget{ref-R-metafor}{}%
+Viechtbauer, W. (2010). Conducting meta-analyses in R with the metafor package. \emph{Journal of Statistical Software}, \emph{36}(3), 1--48. Retrieved from \url{http://www.jstatsoft.org/v36/i03/}
+
+\leavevmode\hypertarget{ref-R-ggplot2}{}%
+Wickham, H. (2016). \emph{Ggplot2: Elegant graphics for data analysis}. Springer-Verlag New York. Retrieved from \url{https://ggplot2.tidyverse.org}
+
+\leavevmode\hypertarget{ref-R-tidyverse}{}%
+Wickham, H. (2017). \emph{Tidyverse: Easily install and load the 'tidyverse'}. Retrieved from \url{https://CRAN.R-project.org/package=tidyverse}
+
+\leavevmode\hypertarget{ref-R-forcats}{}%
+Wickham, H. (2019a). \emph{Forcats: Tools for working with categorical variables (factors)}. Retrieved from \url{https://CRAN.R-project.org/package=forcats}
+
+\leavevmode\hypertarget{ref-R-stringr}{}%
+Wickham, H. (2019b). \emph{Stringr: Simple, consistent wrappers for common string operations}. Retrieved from \url{https://CRAN.R-project.org/package=stringr}
+
+\leavevmode\hypertarget{ref-R-dplyr}{}%
+Wickham, H., François, R., Henry, L., \& Müller, K. (2019). \emph{Dplyr: A grammar of data manipulation}. Retrieved from \url{https://CRAN.R-project.org/package=dplyr}
+
+\leavevmode\hypertarget{ref-R-tidyr}{}%
+Wickham, H., \& Henry, L. (2019). \emph{Tidyr: Easily tidy data with 'spread()' and 'gather()' functions}. Retrieved from \url{https://CRAN.R-project.org/package=tidyr}
+
+\leavevmode\hypertarget{ref-R-readr}{}%
+Wickham, H., Hester, J., \& Francois, R. (2018). \emph{Readr: Read rectangular text data}. Retrieved from \url{https://CRAN.R-project.org/package=readr}
+
+\leavevmode\hypertarget{ref-R-haven}{}%
+Wickham, H., \& Miller, E. (2019). \emph{Haven: Import and export 'spss', 'stata' and 'sas' files}. Retrieved from \url{https://CRAN.R-project.org/package=haven}
+
+\leavevmode\hypertarget{ref-R-extrafont}{}%
+Winston Chang. (2014). \emph{Extrafont: Tools for using fonts}. Retrieved from \url{https://CRAN.R-project.org/package=extrafont}
+
+\endgroup
+
+\theendnotes
+
+
+\end{document}
