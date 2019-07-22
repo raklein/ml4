@@ -1151,4 +1151,3 @@ n_nofav <- sum(merged_excl_3$pro_minus_anti == 0)
 pct_profav3 <- (n_profav/(n_profav+n_antifav+n_nofav))*100
 pct_antifav3 <- (n_antifav/(n_profav+n_antifav+n_nofav))*100
 pct_nofav3 <- (n_nofav/(n_profav+n_antifav+n_nofav))*100
-
