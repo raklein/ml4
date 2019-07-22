@@ -290,16 +290,6 @@ knowl_effsize <- effsize::cohen.d(data_knowledgeable$pro_minus_anti~data_knowled
 ## Follow-Up Exploratory Analyses
 **Results for TMT-knowledgeable sites.** One principal investigator reported being an expert in TMT, while 5 others indicated having “a lot” of knowledge about TMT. One might expect that these locations would have greater success at replicating the mortality salience effect. Aggregating across these sites, and using only the first exclusion rule, these sites did not detect a difference between the mortality salience group (*M* = `r as.numeric(knowl_desc$ms["mean"])`, *SD* = `r as.numeric(knowl_desc$ms["sd"])`) and the control group (*M* = `r as.numeric(knowl_desc$tv["mean"])`, *SD* = `r as.numeric(knowl_desc$tv["sd"])`), *t*(`r knowl_ttest$parameter`) = `r knowl_ttest$statistic`, *p* = `r knowl_ttest$p.value`, *Hedges’ g* = `r knowl_effsize$estimate`, 95% CI = [`r knowl_effsize$conf.int["lower"]`, `r knowl_effsize$conf.int["upper"]`]. 
 
-# Discussion
-
-
-\newpage
-
-# References
-```{r create_r-references}
-r_refs(file = "r-references.bib")
-```
-
 \begingroup
 \setlength{\parindent}{-0.5in}
 \setlength{\leftskip}{0.5in}
