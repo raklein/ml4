@@ -1106,3 +1106,20 @@ describeBy(data$antiauth_avg, group = data$ms_condition)
 effsize::cohen.d(data$antiauth_avg~data$ms_condition,pooled=TRUE,paired=FALSE,
                  na.rm=TRUE, hedges.correction=TRUE,
                  conf.level=0.95) #this was previously incorrectly indicating a positive value? Had to manually reverse for dissertation but seems fine now
+
+
+#### Analyzing how much participants liked the pro and anti authors
+# Read in data to start from scratch
+merged <- readRDS("./data/public/merged_deidentified.rds")
+
+# Applying exclusion criteria 1
+# 1. Wrote something for both writing prompts
+merged <- subset(merged, (merged$msincomplete == 0 | is.na(merged$msincomplete)))
+# 2. Completed all six items evaluating the essay authors)
+merged <- subset(merged, (!is.na(merged$prous3) & !is.na(merged$prous4) & !is.na(merged$prous5) & !is.na(merged$antius3) & !is.na(merged$antius4) & !is.na(merged$antius5)))
+
+# 'merged_excl_2' further excludes participants as per exclusion set 2 (below)
+merged_excl_2 <- subset(merged, (merged$race == 1 & merged$countryofbirth == 1) | merged$expert == 0)
+
+# 'merged_excl_3' further excludes participants as per exclusion set 3 (below)
+merged_excl_3 <- subset(merged_excl_2, merged_excl_2$americanid >= 7 | merged_excl_2$expert == 0)

@@ -180,7 +180,7 @@ merged_excl_2 <- subset(merged, (merged$race == 1 & merged$countryofbirth == 1) 
 
 # 'merged_excl_3' further excludes participants as per exclusion set 3 (below)
 
-merged_excl_3 <- subset(merged_excl_2, merged$americanid >= 7 | merged$expert == 0)
+merged_excl_3 <- subset(merged_excl_2, merged_excl_2$americanid >= 7 | merged_excl_2$expert == 0)
 ```
 
 ## TMT Replication Results
