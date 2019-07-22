@@ -1123,3 +1123,31 @@ merged_excl_2 <- subset(merged, (merged$race == 1 & merged$countryofbirth == 1) 
 
 # 'merged_excl_3' further excludes participants as per exclusion set 3 (below)
 merged_excl_3 <- subset(merged_excl_2, merged_excl_2$americanid >= 7 | merged_excl_2$expert == 0)
+
+# Percent rating pro-author more highly than anti-author
+# Basic exclusions
+n_profav <- sum(merged$pro_minus_anti > 0)
+n_antifav <- sum(merged$pro_minus_anti < 0)
+n_nofav <- sum(merged$pro_minus_anti == 0)
+
+pct_profav1 <- (n_profav/(n_profav+n_antifav+n_nofav))*100
+pct_antifav1 <- (n_antifav/(n_profav+n_antifav+n_nofav))*100
+pct_nofav1 <- (n_nofav/(n_profav+n_antifav+n_nofav))*100
+
+# Exclusions 2
+n_profav <- sum(merged_excl_2$pro_minus_anti > 0)
+n_antifav <- sum(merged_excl_2$pro_minus_anti < 0)
+n_nofav <- sum(merged_excl_2$pro_minus_anti == 0)
+
+pct_profav2 <- (n_profav/(n_profav+n_antifav+n_nofav))*100
+pct_antifav2 <- (n_antifav/(n_profav+n_antifav+n_nofav))*100
+pct_nofav2 <- (n_nofav/(n_profav+n_antifav+n_nofav))*100
+
+# Exclusions 3
+n_profav <- sum(merged_excl_3$pro_minus_anti > 0)
+n_antifav <- sum(merged_excl_3$pro_minus_anti < 0)
+n_nofav <- sum(merged_excl_3$pro_minus_anti == 0)
+
+pct_profav3 <- (n_profav/(n_profav+n_antifav+n_nofav))*100
+pct_antifav3 <- (n_antifav/(n_profav+n_antifav+n_nofav))*100
+pct_nofav3 <- (n_nofav/(n_profav+n_antifav+n_nofav))*100
