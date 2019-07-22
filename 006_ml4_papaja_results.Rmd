@@ -110,14 +110,10 @@ n_other_pct <- length(which(merged$race == 6))/nrow(merged)*100 #percent other
 ```
 
 ## Participants
-**NOTE: CONFIRM FOOTNOTES ARE SHOWING UP**
 
 `r length(unique(merged_original$source))` labs participated and provided a total sample of `r formatC(nrow(merged_original), big.mark = ",")` participants. In accordance with the pre-registration, we immediately excluded from all analyses participants who either failed to complete all 6 ratings of the essay authors, or who failed to complete both writing prompts within the mortality salience or control conditions (e.g., the between-subjects manipulation).[^1] Thus, the usable N = `r formatC(nrow(merged), big.mark = ",")` (see Table XX for a summary of sites). `r formatC(n_woman, big.mark = ",")` participants (`r n_woman_pct`%) reported being female and `r formatC(n_man, big.mark = ",")` participants (`r n_man_pct`%) reported being male; the remaining participants did not respond to the item, were asked about gender in a non-standard way, or chose a different response. Mean age was `r mean(merged$age, na.rm=TRUE)` years (*SD* = `r sd(merged$age, na.rm=TRUE)`). Participant reported race was `r n_white` (`r n_white_pct`%) White, `r n_asian` (`r n_asian_pct`%) Asian, `r n_black` (`r n_black_pct`%) Black or African American, `r n_aian` (`r n_aian_pct`%) American Indian or Alaska Native, `r n_haw` (`r n_haw_pct`%) Native Hawaiian or Pacific Islander, `r n_other` (`r n_other_pct`%) Other. The remaining participants did not report their race, or responses were not easily recoded to match these categories.
 
 [^1]: The latter exclusion critera applied only to participants from Author Advised sites, because the necessary data was not always available for In House sites.
-
-## Data analysis
-We used `r cite_r("r-references.bib")` for all our analyses.
 
 # Results
 
