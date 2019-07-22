@@ -31,6 +31,50 @@ combinedresults1$sitesource_label[combinedresults1$sitesource == "upenn"] <- "Un
 combinedresults1$sitesource_label[combinedresults1$sitesource == "pace_inhouse"] <- "Pace University"
 combinedresults1$sitesource_label[combinedresults1$sitesource == "pace_expert"] <- "Pace University"
 
+combinedresults2$sitesource_label[combinedresults2$sitesource == "ufl"] <- "University of Florida"
+combinedresults2$sitesource_label[combinedresults2$sitesource == "occid"] <- "Occidental College"
+combinedresults2$sitesource_label[combinedresults2$sitesource == "ashland"] <- "Ashland University"
+combinedresults2$sitesource_label[combinedresults2$sitesource == "ithaca"] <- "Ithaca College"
+combinedresults2$sitesource_label[combinedresults2$sitesource == "riverside"] <- "UC Riverside"
+combinedresults2$sitesource_label[combinedresults2$sitesource == "wesleyan_inhouse"] <- "Wesleyan University"
+combinedresults2$sitesource_label[combinedresults2$sitesource == "uwmadison_expert"] <- "University of Wisconsin"
+combinedresults2$sitesource_label[combinedresults2$sitesource == "uwmadison_inhouse"] <- "University of Wisconsin"
+combinedresults2$sitesource_label[combinedresults2$sitesource == "vcu"] <- "Virginia Commonwealth University"
+combinedresults2$sitesource_label[combinedresults2$sitesource == "sou_inhouse"] <- "Southern Oregon University"
+combinedresults2$sitesource_label[combinedresults2$sitesource == "plu"] <- "Pacific Lutheran University"
+combinedresults2$sitesource_label[combinedresults2$sitesource == "byui"] <- "Brigham Young University – Idaho"
+combinedresults2$sitesource_label[combinedresults2$sitesource == "azusa"] <- "Azusa Pacific University"
+combinedresults2$sitesource_label[combinedresults2$sitesource == "cnj"] <- "The College of New Jersey"
+combinedresults2$sitesource_label[combinedresults2$sitesource == "wpi"] <- "Worcester Polytechnic Institute"
+combinedresults2$sitesource_label[combinedresults2$sitesource == "illinois"] <- "University of Illinois"
+combinedresults2$sitesource_label[combinedresults2$sitesource == "kansas_expert"] <- "University of Kansas"
+combinedresults2$sitesource_label[combinedresults2$sitesource == "kansas_inhouse"] <- "University of Kansas"
+combinedresults2$sitesource_label[combinedresults2$sitesource == "upenn"] <- "University of Pennsylvania"
+combinedresults2$sitesource_label[combinedresults2$sitesource == "pace_inhouse"] <- "Pace University"
+combinedresults2$sitesource_label[combinedresults2$sitesource == "pace_expert"] <- "Pace University"
+
+combinedresults3$sitesource_label[combinedresults3$sitesource == "ufl"] <- "University of Florida"
+combinedresults3$sitesource_label[combinedresults3$sitesource == "occid"] <- "Occidental College"
+combinedresults3$sitesource_label[combinedresults3$sitesource == "ashland"] <- "Ashland University"
+combinedresults3$sitesource_label[combinedresults3$sitesource == "ithaca"] <- "Ithaca College"
+combinedresults3$sitesource_label[combinedresults3$sitesource == "riverside"] <- "UC Riverside"
+combinedresults3$sitesource_label[combinedresults3$sitesource == "wesleyan_inhouse"] <- "Wesleyan University"
+combinedresults3$sitesource_label[combinedresults3$sitesource == "uwmadison_expert"] <- "University of Wisconsin"
+combinedresults3$sitesource_label[combinedresults3$sitesource == "uwmadison_inhouse"] <- "University of Wisconsin"
+combinedresults3$sitesource_label[combinedresults3$sitesource == "vcu"] <- "Virginia Commonwealth University"
+combinedresults3$sitesource_label[combinedresults3$sitesource == "sou_inhouse"] <- "Southern Oregon University"
+combinedresults3$sitesource_label[combinedresults3$sitesource == "plu"] <- "Pacific Lutheran University"
+combinedresults3$sitesource_label[combinedresults3$sitesource == "byui"] <- "Brigham Young University – Idaho"
+combinedresults3$sitesource_label[combinedresults3$sitesource == "azusa"] <- "Azusa Pacific University"
+combinedresults3$sitesource_label[combinedresults3$sitesource == "cnj"] <- "The College of New Jersey"
+combinedresults3$sitesource_label[combinedresults3$sitesource == "wpi"] <- "Worcester Polytechnic Institute"
+combinedresults3$sitesource_label[combinedresults3$sitesource == "illinois"] <- "University of Illinois"
+combinedresults3$sitesource_label[combinedresults3$sitesource == "kansas_expert"] <- "University of Kansas"
+combinedresults3$sitesource_label[combinedresults3$sitesource == "kansas_inhouse"] <- "University of Kansas"
+combinedresults3$sitesource_label[combinedresults3$sitesource == "upenn"] <- "University of Pennsylvania"
+combinedresults3$sitesource_label[combinedresults3$sitesource == "pace_inhouse"] <- "Pace University"
+combinedresults3$sitesource_label[combinedresults3$sitesource == "pace_expert"] <- "Pace University"
+
 # metaviz requests sampling errors, not variances
 combinedresults1$sqrt_vi <- sqrt(combinedresults1$vi)
 combinedresults2$sqrt_vi <- sqrt(combinedresults2$vi)
@@ -44,6 +88,8 @@ combinedresults3 <- arrange(combinedresults3, expert, yi)
 # I'll use a temporary 'dat' object to avoid typos in making identical plots
 # from different datasets
 
+# Change this to 'combinedresults2' or 'combinedresults3' to generate plots
+# for the other two exclusion sets
 dat <- combinedresults1
 
 # # Rain plot - tried it, prefer variant = 'thick'
@@ -89,7 +135,7 @@ thick <- thick +
   theme(axis.title.x = element_text(hjust = 0.407, face = "plain")) +
   theme(axis.ticks = element_blank())
 
-thick
+# thick
 
 # I'm having trouble editing the geom objects given I'm not generating
 # the gg code from scratch. Using the gginnards package to change the order
@@ -116,7 +162,9 @@ fonts()
 thick <- thick +
   theme(text=element_text(family="Arial"))
 
-thick
+# thick
 
-# Save the plot
-ggsave(filename = "./output/ml4_plot_thick.png", plot = thick, dpi=300, height=5, width=5, units="in", type = "cairo")
+# Save the plot, note filename if you're doing a different exclusion set
+ggsave(filename = "./output/ml4_mainfigure_excl1.png", plot = thick, dpi=300, height=5, width=5, units="in", type = "cairo")
+
+# Repeat for exclusion sets 2 and 3 by changing dat <- combinedresults2 and dat <- combinedresults3
