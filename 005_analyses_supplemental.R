@@ -7,6 +7,11 @@
 # remain in the main script, and this only includes analyses performed after
 # the dissertation was accepted.
 
+# INDEX
+# 1. Analysis repeated for only pro- US author ratings (instead of difference score)
+# 2. Analysis repeated for only anti- US author ratings
+# 3. Analyses of how many participants preferred the pro- author vs the anti- author
+
 # Open the .rproj file in R Studio to avoid setting the working directory.
 # Otherwise, call setwd() with a path to the /ml4/ folder
 # All file paths are relative from the working directory.
