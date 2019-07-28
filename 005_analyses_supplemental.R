@@ -1117,6 +1117,10 @@ effsize::cohen.d(data$antiauth_avg~data$ms_condition,pooled=TRUE,paired=FALSE,
 # Read in data to start from scratch
 merged <- readRDS("./data/public/merged_deidentified.rds")
 
+# Uncomment either line if you want to subset to only in house or author advised sites
+# merged <- filter(merged, expert == 1)
+# merged <- filter(merged, expert == 0)
+
 # Applying exclusion criteria 1
 # 1. Wrote something for both writing prompts
 merged <- subset(merged, (merged$msincomplete == 0 | is.na(merged$msincomplete)))
@@ -1156,3 +1160,32 @@ n_nofav <- sum(merged_excl_3$pro_minus_anti == 0)
 pct_profav3 <- (n_profav/(n_profav+n_antifav+n_nofav))*100
 pct_antifav3 <- (n_antifav/(n_profav+n_antifav+n_nofav))*100
 pct_nofav3 <- (n_nofav/(n_profav+n_antifav+n_nofav))*100
+
+# Subset to participants who preferred the pro-US author 
+# and examine if that finds the effect. 
+# Repeat for 3 exclusion sets if desired (will show identical results if only using in house labs)
+
+summary(lm(data = merged, pro_minus_anti ~ ms_condition))
+summary(lm(data = merged_excl_2, pro_minus_anti ~ ms_condition))
+summary(lm(data = merged_excl_3, pro_minus_anti ~ ms_condition))
+
+effsize::cohen.d(merged$pro_minus_anti~merged$ms_condition,
+                 pooled=TRUE,
+                 paired=FALSE,
+                 na.rm=TRUE,
+                 hedges.correction=TRUE,
+                 conf.level=0.95)
+
+effsize::cohen.d(merged_excl_2$pro_minus_anti~merged_excl_2$ms_condition,
+                 pooled=TRUE,
+                 paired=FALSE,
+                 na.rm=TRUE,
+                 hedges.correction=TRUE,
+                 conf.level=0.95)
+
+effsize::cohen.d(merged_excl_3$pro_minus_anti~merged_excl_3$ms_condition,
+                 pooled=TRUE,
+                 paired=FALSE,
+                 na.rm=TRUE,
+                 hedges.correction=TRUE,
+                 conf.level=0.95)
