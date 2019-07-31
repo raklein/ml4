@@ -604,7 +604,105 @@ anti_df <- data.frame(data$antius3,data$antius4,data$antius5)
 psych::alpha(anti_df)
 omega(anti_df)
 
-################################################################################
-# Analyzing ratings of pro- and anti- essay separately
-################################################################################
+###### Adding a clearer site label for tables
 
+# Read per-site results according to the three exclusions criteria levels
+combinedresults0 <- read.csv("./data/public/combinedresults0.csv")
+combinedresults1 <- read.csv("./data/public/combinedresults1.csv")
+combinedresults2 <- read.csv("./data/public/combinedresults2.csv")
+combinedresults3 <- read.csv("./data/public/combinedresults3.csv")
+
+# Tidy up the sitesource variable into a descriptive label
+combinedresults0$sitesource_label[combinedresults0$sitesource == "ufl"] <- "University of Florida"
+combinedresults0$sitesource_label[combinedresults0$sitesource == "occid"] <- "Occidental College"
+combinedresults0$sitesource_label[combinedresults0$sitesource == "ashland"] <- "Ashland University"
+combinedresults0$sitesource_label[combinedresults0$sitesource == "ithaca"] <- "Ithaca College"
+combinedresults0$sitesource_label[combinedresults0$sitesource == "riverside"] <- "UC Riverside"
+combinedresults0$sitesource_label[combinedresults0$sitesource == "wesleyan_inhouse"] <- "Wesleyan University"
+combinedresults0$sitesource_label[combinedresults0$sitesource == "uwmadison_expert"] <- "University of Wisconsin"
+combinedresults0$sitesource_label[combinedresults0$sitesource == "uwmadison_inhouse"] <- "University of Wisconsin"
+combinedresults0$sitesource_label[combinedresults0$sitesource == "vcu"] <- "Virginia Commonwealth University"
+combinedresults0$sitesource_label[combinedresults0$sitesource == "sou_inhouse"] <- "Southern Oregon University"
+combinedresults0$sitesource_label[combinedresults0$sitesource == "plu"] <- "Pacific Lutheran University"
+combinedresults0$sitesource_label[combinedresults0$sitesource == "byui"] <- "Brigham Young University – Idaho"
+combinedresults0$sitesource_label[combinedresults0$sitesource == "azusa"] <- "Azusa Pacific University"
+combinedresults0$sitesource_label[combinedresults0$sitesource == "cnj"] <- "The College of New Jersey"
+combinedresults0$sitesource_label[combinedresults0$sitesource == "wpi"] <- "Worcester Polytechnic Institute"
+combinedresults0$sitesource_label[combinedresults0$sitesource == "illinois"] <- "University of Illinois"
+combinedresults0$sitesource_label[combinedresults0$sitesource == "kansas_expert"] <- "University of Kansas"
+combinedresults0$sitesource_label[combinedresults0$sitesource == "kansas_inhouse"] <- "University of Kansas"
+combinedresults0$sitesource_label[combinedresults0$sitesource == "upenn"] <- "University of Pennsylvania"
+combinedresults0$sitesource_label[combinedresults0$sitesource == "pace_inhouse"] <- "Pace University"
+combinedresults0$sitesource_label[combinedresults0$sitesource == "pace_expert"] <- "Pace University"
+
+combinedresults1$sitesource_label[combinedresults1$sitesource == "ufl"] <- "University of Florida"
+combinedresults1$sitesource_label[combinedresults1$sitesource == "occid"] <- "Occidental College"
+combinedresults1$sitesource_label[combinedresults1$sitesource == "ashland"] <- "Ashland University"
+combinedresults1$sitesource_label[combinedresults1$sitesource == "ithaca"] <- "Ithaca College"
+combinedresults1$sitesource_label[combinedresults1$sitesource == "riverside"] <- "UC Riverside"
+combinedresults1$sitesource_label[combinedresults1$sitesource == "wesleyan_inhouse"] <- "Wesleyan University"
+combinedresults1$sitesource_label[combinedresults1$sitesource == "uwmadison_expert"] <- "University of Wisconsin"
+combinedresults1$sitesource_label[combinedresults1$sitesource == "uwmadison_inhouse"] <- "University of Wisconsin"
+combinedresults1$sitesource_label[combinedresults1$sitesource == "vcu"] <- "Virginia Commonwealth University"
+combinedresults1$sitesource_label[combinedresults1$sitesource == "sou_inhouse"] <- "Southern Oregon University"
+combinedresults1$sitesource_label[combinedresults1$sitesource == "plu"] <- "Pacific Lutheran University"
+combinedresults1$sitesource_label[combinedresults1$sitesource == "byui"] <- "Brigham Young University – Idaho"
+combinedresults1$sitesource_label[combinedresults1$sitesource == "azusa"] <- "Azusa Pacific University"
+combinedresults1$sitesource_label[combinedresults1$sitesource == "cnj"] <- "The College of New Jersey"
+combinedresults1$sitesource_label[combinedresults1$sitesource == "wpi"] <- "Worcester Polytechnic Institute"
+combinedresults1$sitesource_label[combinedresults1$sitesource == "illinois"] <- "University of Illinois"
+combinedresults1$sitesource_label[combinedresults1$sitesource == "kansas_expert"] <- "University of Kansas"
+combinedresults1$sitesource_label[combinedresults1$sitesource == "kansas_inhouse"] <- "University of Kansas"
+combinedresults1$sitesource_label[combinedresults1$sitesource == "upenn"] <- "University of Pennsylvania"
+combinedresults1$sitesource_label[combinedresults1$sitesource == "pace_inhouse"] <- "Pace University"
+combinedresults1$sitesource_label[combinedresults1$sitesource == "pace_expert"] <- "Pace University"
+
+combinedresults2$sitesource_label[combinedresults2$sitesource == "ufl"] <- "University of Florida"
+combinedresults2$sitesource_label[combinedresults2$sitesource == "occid"] <- "Occidental College"
+combinedresults2$sitesource_label[combinedresults2$sitesource == "ashland"] <- "Ashland University"
+combinedresults2$sitesource_label[combinedresults2$sitesource == "ithaca"] <- "Ithaca College"
+combinedresults2$sitesource_label[combinedresults2$sitesource == "riverside"] <- "UC Riverside"
+combinedresults2$sitesource_label[combinedresults2$sitesource == "wesleyan_inhouse"] <- "Wesleyan University"
+combinedresults2$sitesource_label[combinedresults2$sitesource == "uwmadison_expert"] <- "University of Wisconsin"
+combinedresults2$sitesource_label[combinedresults2$sitesource == "uwmadison_inhouse"] <- "University of Wisconsin"
+combinedresults2$sitesource_label[combinedresults2$sitesource == "vcu"] <- "Virginia Commonwealth University"
+combinedresults2$sitesource_label[combinedresults2$sitesource == "sou_inhouse"] <- "Southern Oregon University"
+combinedresults2$sitesource_label[combinedresults2$sitesource == "plu"] <- "Pacific Lutheran University"
+combinedresults2$sitesource_label[combinedresults2$sitesource == "byui"] <- "Brigham Young University – Idaho"
+combinedresults2$sitesource_label[combinedresults2$sitesource == "azusa"] <- "Azusa Pacific University"
+combinedresults2$sitesource_label[combinedresults2$sitesource == "cnj"] <- "The College of New Jersey"
+combinedresults2$sitesource_label[combinedresults2$sitesource == "wpi"] <- "Worcester Polytechnic Institute"
+combinedresults2$sitesource_label[combinedresults2$sitesource == "illinois"] <- "University of Illinois"
+combinedresults2$sitesource_label[combinedresults2$sitesource == "kansas_expert"] <- "University of Kansas"
+combinedresults2$sitesource_label[combinedresults2$sitesource == "kansas_inhouse"] <- "University of Kansas"
+combinedresults2$sitesource_label[combinedresults2$sitesource == "upenn"] <- "University of Pennsylvania"
+combinedresults2$sitesource_label[combinedresults2$sitesource == "pace_inhouse"] <- "Pace University"
+combinedresults2$sitesource_label[combinedresults2$sitesource == "pace_expert"] <- "Pace University"
+
+combinedresults3$sitesource_label[combinedresults3$sitesource == "ufl"] <- "University of Florida"
+combinedresults3$sitesource_label[combinedresults3$sitesource == "occid"] <- "Occidental College"
+combinedresults3$sitesource_label[combinedresults3$sitesource == "ashland"] <- "Ashland University"
+combinedresults3$sitesource_label[combinedresults3$sitesource == "ithaca"] <- "Ithaca College"
+combinedresults3$sitesource_label[combinedresults3$sitesource == "riverside"] <- "UC Riverside"
+combinedresults3$sitesource_label[combinedresults3$sitesource == "wesleyan_inhouse"] <- "Wesleyan University"
+combinedresults3$sitesource_label[combinedresults3$sitesource == "uwmadison_expert"] <- "University of Wisconsin"
+combinedresults3$sitesource_label[combinedresults3$sitesource == "uwmadison_inhouse"] <- "University of Wisconsin"
+combinedresults3$sitesource_label[combinedresults3$sitesource == "vcu"] <- "Virginia Commonwealth University"
+combinedresults3$sitesource_label[combinedresults3$sitesource == "sou_inhouse"] <- "Southern Oregon University"
+combinedresults3$sitesource_label[combinedresults3$sitesource == "plu"] <- "Pacific Lutheran University"
+combinedresults3$sitesource_label[combinedresults3$sitesource == "byui"] <- "Brigham Young University – Idaho"
+combinedresults3$sitesource_label[combinedresults3$sitesource == "azusa"] <- "Azusa Pacific University"
+combinedresults3$sitesource_label[combinedresults3$sitesource == "cnj"] <- "The College of New Jersey"
+combinedresults3$sitesource_label[combinedresults3$sitesource == "wpi"] <- "Worcester Polytechnic Institute"
+combinedresults3$sitesource_label[combinedresults3$sitesource == "illinois"] <- "University of Illinois"
+combinedresults3$sitesource_label[combinedresults3$sitesource == "kansas_expert"] <- "University of Kansas"
+combinedresults3$sitesource_label[combinedresults3$sitesource == "kansas_inhouse"] <- "University of Kansas"
+combinedresults3$sitesource_label[combinedresults3$sitesource == "upenn"] <- "University of Pennsylvania"
+combinedresults3$sitesource_label[combinedresults3$sitesource == "pace_inhouse"] <- "Pace University"
+combinedresults3$sitesource_label[combinedresults3$sitesource == "pace_expert"] <- "Pace University"
+
+# overwrite .csv files
+write.csv(combinedresults0, "./data/public/combinedresults0.csv", row.names = FALSE)
+write.csv(combinedresults1, "./data/public/combinedresults1.csv", row.names = FALSE)
+write.csv(combinedresults2, "./data/public/combinedresults2.csv", row.names = FALSE)
+write.csv(combinedresults3, "./data/public/combinedresults3.csv", row.names = FALSE)
