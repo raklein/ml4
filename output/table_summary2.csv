@@ -1,0 +1,22 @@
+"Location","Author Advised (AA) or In House (IH)","N (TV)","N (MS)","Mean (TV)","Mean (MS)","SD (TV)","SD (MS)","Hedges' g","p"
+"Ashland University","AA",26,23,1.83,1.39,1.85,2.02,-0.22,0.45
+"Azusa Pacific University","IH",15,15,0.22,0.09,1.01,1.54,-0.1,0.78
+"Brigham Young University – Idaho","AA",34,38,1.83,2.61,2.17,2.02,0.37,0.12
+"Ithaca College","IH",87,90,-0.41,-0.53,2.14,2.78,-0.05,0.76
+"Occidental College","AA",18,28,0.57,0.79,1.74,2.76,0.09,0.76
+"Pace University","AA",34,33,1.69,1.53,2.01,2.19,-0.08,0.77
+"Pace University","IH",34,24,2.2,0.11,5.93,5.33,-0.36,0.17
+"Pacific Lutheran University","IH",125,121,0.37,0.36,1.85,1.97,-0.01,0.96
+"Southern Oregon University","IH",14,15,-1.02,-0.18,1.68,1.25,0.56,0.14
+"The College of New Jersey","AA",42,59,1.27,1.68,2.21,1.74,0.21,0.34
+"University of California, Riverside","AA",13,13,0.44,2.33,0.89,1.25,1.69,0.05
+"University of Florida","IH",107,145,0.99,0.76,1.47,1.23,-0.17,0.19
+"University of Illinois","IH",44,43,-0.78,0.64,1.8,2.01,0.74,0
+"University of Kansas","AA",11,18,1.76,0.8,2.41,2.49,-0.38,0.32
+"University of Kansas","IH",40,35,1.32,1.21,3.03,3.04,-0.03,0.88
+"University of Pennsylvania","IH",45,41,-0.16,0.2,1.75,2.23,0.17,0.42
+"University of Wisconsin","AA",31,34,0.88,0.86,1.68,2.27,-0.01,0.97
+"University of Wisconsin","IH",36,32,-0.74,-0.93,2.05,1.77,-0.1,0.69
+"Virginia Commonwealth University","AA",12,28,1.22,1.49,1.13,2,0.15,0.59
+"Wesleyan University","IH",97,77,-0.2,-0.09,1.81,1.78,0.06,0.67
+"Worcester Polytechnic Institute","IH",68,71,0.53,0.51,1.96,1.61,-0.01,0.95
