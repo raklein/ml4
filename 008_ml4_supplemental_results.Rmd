@@ -1,0 +1,243 @@
+---
+title             : "ML4 Supplemental Results in rMarkdown"
+shorttitle        : "ML4 Results"
+
+author: 
+  - name          : "Richard A. Klein"
+    affiliation   : "1"
+    corresponding : yes    # Define only one corresponding author
+    address       : ""
+    email         : "raklein22@gmail.com"
+
+affiliation:
+  - id            : "1"
+    institution   : "Université Grenoble Alpes"
+
+authornote: |
+  This script generates supplemental analyses not reported in the main ML4 manuscript. To knit this document you must install the papaja package from GitHub.
+
+abstract: |
+
+keywords          : "Terror Management Theory, mortality salience, replication, many labs"
+wordcount         : "X"
+
+bibliography      : ["r-references.bib"]
+
+floatsintext      : no
+figurelist        : no
+tablelist         : no
+footnotelist      : yes
+linenumbers       : no
+mask              : no
+draft             : no
+
+documentclass     : "apa6"
+classoption       : "man"
+output            : papaja::apa6_word
+---
+
+```{r setup, include = FALSE}
+library("papaja")
+library("metafor")
+library("metaSEM")
+library("haven")
+library("psych")
+library("dplyr")
+library("effsize")
+library("GPArotation")
+library("tidyverse")
+```
+
+```{r analysis-preferences}
+# Seed for random number generation
+set.seed(1)
+knitr::opts_chunk$set(cache.extra = knitr::rand_seed)
+```
+
+```{r analysis-loaddata, include = FALSE}
+# Reading in all necessary data
+
+# Primary data file with replication data aggregated across labs (deidentified should suffice)
+# Note: This file is the merged data provided by sites, produced by 001_data_cleaning.R
+merged <- readRDS("./data/public/merged_deidentified.rds")
+```
+
+# Supplemental Results
+
+```{r analysis-alpha-exclusions, include = FALSE}
+alpha_anti <- psych::alpha(select(merged, antius3, antius4, antius5))
+alpha_pro <- psych::alpha(select(merged, prous3, prous4, prous5))
+
+# Tracking exclusions:
+# 'merged_original' is all data, no exclusions, incase we need it for anything.
+merged_original <- merged
+
+# Applying exclusion criteria 1
+# 1. Wrote something for both writing prompts
+merged <- subset(merged, (merged$msincomplete == 0 | is.na(merged$msincomplete)))
+# 2. Completed all six items evaluating the essay authors)
+merged <- subset(merged, (!is.na(merged$prous3) & !is.na(merged$prous4) & !is.na(merged$prous5) & !is.na(merged$antius3) & !is.na(merged$antius4) & !is.na(merged$antius5)))
+# 'merged' is basic exclusions (exclusion set 1 below).
+# 'merged_excl_2' further excludes participants as per exclusion set 2 (below)
+merged_excl_2 <- subset(merged, (merged$race == 1 & merged$countryofbirth == 1) | merged$expert == 0)
+
+# 'merged_excl_3' further excludes participants as per exclusion set 3 (below)
+
+merged_excl_3 <- subset(merged_excl_2, merged_excl_2$americanid >= 7 | merged_excl_2$expert == 0)
+```
+
+## Pro-US Author Ratings and Anti-US Author Ratings separately
+The primary finding of interest from Greenberg et al., (1994) was that participants who underwent the mortality salience treatment showed greater preference for the pro-US essay author compared to the anti-US essay author. In the main article, we report our DVs with these separately averaged, and then anti-US scores subtracted from pro-US scores. In this section we instead treat these as two separate DVs and repeat the primary analyses reported in the manuscript.
+
+```{r analysis-replication-meta-pro, include = FALSE}
+
+# In 005_analysis_supplemental.R I generate results per site, treating anti- and pro- author ratings separately. Like the main manuscript, these are identical but repeated for each of the three exclusion rules. Those are output to:
+
+# ./data/public/combinedresults_pro1.csv
+# ./data/public/combinedresults_pro2.csv
+# ./data/public/combinedresults_pro3.csv
+
+# ./data/public/combinedresults_anti1.csv
+# ./data/public/combinedresults_anti2.csv
+# ./data/public/combinedresults_anti3.csv
+
+# Here I'll read in those files, but if you're error checking you'll also
+# want to review the code in 005_analysis_supplemental.R (which re-uses code from 002_ml4analysis.R)
+
+combinedresults_pro1 <- read.csv("./data/public/combinedresults_pro1.csv")
+combinedresults_pro2 <- read.csv("./data/public/combinedresults_pro2.csv")
+combinedresults_pro3 <- read.csv("./data/public/combinedresults_pro3.csv")
+
+# analyses repeated for each set of exclusion critera
+# three-level random-effects meta-analysis in MetaSEM
+# summary( meta3(y=yi, v=vi, cluster=location, data=combinedresults0)) #line not necessary, results for a subset we never use (e.g., zero exclusions)
+random_effects_pro1 <- summary(meta3(y=yi, v=vi, cluster=location, data=combinedresults_pro1))
+random_effects_pro2 <- summary(meta3(y=yi, v=vi, cluster=location, data=combinedresults_pro2))
+random_effects_pro3 <- summary(meta3(y=yi, v=vi, cluster=location, data=combinedresults_pro3))
+#Notes: Q statistic is for sig test for heterogeneity among all effect sizes. I2 for level 2 indicates the percent of total variance explained by effects within sites, and I2 for level 3 indicates the percent of total variance accounted for by differences between sites. Intercept is the avg population effect. 
+
+# a covariate of study version (in-house or expert-designed) is added to create a three-level mixed-effects meta-analysis
+# note the openMX status, sometimes indicates a potential problem
+# summary( mixed0 <- meta3(y=yi, v=vi, cluster=location, x=expert, data=combinedresults0)) #line not necessary, results for a subset we never use (e.g., zero exclusions)
+mixed_effects_pro1 <- summary(mixed_pro1 <- meta3(y=yi, v=vi, cluster=location, x=expert, data=combinedresults_pro1))
+mixed_effects_pro2 <- summary(mixed_pro2 <- meta3(y=yi, v=vi, cluster=location, x=expert, data=combinedresults_pro2))
+mixed_effects_pro3 <- summary(mixed_pro3 <- meta3(y=yi, v=vi, cluster=location, x=expert, data=combinedresults_pro3))
+# Notes: The R? for the version predictor will be reported for both level 2 and level 3, although in this case version is a level 2 predictor so the level 3 R? will always be zero. 
+
+# constraining the variance to test if it significantly worsens the model
+# summary( fixed0 <- meta3(y=yi, v=vi, cluster=location, x=expert, data=combinedresults0, RE2.constraints=0, RE3.constraints=0)) #line not necessary, results for a subset we never use (e.g., zero exclusions)
+constrained_pro1 <- summary(fixed_pro1 <- meta3(y=yi, v=vi, cluster=location, x=expert, data=combinedresults_pro1, RE2.constraints=0, RE3.constraints=0))
+constrained_pro2 <- summary(fixed_pro2 <- meta3(y=yi, v=vi, cluster=location, x=expert, data=combinedresults_pro2, RE2.constraints=0, RE3.constraints=0))
+constrained_pro3 <- summary(fixed_pro3 <- meta3(y=yi, v=vi, cluster=location, x=expert, data=combinedresults_pro3, RE2.constraints=0, RE3.constraints=0))
+
+# compare if there is a significant difference in model fit, chi square difference test
+# anova(mixed0, fixed0)
+fit_comparison_pro1 <- anova(mixed_pro1, fixed_pro1)
+fit_comparison_pro2 <- anova(mixed_pro2, fixed_pro2)
+fit_comparison_pro3 <- anova(mixed_pro3, fixed_pro3)
+```
+
+## PRO-US RATINGS ONLY: Research question 1: Meta-analytic results across all labs (random effects meta-analysis). 
+Some labs administered both Author Advised and In House protocols. To account for this nesting of effect sizes within labs, a three-level random-effects meta-analysis was conducted using the MetaSEM package (Cheung, 2014) in R.[^1] This analysis produces the grand mean effect size across all sites and versions.
+
+[^1]: Sample code to run this analysis is: meta3(y=es, v=var, cluster=Location, data=dataset). In this sample code, “y=es” directs the program to the column of effect sizes, “v=var” indicates the variable to be used as the sampling variance for each effect size, and the “cluster=Location” command groups the effect sizes by a location variable in the dataset (in this case, a unique identifier assigned to each replication site).
+
+First we examine if there was an overall effect of the mortality salience manipulation on ratings of the pro-us author. Regardless of which exclusion critera were used, we did not observe an effect: Exclusion set 1: *Hedges’ g* = `r random_effects_pro1$coefficients$Estimate[1]`, 95% CI = [`r random_effects_pro1$coefficients$lbound[1]`, `r random_effects_pro1$coefficients$ubound[1]`], *SE* = `r random_effects_pro1$coefficients$Std.Error[1]`, *Z* = `r random_effects_pro1$coefficients$"z value"[1]`, *p* = `r random_effects_pro1$coefficients$"Pr(>|z|)"[1]`. Exclusion set 2: *Hedges’ g* = `r random_effects_pro2$coefficients$Estimate[1]`, 95% CI = [`r random_effects_pro2$coefficients$lbound[1]`, `r random_effects_pro2$coefficients$ubound[1]`], *SE* = `r random_effects_pro2$coefficients$Std.Error[1]`, *Z* = `r random_effects_pro2$coefficients$"z value"[1]`, *p* = `r random_effects_pro2$coefficients$"Pr(>|z|)"[1]`. Exclusion set 3: *Hedges’ g* = `r random_effects_pro3$coefficients$Estimate[1]`, 95% CI = [`r random_effects_pro3$coefficients$lbound[1]`, `r random_effects_pro3$coefficients$ubound[1]`], *SE* = `r random_effects_pro3$coefficients$Std.Error[1]`, *Z* = `r random_effects_pro3$coefficients$"z value"[1]`, *p* = `r random_effects_pro3$coefficients$"Pr(>|z|)"[1]`. 
+
+We also examined how much variation was observed among effect sizes (e.g., heterogeneity). For example, there may have been a mortality salience effect at some sites and not others. For all exclusion sets, this variability did not exceed variability we would expect by chance: exclusion set 1: *Q*(`r random_effects_pro1$Q.stat$Q.df`) = `r random_effects_pro1$Q.stat$Q`, *p* = `r random_effects_pro1$Q.stat$pval`; exclusion set 2: *Q*(`r random_effects_pro2$Q.stat$Q.df`) = `r random_effects_pro2$Q.stat$Q`, *p* = `r random_effects_pro2$Q.stat$pval`; exclusion set 3: *Q*(`r random_effects_pro3$Q.stat$Q.df`) = `r random_effects_pro3$Q.stat$Q`, *p* = `r random_effects_pro3$Q.stat$pval`. 
+
+In sum, we observed no evidence for an overall effect of mortality salience on pro-us author ratings. And, overall results suggest that there was minimal or no heterogeneity in effect sizes across sites. This lack of variation suggests that it is unlikely we will observe an effect of Author Advised versus In House protocols or other moderators such as differences in samples or TMT knowledge. Even so, the plausible moderation by Author Advised/In House protocol is examined in the following section. 
+
+## PRO-US RATINGS ONLY: Research Question 2: Moderation by Author Advised/In House protocol
+A covariate of protocol type was added to the random effects model to create a three-level mixed-effects meta-analysis. This was pre-registered as our primary analysis.[^2] 
+
+[^2]: The addition of the argument "x = version" to the prior metaSEM R code can be seen here: meta3(y=es, v=var, cluster=Location, x=version, data=dataset)
+
+This analysis again produces an overall grand mean effect size, and those were again null across all three exclusion sets: Exclusion set 1: *Hedges’ g* = `r mixed_effects_pro1$coefficients$Estimate[1]`, 95% CI = [`r mixed_effects_pro1$coefficients$lbound[1]`, `r mixed_effects_pro1$coefficients$ubound[1]`], *SE* = `r mixed_effects_pro1$coefficients$Std.Error[1]`, *Z* = `r mixed_effects_pro1$coefficients$"z value"[1]`, *p* = `r mixed_effects_pro1$coefficients$"Pr(>|z|)"[1]`. Exclusion set 2: *Hedges’ g* = `r mixed_effects_pro2$coefficients$Estimate[1]`, 95% CI = [`r mixed_effects_pro2$coefficients$lbound[1]`, `r mixed_effects_pro2$coefficients$ubound[1]`], *SE* = `r mixed_effects_pro2$coefficients$Std.Error[1]`, *Z* = `r mixed_effects_pro2$coefficients$"z value"[1]`, *p* = `r mixed_effects_pro2$coefficients$"Pr(>|z|)"[1]`. Exclusion set 3: *Hedges’ g* = `r mixed_effects_pro3$coefficients$Estimate[1]`, 95% CI = [`r mixed_effects_pro3$coefficients$lbound[1]`, `r mixed_effects_pro3$coefficients$ubound[1]`], *SE* = `r mixed_effects_pro3$coefficients$Std.Error[1]`, *Z* = `r mixed_effects_pro3$coefficients$"z value"[1]`, *p* = `r mixed_effects_pro3$coefficients$"Pr(>|z|)"[1]`.
+
+In addition, protocol version did not significantly predict replication effect size. Exclusion set 1: *b* = `r mixed_effects_pro1$coefficients["Slope_1", "Estimate"]`, *Z* = `r mixed_effects_pro1$coefficients["Slope_1", "z value"]`, *p* = `r mixed_effects_pro1$coefficients["Slope_1", "Pr(>|z|)"]`; exclusion set 2: *b* = `r mixed_effects_pro2$coefficients["Slope_1", "Estimate"]`, *Z* = `r mixed_effects_pro2$coefficients["Slope_1", "z value"]`, *p* = `r mixed_effects_pro2$coefficients["Slope_1", "Pr(>|z|)"]`; exclusion set 3: *b* = `r mixed_effects_pro3$coefficients["Slope_1", "Estimate"]`, *Z* = `r mixed_effects_pro3$coefficients["Slope_1", "z value"]`, *p* = `r mixed_effects_pro3$coefficients["Slope_1", "Pr(>|z|)"]`. 
+
+We again did not observe heterogeneity between labs, in any of the exclusion sets: exclusion set 1: *Q*(`r mixed_effects_pro1$Q.stat$Q.df`) = `r mixed_effects_pro1$Q.stat$Q`, *p* = `r mixed_effects_pro1$Q.stat$pval`; exclusion set 2: *Q*(`r mixed_effects_pro2$Q.stat$Q.df`) = `r mixed_effects_pro2$Q.stat$Q`, *p* = `r mixed_effects_pro2$Q.stat$pval`; exclusion set 3: *Q*(`r mixed_effects_pro3$Q.stat$Q.df`) = `r mixed_effects_pro3$Q.stat$Q`, *p* = `r mixed_effects_pro3$Q.stat$pval`.
+
+## PRO-US RATINGS ONLY: Research Question 3: Effect of Standardization
+Finally, we tested whether In House protocols displayed greater variability in effect size than Author Advised protocols. To test this hypothesis, we ran the mixed-effects models but constrained the variances at both level 2 and level 3 to 0, effectively creating fixed-effects models. These models were then compared with a chi-squared differences test to assess whether the fit significantly changed. In this case, none of the three models significantly decreased in fit: Exclusion set 1: *$\chi$²* (`r fit_comparison_pro1$diffdf[2]`) = `r fit_comparison_pro1$diffLL[2]`, *p* = `r fit_comparison_pro1$p[2]`; Exclusion set 2: *$\chi$²* (`r fit_comparison_pro2$diffdf[2]`) = `r fit_comparison_pro2$diffLL[2]`, *p* = `r fit_comparison_pro2$p[2]`; Exclusion set 3: *$\chi$²* (`r fit_comparison_pro3$diffdf[2]`) = `r fit_comparison_pro3$diffLL[2]`, *p* = `r fit_comparison_pro3$p[2]`. Overall, there was no evidence that In House protocols elicited greater variability than Author Advised protocols.
+
+```{r analysis-replication-meta-anti, include = FALSE}
+
+# In 005_analysis_supplemental.R I generate results per site, treating anti- and pro- author ratings separately. Like the main manuscript, these are identical but repeated for each of the three exclusion rules. Those are output to:
+
+# ./data/public/combinedresults_pro1.csv
+# ./data/public/combinedresults_pro2.csv
+# ./data/public/combinedresults_pro3.csv
+
+# ./data/public/combinedresults_anti1.csv
+# ./data/public/combinedresults_anti2.csv
+# ./data/public/combinedresults_anti3.csv
+
+# Here I'll read in those files, but if you're error checking you'll also
+# want to review the code in 005_analysis_supplemental.R (which re-uses code from 002_ml4analysis.R)
+
+combinedresults_anti1 <- read.csv("./data/public/combinedresults_anti1.csv")
+combinedresults_anti2 <- read.csv("./data/public/combinedresults_anti2.csv")
+combinedresults_anti3 <- read.csv("./data/public/combinedresults_anti3.csv")
+
+# analyses repeated for each set of exclusion critera
+# three-level random-effects meta-analysis in MetaSEM
+# summary( meta3(y=yi, v=vi, cluster=location, data=combinedresults0)) #line not necessary, results for a subset we never use (e.g., zero exclusions)
+random_effects_anti1 <- summary(meta3(y=yi, v=vi, cluster=location, data=combinedresults_anti1))
+random_effects_anti2 <- summary(meta3(y=yi, v=vi, cluster=location, data=combinedresults_anti2))
+random_effects_anti3 <- summary(meta3(y=yi, v=vi, cluster=location, data=combinedresults_anti3))
+#Notes: Q statistic is for sig test for heterogeneity among all effect sizes. I2 for level 2 indicates the percent of total variance explained by effects within sites, and I2 for level 3 indicates the percent of total variance accounted for by differences between sites. Intercept is the avg population effect. 
+
+# a covariate of study version (in-house or expert-designed) is added to create a three-level mixed-effects meta-analysis
+# note the openMX status, sometimes indicates a potential problem
+# summary( mixed0 <- meta3(y=yi, v=vi, cluster=location, x=expert, data=combinedresults0)) #line not necessary, results for a subset we never use (e.g., zero exclusions)
+mixed_effects_anti1 <- summary(mixed_anti1 <- meta3(y=yi, v=vi, cluster=location, x=expert, data=combinedresults_anti1))
+mixed_effects_anti2 <- summary(mixed_anti2 <- meta3(y=yi, v=vi, cluster=location, x=expert, data=combinedresults_anti2))
+mixed_effects_anti3 <- summary(mixed_anti3 <- meta3(y=yi, v=vi, cluster=location, x=expert, data=combinedresults_anti3))
+# Notes: The R? for the version predictor will be reported for both level 2 and level 3, although in this case version is a level 2 predictor so the level 3 R? will always be zero. 
+
+# constraining the variance to test if it significantly worsens the model
+# summary( fixed0 <- meta3(y=yi, v=vi, cluster=location, x=expert, data=combinedresults0, RE2.constraints=0, RE3.constraints=0)) #line not necessary, results for a subset we never use (e.g., zero exclusions)
+constrained_anti1 <- summary(fixed_anti1 <- meta3(y=yi, v=vi, cluster=location, x=expert, data=combinedresults_anti1, RE2.constraints=0, RE3.constraints=0))
+constrained_anti2 <- summary(fixed_anti2 <- meta3(y=yi, v=vi, cluster=location, x=expert, data=combinedresults_anti2, RE2.constraints=0, RE3.constraints=0))
+constrained_anti3 <- summary(fixed_anti3 <- meta3(y=yi, v=vi, cluster=location, x=expert, data=combinedresults_anti3, RE2.constraints=0, RE3.constraints=0))
+
+# compare if there is a significant difference in model fit, chi square difference test
+# anova(mixed0, fixed0)
+fit_comparison_anti1 <- anova(mixed_anti1, fixed_anti1)
+fit_comparison_anti2 <- anova(mixed_anti2, fixed_anti2)
+fit_comparison_anti3 <- anova(mixed_anti3, fixed_anti3)
+```
+
+## ANTI-US RATINGS ONLY: Research question 1: Meta-analytic results across all labs (random effects meta-analysis). 
+Some labs administered both Author Advised and In House protocols. To account for this nesting of effect sizes within labs, a three-level random-effects meta-analysis was conducted using the MetaSEM package (Cheung, 2014) in R.[^3] This analysis produces the grand mean effect size across all sites and versions.
+
+[^3]: Sample code to run this analysis is: meta3(y=es, v=var, cluster=Location, data=dataset). In this sample code, “y=es” directs the program to the column of effect sizes, “v=var” indicates the variable to be used as the sampling variance for each effect size, and the “cluster=Location” command groups the effect sizes by a location variable in the dataset (in this case, a unique identifier assigned to each replication site).
+
+First we examine if there was an overall effect of the mortality salience manipulation on ratings of the anti-US author. For exclusion sets 1 and 2, there was not: Exclusion set 1: *Hedges’ g* = `r random_effects_anti1$coefficients$Estimate[1]`, 95% CI = [`r random_effects_anti1$coefficients$lbound[1]`, `r random_effects_anti1$coefficients$ubound[1]`], *SE* = `r random_effects_anti1$coefficients$Std.Error[1]`, *Z* = `r random_effects_anti1$coefficients$"z value"[1]`, *p* = `r random_effects_anti1$coefficients$"Pr(>|z|)"[1]`. Exclusion set 2: *Hedges’ g* = `r random_effects_anti2$coefficients$Estimate[1]`, 95% CI = [`r random_effects_anti2$coefficients$lbound[1]`, `r random_effects_anti2$coefficients$ubound[1]`], *SE* = `r random_effects_anti2$coefficients$Std.Error[1]`, *Z* = `r random_effects_anti2$coefficients$"z value"[1]`, *p* = `r random_effects_anti2$coefficients$"Pr(>|z|)"[1]`. Exclusion set 3 is not reported because the meta3() call could not find a definitive solution, indicating results may not be valid (e.g., results were 'NA').
+
+We also examined how much variation was observed among effect sizes (e.g., heterogeneity). For example, there may have been a mortality salience effect at some sites and not others. We generally observed little evidence for heterogeneity: exclusion set 1: *Q*(`r random_effects_anti1$Q.stat$Q.df`) = `r random_effects_anti1$Q.stat$Q`, *p* = `r random_effects_anti1$Q.stat$pval`; exclusion set 2: *Q*(`r random_effects_anti2$Q.stat$Q.df`) = `r random_effects_anti2$Q.stat$Q`, *p* = `r random_effects_anti2$Q.stat$pval`. We again do not report exclusion set 3 for this analysis because of the issue noted above. Note: Although exclusion set 2 was near statistical significance, the effect size was trivial regardless: , Tau^2^~within\ labs~ = `r random_effects_anti2$coefficients["Tau2_2", "Estimate"]`, Tau^2^~between\ labs~ = `r random_effects_anti2$coefficients["Tau2_3", "Estimate"]`
+
+In sum, we observed no evidence for an overall effect of mortality salience on anti-us author ratings. And, overall results suggest that there was minimal or no heterogeneity in effect sizes across sites. This lack of variation suggests that it is unlikely we will observe an effect of Author Advised versus In House protocols or other moderators such as differences in samples or TMT knowledge. Even so, the plausible moderation by Author Advised/In House protocol is examined in the following section. 
+
+## ANTI-US RATINGS ONLY: Research Question 2: Moderation by Author Advised/In House protocol
+A covariate of protocol type was added to the random effects model to create a three-level mixed-effects meta-analysis. This was pre-registered as our primary analysis.[^4] 
+
+[^4]: The addition of the argument "x = version" to the prior metaSEM R code can be seen here: meta3(y=es, v=var, cluster=Location, x=version, data=dataset)
+
+This analysis again produces an overall grand mean effect size, and those were again null across all three exclusion sets: Exclusion set 1: *Hedges’ g* = `r mixed_effects_anti1$coefficients$Estimate[1]`, 95% CI = [`r mixed_effects_anti1$coefficients$lbound[1]`, `r mixed_effects_anti1$coefficients$ubound[1]`], *SE* = `r mixed_effects_anti1$coefficients$Std.Error[1]`, *Z* = `r mixed_effects_anti1$coefficients$"z value"[1]`, *p* = `r mixed_effects_anti1$coefficients$"Pr(>|z|)"[1]`. Exclusion set 2: *Hedges’ g* = `r mixed_effects_anti2$coefficients$Estimate[1]`, 95% CI = [`r mixed_effects_anti2$coefficients$lbound[1]`, `r mixed_effects_anti2$coefficients$ubound[1]`], *SE* = `r mixed_effects_anti2$coefficients$Std.Error[1]`, *Z* = `r mixed_effects_anti2$coefficients$"z value"[1]`, *p* = `r mixed_effects_anti2$coefficients$"Pr(>|z|)"[1]`. Exclusion set 3: *Hedges’ g* = `r mixed_effects_anti3$coefficients$Estimate[1]`, 95% CI = [`r mixed_effects_anti3$coefficients$lbound[1]`, `r mixed_effects_anti3$coefficients$ubound[1]`], *SE* = `r mixed_effects_anti3$coefficients$Std.Error[1]`, *Z* = `r mixed_effects_anti3$coefficients$"z value"[1]`, *p* = `r mixed_effects_anti3$coefficients$"Pr(>|z|)"[1]`.
+
+In addition, protocol version did not significantly predict replication effect size. Exclusion set 1: *b* = `r mixed_effects_anti1$coefficients["Slope_1", "Estimate"]`, *Z* = `r mixed_effects_anti1$coefficients["Slope_1", "z value"]`, *p* = `r mixed_effects_anti1$coefficients["Slope_1", "Pr(>|z|)"]`; exclusion set 2: *b* = `r mixed_effects_anti2$coefficients["Slope_1", "Estimate"]`, *Z* = `r mixed_effects_anti2$coefficients["Slope_1", "z value"]`, *p* = `r mixed_effects_anti2$coefficients["Slope_1", "Pr(>|z|)"]`; exclusion set 3: *b* = `r mixed_effects_anti3$coefficients["Slope_1", "Estimate"]`, *Z* = `r mixed_effects_anti3$coefficients["Slope_1", "z value"]`, *p* = `r mixed_effects_anti3$coefficients["Slope_1", "Pr(>|z|)"]`. 
+
+We again did not observe heterogeneity between labs, in any of the exclusion sets: exclusion set 1: *Q*(`r mixed_effects_anti1$Q.stat$Q.df`) = `r mixed_effects_anti1$Q.stat$Q`, *p* = `r mixed_effects_anti1$Q.stat$pval`; exclusion set 2: *Q*(`r mixed_effects_anti2$Q.stat$Q.df`) = `r mixed_effects_anti2$Q.stat$Q`, *p* = `r mixed_effects_anti2$Q.stat$pval`; exclusion set 3: *Q*(`r mixed_effects_anti3$Q.stat$Q.df`) = `r mixed_effects_anti3$Q.stat$Q`, *p* = `r mixed_effects_anti3$Q.stat$pval`. Note: Although exclusion set 2 was near statistical significance, the effect size was trivial regardless: , Tau^2^~within\ labs~ = `r mixed_effects_anti2$coefficients["Tau2_2", "Estimate"]`, Tau^2^~between\ labs~ = `r mixed_effects_anti2$coefficients["Tau2_3", "Estimate"]`
+
+## ANTI-US RATINGS ONLY: Research Question 3: Effect of Standardization
+Finally, we tested whether In House protocols displayed greater variability in effect size than Author Advised protocols. To test this hypothesis, we ran the mixed-effects models but constrained the variances at both level 2 and level 3 to 0, effectively creating fixed-effects models. These models were then compared with a chi-squared differences test to assess whether the fit significantly changed. In this case, none of the three models significantly decreased in fit: Exclusion set 1: *$\chi$²* (`r fit_comparison_anti1$diffdf[2]`) = `r fit_comparison_anti1$diffLL[2]`, *p* = `r fit_comparison_anti1$p[2]`; Exclusion set 2: *$\chi$²* (`r fit_comparison_anti2$diffdf[2]`) = `r fit_comparison_anti2$diffLL[2]`, *p* = `r fit_comparison_anti2$p[2]`; Exclusion set 3: *$\chi$²* (`r fit_comparison_anti3$diffdf[2]`) = `r fit_comparison_anti3$diffLL[2]`, *p* = `r fit_comparison_anti3$p[2]`. Overall, there was no evidence that In House protocols elicited greater variability than Author Advised protocols.
+
+\begingroup
+\setlength{\parindent}{-0.5in}
+\setlength{\leftskip}{0.5in}
+
+<div id = "refs"></div>
+\endgroup

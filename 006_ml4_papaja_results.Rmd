@@ -6,7 +6,7 @@ author:
   - name          : "Richard A. Klein"
     affiliation   : "1"
     corresponding : yes    # Define only one corresponding author
-    address       : "Postal address"
+    address       : ""
     email         : "raklein22@gmail.com"
 
 affiliation:
@@ -173,7 +173,7 @@ alpha_anti <- psych::alpha(select(merged, antius3, antius4, antius5))
 alpha_pro <- psych::alpha(select(merged, prous3, prous4, prous5))
 
 # Tracking exclusions:
-# 'merged_old' is all data, no exclusions
+# 'merged_original' is all data, no exclusions
 # 'merged' is basic exclusions (exclusion set 1 below). Implemented in the participants code chunk at the beginning.
 # 'merged_excl_2' further excludes participants as per exclusion set 2 (below)
 merged_excl_2 <- subset(merged, (merged$race == 1 & merged$countryofbirth == 1) | merged$expert == 0)
@@ -241,7 +241,7 @@ fit_comparison_2 <- anova(mixed2, fixed2)
 fit_comparison_3 <- anova(mixed3, fixed3)
 ```
 
-## Meta-analytic results across all labs (random effects meta-analysis). 
+## Research Question 1: Meta-analytic results across all labs (random effects meta-analysis). 
 Some labs administered both Author Advised and In House protocols. To account for this nesting of effect sizes within labs, a three-level random-effects meta-analysis was conducted using the MetaSEM package (Cheung, 2014) in R.[^3] This analysis produces the grand mean effect size across all sites and versions.
 
 [^3]: Sample code to run this analysis is: meta3(y=es, v=var, cluster=Location, data=dataset). In this sample code, “y=es” directs the program to the column of effect sizes, “v=var” indicates the variable to be used as the sampling variance for each effect size, and the “cluster=Location” command groups the effect sizes by a location variable in the dataset (in this case, a unique identifier assigned to each replication site).
