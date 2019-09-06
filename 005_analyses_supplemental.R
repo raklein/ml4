@@ -1133,59 +1133,51 @@ merged_excl_2 <- subset(merged, (merged$race == 1 & merged$countryofbirth == 1) 
 # 'merged_excl_3' further excludes participants as per exclusion set 3 (below)
 merged_excl_3 <- subset(merged_excl_2, merged_excl_2$americanid >= 7 | merged_excl_2$expert == 0)
 
-# Percent rating pro-author more highly than anti-author
-# Basic exclusions
-n_profav <- sum(merged$pro_minus_anti > 0)
-n_antifav <- sum(merged$pro_minus_anti < 0)
-n_nofav <- sum(merged$pro_minus_anti == 0)
+# Investigating only participants who reported preference for the pro-US author.
 
-pct_profav1 <- (n_profav/(n_profav+n_antifav+n_nofav))*100
-pct_antifav1 <- (n_antifav/(n_profav+n_antifav+n_nofav))*100
-pct_nofav1 <- (n_nofav/(n_profav+n_antifav+n_nofav))*100
+# generate dfs for Author Advised and In House sites.
+merged_aa <- filter(merged, expert == 1)
+merged_ih <- filter(merged, expert == 0)
 
-# Exclusions 2
-n_profav <- sum(merged_excl_2$pro_minus_anti > 0)
-n_antifav <- sum(merged_excl_2$pro_minus_anti < 0)
-n_nofav <- sum(merged_excl_2$pro_minus_anti == 0)
+### Percent rating pro-author more highly than anti-author, basic exclusions
+# In House
+n_profav_ih <- sum(merged_ih$pro_minus_anti > 0)
+n_antifav_ih <- sum(merged_ih$pro_minus_anti < 0)
+n_nofav_ih <- sum(merged_ih$pro_minus_anti == 0)
 
-pct_profav2 <- (n_profav/(n_profav+n_antifav+n_nofav))*100
-pct_antifav2 <- (n_antifav/(n_profav+n_antifav+n_nofav))*100
-pct_nofav2 <- (n_nofav/(n_profav+n_antifav+n_nofav))*100
+pct_profav_ih <- (n_profav_ih/(n_profav_ih+n_antifav_ih+n_nofav_ih))*100
+pct_antifav_ih <- (n_antifav_ih/(n_profav_ih+n_antifav_ih+n_nofav_ih))*100
+pct_nofav_ih <- (n_nofav_ih/(n_profav_ih+n_antifav_ih+n_nofav_ih))*100
 
-# Exclusions 3
-n_profav <- sum(merged_excl_3$pro_minus_anti > 0)
-n_antifav <- sum(merged_excl_3$pro_minus_anti < 0)
-n_nofav <- sum(merged_excl_3$pro_minus_anti == 0)
+# Author Advised
+n_profav_aa <- sum(merged_aa$pro_minus_anti > 0)
+n_antifav_aa <- sum(merged_aa$pro_minus_anti < 0)
+n_nofav_aa <- sum(merged_aa$pro_minus_anti == 0)
 
-pct_profav3 <- (n_profav/(n_profav+n_antifav+n_nofav))*100
-pct_antifav3 <- (n_antifav/(n_profav+n_antifav+n_nofav))*100
-pct_nofav3 <- (n_nofav/(n_profav+n_antifav+n_nofav))*100
+pct_profav_aa <- (n_profav_aa/(n_profav_aa+n_antifav_aa+n_nofav_aa))*100
+pct_antifav_aa <- (n_antifav_aa/(n_profav_aa+n_antifav_aa+n_nofav_aa))*100
+pct_nofav_aa <- (n_nofav_aa/(n_profav_aa+n_antifav_aa+n_nofav_aa))*100
 
-# Subset to participants who preferred the pro-US author 
-# and examine if that finds the effect. 
-# Repeat for 3 exclusion sets if desired (will show identical results if only using in house labs)
+# Subset to Author Advised participants who preferred the pro-US author 
+# and examine if that finds the effect. Repeat for 3 exclusion sets.
+# Datasets:
+# merged_aa is basic exclusions
+# merged_excl_2_aa is exclusion set 2
+merged_excl_2_aa <- filter(merged_excl_2, expert == 1)
+# merged_excl_3_aa is exclusion set 3
+merged_excl_3_aa <- filter(merged_excl_3, expert == 1)
 
-summary(lm(data = merged, pro_minus_anti ~ ms_condition))
-summary(lm(data = merged_excl_2, pro_minus_anti ~ ms_condition))
-summary(lm(data = merged_excl_3, pro_minus_anti ~ ms_condition))
+# Analyses for each
+merged_aa_ttest <- t.test(merged_aa$pro_minus_anti~merged_aa$ms_condition)
+merged_aa_desc <- describeBy(merged_aa$pro_minus_anti, group = merged_aa$ms_condition)
+merged_aa_effsize <- effsize::cohen.d(merged_aa$pro_minus_anti~merged_aa$ms_condition,pooled=TRUE,paired=FALSE,na.rm=TRUE, hedges.correction=TRUE,conf.level=0.95)
 
-effsize::cohen.d(merged$pro_minus_anti~merged$ms_condition,
-                 pooled=TRUE,
-                 paired=FALSE,
-                 na.rm=TRUE,
-                 hedges.correction=TRUE,
-                 conf.level=0.95)
+# Analyses using that subset
+merged_excl_2_aa_ttest <- t.test(merged_excl_2_aa$pro_minus_anti~merged_excl_2_aa$ms_condition)
+merged_excl_2_aa_desc <- describeBy(merged_excl_2_aa$pro_minus_anti, group = merged_excl_2_aa$ms_condition)
+merged_excl_2_aa_effsize <- effsize::cohen.d(merged_excl_2_aa$pro_minus_anti~merged_excl_2_aa$ms_condition,pooled=TRUE,paired=FALSE,na.rm=TRUE, hedges.correction=TRUE,conf.level=0.95)
 
-effsize::cohen.d(merged_excl_2$pro_minus_anti~merged_excl_2$ms_condition,
-                 pooled=TRUE,
-                 paired=FALSE,
-                 na.rm=TRUE,
-                 hedges.correction=TRUE,
-                 conf.level=0.95)
-
-effsize::cohen.d(merged_excl_3$pro_minus_anti~merged_excl_3$ms_condition,
-                 pooled=TRUE,
-                 paired=FALSE,
-                 na.rm=TRUE,
-                 hedges.correction=TRUE,
-                 conf.level=0.95)
+# Analyses using that subset
+merged_excl_3_aa_ttest <- t.test(merged_excl_3_aa$pro_minus_anti~merged_excl_3_aa$ms_condition)
+merged_excl_3_aa_desc <- describeBy(merged_excl_3_aa$pro_minus_anti, group = merged_excl_3_aa$ms_condition)
+merged_excl_3_aa_effsize <- effsize::cohen.d(merged_excl_3_aa$pro_minus_anti~merged_excl_3_aa$ms_condition,pooled=TRUE,paired=FALSE,na.rm=TRUE, hedges.correction=TRUE,conf.level=0.95)
