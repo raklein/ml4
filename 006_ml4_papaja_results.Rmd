@@ -266,7 +266,7 @@ Variation among effect sizes also followed the previously observed pattern. Smal
 ## Research Question 3: Effect of Standardization
 Finally, we tested whether In House protocols displayed greater variability in effect size than Author Advised protocols. To test this hypothesis, we ran the mixed-effects models but constrained the variances at both level 2 and level 3 to 0, effectively creating fixed-effects models. These models were then compared with a chi-squared differences test to assess whether the fit significantly changed. In this case, none of the three models significantly decreased in fit: Exclusion set 1: *$\chi$²* (`r fit_comparison_1$diffdf[2]`) = `r fit_comparison_1$diffLL[2]`, *p* = `r fit_comparison_1$p[2]`; Exclusion set 2: *$\chi$²* (`r fit_comparison_2$diffdf[2]`) = `r fit_comparison_2$diffLL[2]`, *p* = `r fit_comparison_2$p[2]`; Exclusion set 3: *$\chi$²* (`r fit_comparison_3$diffdf[2]`) = `r fit_comparison_3$diffLL[2]`, *p* = `r fit_comparison_3$p[2]`. Overall, there was no evidence that In House protocols elicited greater variability than Author Advised protocols.
 
-```{r analysis-followup, include = FALSE}
+```{r analysis-exploratory-knowl, include = FALSE}
 # Focused analysis of sites with "expert" or "a lot of knowledge about TMT" leads
 # Still using exclusion set 1 (the 'merged' datafile), implemented in participants section
 
@@ -278,6 +278,11 @@ Finally, we tested whether In House protocols displayed greater variability in e
 #Pace University (expert)
 #Virginia Commonwealth University, Richmond, VA
 data_knowledgeable <- subset(merged, merged$source=="uwmadison_inhouse" | merged$source=="cnj" | merged$source=="kansas_expert" | merged$source=="kansas_inhouse" | merged$source=="pace_expert" | merged$source=="vcu")
+
+#uwmadison_inhouse used a 7 point scale, but with similar anchors, to the 9-point scale used by the other sites. To make this direct comparison I'm going to scale the DV to a 9-point scale. 
+
+data_knowledgeable[data_knowledgeable$source == "uwmadison_inhouse", 'pro_minus_anti'] <- data_knowledgeable[data_knowledgeable$source == "uwmadison_inhouse", 'pro_minus_anti'] * (9/7)
+
 # Applying the same levels fix as earlier, only because it caused problems in 
 # cohen.d() below. May not be necessary anymore.
 data_knowledgeable$ms_condition <- factor(data_knowledgeable$ms_condition, levels = c("ms", "tv"))
@@ -288,7 +293,65 @@ knowl_effsize <- effsize::cohen.d(data_knowledgeable$pro_minus_anti~data_knowled
 ```
 
 ## Follow-Up Exploratory Analyses
-**Results for TMT-knowledgeable sites.** One principal investigator reported being an expert in TMT, while 5 others indicated having “a lot” of knowledge about TMT. One might expect that these locations would have greater success at replicating the mortality salience effect. Aggregating across these sites, and using only the first exclusion rule, these sites did not detect a difference between the mortality salience group (*M* = `r as.numeric(knowl_desc$ms["mean"])`, *SD* = `r as.numeric(knowl_desc$ms["sd"])`) and the control group (*M* = `r as.numeric(knowl_desc$tv["mean"])`, *SD* = `r as.numeric(knowl_desc$tv["sd"])`), *t*(`r knowl_ttest$parameter`) = `r knowl_ttest$statistic`, *p* = `r knowl_ttest$p.value`, *Hedges’ g* = `r knowl_effsize$estimate`, 95% CI = [`r knowl_effsize$conf.int["lower"]`, `r knowl_effsize$conf.int["upper"]`]. 
+**Results for TMT-knowledgeable sites.** One principal investigator reported being an expert in TMT, while 5 others indicated having “a lot” of knowledge about TMT. One might expect that these locations would have greater success at replicating the mortality salience effect. Aggregating across these sites, and using only the first exclusion rule, these sites did not detect a difference between the mortality salience group (*M* = `r as.numeric(knowl_desc$ms["mean"])`, *SD* = `r as.numeric(knowl_desc$ms["sd"])`) and the control group (*M* = `r as.numeric(knowl_desc$tv["mean"])`, *SD* = `r as.numeric(knowl_desc$tv["sd"])`), *t*(`r knowl_ttest$parameter`) = `r knowl_ttest$statistic`, *p* = `r knowl_ttest$p.value`, *Hedges’ g* = `r knowl_effsize$estimate`, 95% CI = [`r knowl_effsize$conf.int["lower"]`, `r knowl_effsize$conf.int["upper"]`].[^5] 
+
+[^5]: One site, UW Madison In House, used a 7-point scale. This has been rescaled to a 9-point scale for this analysis to approximately compare it with the others.
+
+```{r analysis-exploratory-preferpro, include = FALSE}
+# Investigating only participants who reported preference for the pro-US author.
+
+# generate dfs for Author Advised and In House sites.
+merged_aa <- filter(merged, expert == 1)
+merged_ih <- filter(merged, expert == 0)
+
+### Percent rating pro-author more highly than anti-author, basic exclusions
+# In House
+n_profav_ih <- sum(merged_ih$pro_minus_anti > 0)
+n_antifav_ih <- sum(merged_ih$pro_minus_anti < 0)
+n_nofav_ih <- sum(merged_ih$pro_minus_anti == 0)
+
+pct_profav_ih <- (n_profav_ih/(n_profav_ih+n_antifav_ih+n_nofav_ih))*100
+pct_antifav_ih <- (n_antifav_ih/(n_profav_ih+n_antifav_ih+n_nofav_ih))*100
+pct_nofav_ih <- (n_nofav_ih/(n_profav_ih+n_antifav_ih+n_nofav_ih))*100
+
+# Author Advised
+n_profav_aa <- sum(merged_aa$pro_minus_anti > 0)
+n_antifav_aa <- sum(merged_aa$pro_minus_anti < 0)
+n_nofav_aa <- sum(merged_aa$pro_minus_anti == 0)
+
+pct_profav_aa <- (n_profav_aa/(n_profav_aa+n_antifav_aa+n_nofav_aa))*100
+pct_antifav_aa <- (n_antifav_aa/(n_profav_aa+n_antifav_aa+n_nofav_aa))*100
+pct_nofav_aa <- (n_nofav_aa/(n_profav_aa+n_antifav_aa+n_nofav_aa))*100
+
+# Subset to Author Advised participants who preferred the pro-US author 
+# and examine if that finds the effect. Repeat for 3 exclusion sets.
+# Datasets:
+# merged_aa is basic exclusions
+# merged_excl_2_aa is exclusion set 2
+merged_excl_2_aa <- filter(merged_excl_2, expert == 1)
+# merged_excl_3_aa is exclusion set 3
+merged_excl_3_aa <- filter(merged_excl_3, expert == 1)
+
+# Analyses for each
+merged_aa_ttest <- t.test(merged_aa$pro_minus_anti~merged_aa$ms_condition)
+merged_aa_desc <- describeBy(merged_aa$pro_minus_anti, group = merged_aa$ms_condition)
+merged_aa_effsize <- effsize::cohen.d(merged_aa$pro_minus_anti~merged_aa$ms_condition,pooled=TRUE,paired=FALSE,na.rm=TRUE, hedges.correction=TRUE,conf.level=0.95)
+
+# Analyses using that subset
+merged_excl_2_aa_ttest <- t.test(merged_excl_2_aa$pro_minus_anti~merged_excl_2_aa$ms_condition)
+merged_excl_2_aa_desc <- describeBy(merged_excl_2_aa$pro_minus_anti, group = merged_excl_2_aa$ms_condition)
+merged_excl_2_aa_effsize <- effsize::cohen.d(merged_excl_2_aa$pro_minus_anti~merged_excl_2_aa$ms_condition,pooled=TRUE,paired=FALSE,na.rm=TRUE, hedges.correction=TRUE,conf.level=0.95)
+
+# Analyses using that subset
+merged_excl_3_aa_ttest <- t.test(merged_excl_3_aa$pro_minus_anti~merged_excl_3_aa$ms_condition)
+merged_excl_3_aa_desc <- describeBy(merged_excl_3_aa$pro_minus_anti, group = merged_excl_3_aa$ms_condition)
+merged_excl_3_aa_effsize <- effsize::cohen.d(merged_excl_3_aa$pro_minus_anti~merged_excl_3_aa$ms_condition,pooled=TRUE,paired=FALSE,na.rm=TRUE, hedges.correction=TRUE,conf.level=0.95)
+
+```
+
+**Results for participants who preferred the pro-US author** The present hypothesis that mortality salience would cause a participant to become more favorable to the pro-US author as compared to the anti-US author relies on the participant perceiving the pro-US stance as more similar to their own worldview (and/or the anti-US stance as threatening to their worldview). Original authors anticipated that the essays from the original study may not serve this function in the replication, run in 2016. For this reason, the anti-US essay from the original study was made more extreme in the Author Advised version of the replication. There was a particular concern that in the months leading up to and following the 2016 US Presidential Election of Donald Trump, the generally more liberal leaning student bodies on college campuses may feel less patriotic and not identify with the pro-US worldview. Indeed, analysis suggests the original authors anticipated and more successfully addressed this issue. Among In House replications, `r round(pct_profav_ih, digits = 0)`% of participants prefered the pro-US essay author, `r round(pct_antifav_ih, digits = 0)`% preferred the anti-US essay author, and `r round(pct_nofav_ih, digits = 0)`% had no preference. Among Author Advised replications, `r round(pct_profav_aa, digits = 0)`% of participants prefered the pro-US essay author, `r round(pct_antifav_aa, digits = 0)`% preferred the anti-US essay author, and `r round(pct_nofav_aa, digits = 0)`% had no preference.
+
+However, the predicted mortality salience effect still did not emerge when subsetting to only participants at Author Advised sites who preferred the pro-US author: exclusion set 1: mortality salience group (*M* = `r as.numeric(merged_aa_desc$ms["mean"])`, *SD* = `r as.numeric(merged_aa_desc$ms["sd"])`) and the control group (*M* = `r as.numeric(merged_aa_desc$tv["mean"])`, *SD* = `r as.numeric(merged_aa_desc$tv["sd"])`), *t*(`r merged_aa_ttest$parameter`) = `r merged_aa_ttest$statistic`, *p* = `r merged_aa_ttest$p.value`, *Hedges’ g* = `r merged_aa_effsize$estimate`, 95% CI = [`r merged_aa_effsize$conf.int["lower"]`, `r merged_aa_effsize$conf.int["upper"]`]; exclusion set 2: mortality salience group (*M* = `r as.numeric(merged_excl_2_aa_desc$ms["mean"])`, *SD* = `r as.numeric(merged_excl_2_aa_desc$ms["sd"])`) and the control group (*M* = `r as.numeric(merged_excl_2_aa_desc$tv["mean"])`, *SD* = `r as.numeric(merged_excl_2_aa_desc$tv["sd"])`), *t*(`r merged_excl_2_aa_ttest$parameter`) = `r merged_excl_2_aa_ttest$statistic`, *p* = `r merged_excl_2_aa_ttest$p.value`, *Hedges’ g* = `r merged_excl_2_aa_effsize$estimate`, 95% CI = [`r merged_excl_2_aa_effsize$conf.int["lower"]`, `r merged_excl_2_aa_effsize$conf.int["upper"]`]; exclusion set 3: mortality salience group (*M* = `r as.numeric(merged_excl_3_aa_desc$ms["mean"])`, *SD* = `r as.numeric(merged_excl_3_aa_desc$ms["sd"])`) and the control group (*M* = `r as.numeric(merged_excl_3_aa_desc$tv["mean"])`, *SD* = `r as.numeric(merged_excl_3_aa_desc$tv["sd"])`), *t*(`r merged_excl_3_aa_ttest$parameter`) = `r merged_excl_3_aa_ttest$statistic`, *p* = `r merged_excl_3_aa_ttest$p.value`, *Hedges’ g* = `r merged_excl_3_aa_effsize$estimate`, 95% CI = [`r merged_excl_3_aa_effsize$conf.int["lower"]`, `r merged_excl_3_aa_effsize$conf.int["upper"]`].
 
 \begingroup
 \setlength{\parindent}{-0.5in}
