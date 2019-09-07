@@ -69,7 +69,7 @@ exp_surv <- readRDS("./data/raw_site_data/experimenter survey/exp_surv.rds")
 
 # The 'merged' df includes all data provided by sites
 # I'm going to retain it in case we need to refer to it later, and then
-# apply the study-wide exclusion critera noted below.
+# apply the study-wide exclusion criteria noted below.
 
 merged_original <- merged
 
@@ -212,7 +212,7 @@ combinedresults1 <- read.csv("./data/public/combinedresults1.csv")
 combinedresults2 <- read.csv("./data/public/combinedresults2.csv")
 combinedresults3 <- read.csv("./data/public/combinedresults3.csv")
 
-# analyses repeated for each set of exclusion critera
+# analyses repeated for each set of exclusion criteria
 # three-level random-effects meta-analysis in MetaSEM
 # summary( meta3(y=yi, v=vi, cluster=location, data=combinedresults0)) #line not necessary, results for a subset we never use (e.g., zero exclusions)
 random_effects_1 <- summary(meta3(y=yi, v=vi, cluster=location, data=combinedresults1))
@@ -246,7 +246,7 @@ Some labs administered both Author Advised and In House protocols. To account fo
 
 [^3]: Sample code to run this analysis is: meta3(y=es, v=var, cluster=Location, data=dataset). In this sample code, “y=es” directs the program to the column of effect sizes, “v=var” indicates the variable to be used as the sampling variance for each effect size, and the “cluster=Location” command groups the effect sizes by a location variable in the dataset (in this case, a unique identifier assigned to each replication site).
 
-The most basic question is whether we observed the predicted effect of mortality salience. Regardless of which exclusion critera were used, we did not observe the predicted effect: Exclusion set 1: *Hedges’ g* = `r random_effects_1$coefficients$Estimate[1]`, 95% CI = [`r random_effects_1$coefficients$lbound[1]`, `r random_effects_1$coefficients$ubound[1]`], *SE* = `r random_effects_1$coefficients$Std.Error[1]`, *Z* = `r random_effects_1$coefficients$"z value"[1]`, *p* = `r random_effects_1$coefficients$"Pr(>|z|)"[1]`. Exclusion set 2: *Hedges’ g* = `r random_effects_2$coefficients$Estimate[1]`, 95% CI = [`r random_effects_2$coefficients$lbound[1]`, `r random_effects_2$coefficients$ubound[1]`], *SE* = `r random_effects_2$coefficients$Std.Error[1]`, *Z* = `r random_effects_2$coefficients$"z value"[1]`, *p* = `r random_effects_2$coefficients$"Pr(>|z|)"[1]`. Exclusion set 3: *Hedges’ g* = `r random_effects_3$coefficients$Estimate[1]`, 95% CI = [`r random_effects_3$coefficients$lbound[1]`, `r random_effects_3$coefficients$ubound[1]`], *SE* = `r random_effects_3$coefficients$Std.Error[1]`, *Z* = `r random_effects_3$coefficients$"z value"[1]`, *p* = `r random_effects_3$coefficients$"Pr(>|z|)"[1]`. Forest plots showing the effects for individual sites and the aggregate are available in Figure XX for exclusion set 1, and on the OSF page (https://osf.io/8ccnw/) for the other two exclusion sets.
+The most basic question is whether we observed the predicted effect of mortality salience. Regardless of which exclusion criteria were used, we did not observe the predicted effect: Exclusion set 1: *Hedges’ g* = `r random_effects_1$coefficients$Estimate[1]`, 95% CI = [`r random_effects_1$coefficients$lbound[1]`, `r random_effects_1$coefficients$ubound[1]`], *SE* = `r random_effects_1$coefficients$Std.Error[1]`, *Z* = `r random_effects_1$coefficients$"z value"[1]`, *p* = `r random_effects_1$coefficients$"Pr(>|z|)"[1]`. Exclusion set 2: *Hedges’ g* = `r random_effects_2$coefficients$Estimate[1]`, 95% CI = [`r random_effects_2$coefficients$lbound[1]`, `r random_effects_2$coefficients$ubound[1]`], *SE* = `r random_effects_2$coefficients$Std.Error[1]`, *Z* = `r random_effects_2$coefficients$"z value"[1]`, *p* = `r random_effects_2$coefficients$"Pr(>|z|)"[1]`. Exclusion set 3: *Hedges’ g* = `r random_effects_3$coefficients$Estimate[1]`, 95% CI = [`r random_effects_3$coefficients$lbound[1]`, `r random_effects_3$coefficients$ubound[1]`], *SE* = `r random_effects_3$coefficients$Std.Error[1]`, *Z* = `r random_effects_3$coefficients$"z value"[1]`, *p* = `r random_effects_3$coefficients$"Pr(>|z|)"[1]`. Forest plots showing the effects for individual sites and the aggregate are available in Figure XX for exclusion set 1, and on the OSF page (https://osf.io/8ccnw/) for the other two exclusion sets.
 
 We also examined how much variation was observed among effect sizes (e.g., heterogeneity). For example, there may have been a mortality salience effect at some sites and not others. For exclusion sets 1 and 3, this sort of variation did not exceed variation expected by chance (e.g., sampling variance), exclusion set 1: *Q*(`r random_effects_1$Q.stat$Q.df`) = `r random_effects_1$Q.stat$Q`, *p* = `r random_effects_1$Q.stat$pval`; exclusion set 3: *Q*(`r random_effects_3$Q.stat$Q.df`) = `r random_effects_3$Q.stat$Q`, *p* = `r random_effects_3$Q.stat$pval`. The amount of variation between did exceed chance for exclusion set 2, *Q*(`r random_effects_2$Q.stat$Q.df`) = `r random_effects_2$Q.stat$Q`, *p* = `r random_effects_2$Q.stat$pval`. However, though statistically significant, it was small in magnitude, Tau^2^~within\ labs~ = `r random_effects_2$coefficients["Tau2_2", "Estimate"]`, Tau^2^~between\ labs~ = `r random_effects_2$coefficients["Tau2_3", "Estimate"]`. 
 
