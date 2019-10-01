@@ -20,5 +20,6 @@ Data and analysis scripts for the [Many Labs 4](https://osf.io/8ccnw/) project. 
 - **006_ml4_papaja_results.Rmd** is an RMarkdown file that generates the results section from the manuscript and automatically populates the statistical results. 
 - **007_tables.Rmd** produces various tables presented in the manuscript.
 - **008_ml4_supplemental_results.Rmd** is an RMarkdown file that generates the supplemental results reporting section and automatically populates the statistical results. 
+- **009_meta3_ml4_papaja_results.Rmd** is an RMarkdown file that generates the results section with the originally pre-registered 3-level metasem analyses. This does not change results in any way that matters, but for the main paper we had to revert to a more basic metaanalysis because of convergence issues. 
 
 Contact me if you have any issues/comments and I'll help work through them.

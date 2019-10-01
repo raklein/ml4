@@ -386,12 +386,17 @@ combinedresults2 <- read.csv("./data/public/combinedresults2.csv")
 combinedresults3 <- read.csv("./data/public/combinedresults3.csv")
 
 # analyses repeated for each set of exclusion critera
-# three-level random-effects meta-analysis in MetaSEM
-summary( meta3(y=yi, v=vi, cluster=location, data=combinedresults0))
-summary( meta3(y=yi, v=vi, cluster=location, data=combinedresults1))
-summary( meta3(y=yi, v=vi, cluster=location, data=combinedresults2))
-summary( meta3(y=yi, v=vi, cluster=location, data=combinedresults3))
-#Notes: I? for level 2 indicates the percent of total variance explained by effects within sites, and I? for level 3 indicates the percent of total variance accounted for by differences between sites. 
+# This was originally a three-level random-effects meta-analysis in MetaSEM
+# had OpenMX status1: 5 so we had to drop the 'cluster = location' argument (not enough datapoints per location -- max = 2, most = 1)
+# So, now it's a univariate random-effects metaanalysis
+summary( meta(y=yi, v=vi, data=combinedresults0))
+summary( meta(y=yi, v=vi, data=combinedresults1))
+summary( meta(y=yi, v=vi, data=combinedresults2))
+summary( meta(y=yi, v=vi, data=combinedresults3))
+
+#Notes: Intercept1 is the grand mean effect size. 
+# for the 3 level meta, I? for level 2 indicates the percent of total variance explained by effects within sites, and I? for level 3 indicates the percent of total variance accounted for by differences between sites. 
+# Now that it's a simple meta, all of these meta-analytic stats (tau, q, I2) refer to variablity among all effect sizes (e.g., ignores that in 3 cases these are two nested within a particular university).
 
 # # forest plots for each
 # ### All forest plots now outdated in favor of metaviz.R
@@ -430,25 +435,62 @@ summary( meta3(y=yi, v=vi, cluster=location, data=combinedresults3))
 # text(6.5, 20.5, "SMD [95% CI]", pos=2) #adds standardized mean diff label using x y coord
 # dev.off()
 
-# a covariate of study version (in-house or expert-designed) is added to create a three-level mixed-effects meta-analysis
-# note the openMX status, sometimes indicates a potential problem
-summary( mixed0 <- meta3(y=yi, v=vi, cluster=location, x=expert, data=combinedresults0))
-summary( mixed1 <- meta3(y=yi, v=vi, cluster=location, x=expert, data=combinedresults1))
-summary( mixed2 <- meta3(y=yi, v=vi, cluster=location, x=expert, data=combinedresults2))
-summary( mixed3 <- meta3(y=yi, v=vi, cluster=location, x=expert, data=combinedresults3))
-# Notes: The R? for the version predictor will be reported for both level 2 and level 3, although in this case version is a level 2 predictor so the level 3 R? will always be zero. 
+# a covariate of study version (in-house or expert-designed) is added to create a mixed effects model.
+summary(mixed0 <- meta(y=yi, v=vi, x=expert, data=combinedresults0))
+summary(mixed1 <- meta(y=yi, v=vi, x=expert, data=combinedresults1))
+summary(mixed2 <- meta(y=yi, v=vi, x=expert, data=combinedresults2))
+summary(mixed3 <- meta(y=yi, v=vi, x=expert, data=combinedresults3))
 
-# constraining the variance to test if it significantly worsens the model
-summary( fixed0 <- meta3(y=yi, v=vi, cluster=location, x=expert, data=combinedresults0, RE2.constraints=0, RE3.constraints=0))
-summary( fixed1 <- meta3(y=yi, v=vi, cluster=location, x=expert, data=combinedresults1, RE2.constraints=0, RE3.constraints=0))
-summary( fixed2 <- meta3(y=yi, v=vi, cluster=location, x=expert, data=combinedresults2, RE2.constraints=0, RE3.constraints=0))
-summary( fixed3 <- meta3(y=yi, v=vi, cluster=location, x=expert, data=combinedresults3, RE2.constraints=0, RE3.constraints=0))
+# Notes: Intercept1 is still the grand mean estimate, Slope1_1 represents the difference between versions
+
+# Notes: In the old 3-level metasem, The R? for the version predictor will be reported for both level 2 and level 3, although in this case version is a level 2 predictor so the level 3 R? will always be zero. 
+
+# Now, we're going to compare the random effects model to a fixed effects model separately for 
+# Author Advised vs In House sites. If this improves model fit for one but not the other, that suggests that model shows greater variability in effect sizes. There are likely better ways to do this.
+
+# split Author Advised from In House results
+combinedresults0_ih <- filter(combinedresults0, expert == 0)
+combinedresults1_ih <- filter(combinedresults1, expert == 0)
+combinedresults2_ih <- filter(combinedresults2, expert == 0)
+combinedresults3_ih <- filter(combinedresults3, expert == 0)
+
+combinedresults0_aa <- filter(combinedresults0, expert == 1)
+combinedresults1_aa <- filter(combinedresults1, expert == 1)
+combinedresults2_aa <- filter(combinedresults2, expert == 1)
+combinedresults3_aa <- filter(combinedresults3, expert == 1)
+
+# constrain the variance across sites to zero (perform fixed effects model)
+summary(fixed0_ih <- meta(y=yi, v=vi, data=combinedresults0_ih, RE.constraints=0))
+summary(fixed1_ih <- meta(y=yi, v=vi, data=combinedresults1_ih, RE.constraints=0))
+summary(fixed2_ih <- meta(y=yi, v=vi, data=combinedresults2_ih, RE.constraints=0))
+summary(fixed3_ih <- meta(y=yi, v=vi, data=combinedresults3_ih, RE.constraints=0))
+
+summary(fixed0_aa <- meta(y=yi, v=vi, data=combinedresults0_aa, RE.constraints=0))
+summary(fixed1_aa <- meta(y=yi, v=vi, data=combinedresults1_aa, RE.constraints=0))
+summary(fixed2_aa <- meta(y=yi, v=vi, data=combinedresults2_aa, RE.constraints=0))
+summary(fixed3_aa <- meta(y=yi, v=vi, data=combinedresults3_aa, RE.constraints=0))
+
+# repeat random effects model for just this subset
+summary(random0_ih <- meta(y=yi, v=vi, data=combinedresults0_ih))
+summary(random1_ih <- meta(y=yi, v=vi, data=combinedresults1_ih))
+summary(random2_ih <- meta(y=yi, v=vi, data=combinedresults2_ih))
+summary(random3_ih <- meta(y=yi, v=vi, data=combinedresults3_ih))
+
+summary(random0_aa <- meta(y=yi, v=vi, data=combinedresults0_aa))
+summary(random1_aa <- meta(y=yi, v=vi, data=combinedresults1_aa))
+summary(random2_aa <- meta(y=yi, v=vi, data=combinedresults2_aa))
+summary(random3_aa <- meta(y=yi, v=vi, data=combinedresults3_aa))
 
 # compare if there is a significant difference in model fit, chi square difference test
-anova(mixed0, fixed0)
-anova(mixed1, fixed1)
-anova(mixed2, fixed2)
-anova(mixed3, fixed3)
+anova(random0_ih, fixed0_ih)
+anova(random1_ih, fixed1_ih)
+anova(random2_ih, fixed2_ih)
+anova(random3_ih, fixed3_ih)
+
+anova(random0_aa, fixed0_aa)
+anova(random1_aa, fixed1_aa)
+anova(random2_aa, fixed2_aa)
+anova(random3_aa, fixed3_aa)
 
 # Repeating analyses of "expert" sites in the aggregate, ignoring site dependence.
 # This is a simple alternative and useful for most stringent exclusion criteria which drastically reduces overall N (exclusion set 3)
