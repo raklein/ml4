@@ -247,10 +247,11 @@ mixed_effects_3 <- summary(mixed3 <- meta(y=yi, v=vi, x=expert, data=combinedres
 # Now, we're going to compare the random effects model to a fixed effects model separately for 
 # Author Advised vs In House sites. If this improves model fit for one but not the other, that suggests that model shows greater variability in effect sizes. There are likely better ways to do this.
 
+# Remember: In House sites always use the same exclusion rules, so we don't 
+# have to repeat across all 3 sets.
+
 # split Author Advised from In House results
 combinedresults1_ih <- filter(combinedresults1, expert == 0)
-combinedresults2_ih <- filter(combinedresults2, expert == 0)
-combinedresults3_ih <- filter(combinedresults3, expert == 0)
 
 combinedresults1_aa <- filter(combinedresults1, expert == 1)
 combinedresults2_aa <- filter(combinedresults2, expert == 1)
@@ -258,8 +259,6 @@ combinedresults3_aa <- filter(combinedresults3, expert == 1)
 
 # constrain the variance across sites to zero (perform fixed effects model)
 summary(fixed1_ih <- meta(y=yi, v=vi, data=combinedresults1_ih, RE.constraints=0))
-summary(fixed2_ih <- meta(y=yi, v=vi, data=combinedresults2_ih, RE.constraints=0))
-summary(fixed3_ih <- meta(y=yi, v=vi, data=combinedresults3_ih, RE.constraints=0))
 
 summary(fixed1_aa <- meta(y=yi, v=vi, data=combinedresults1_aa, RE.constraints=0))
 summary(fixed2_aa <- meta(y=yi, v=vi, data=combinedresults2_aa, RE.constraints=0))
@@ -267,8 +266,6 @@ summary(fixed3_aa <- meta(y=yi, v=vi, data=combinedresults3_aa, RE.constraints=0
 
 # repeat random effects model for just this subset
 summary(random1_ih <- meta(y=yi, v=vi, data=combinedresults1_ih))
-summary(random2_ih <- meta(y=yi, v=vi, data=combinedresults2_ih))
-summary(random3_ih <- meta(y=yi, v=vi, data=combinedresults3_ih))
 
 summary(random1_aa <- meta(y=yi, v=vi, data=combinedresults1_aa))
 summary(random2_aa <- meta(y=yi, v=vi, data=combinedresults2_aa))
@@ -276,8 +273,6 @@ summary(random3_aa <- meta(y=yi, v=vi, data=combinedresults3_aa))
 
 # compare if there is a significant difference in model fit, chi square difference test
 fit_comparison_1_ih <- anova(random1_ih, fixed1_ih)
-fit_comparison_2_ih <- anova(random2_ih, fixed2_ih)
-fit_comparison_3_ih <- anova(random3_ih, fixed3_ih)
 
 fit_comparison_1_aa <- anova(random1_aa, fixed1_aa)
 fit_comparison_2_aa <- anova(random2_aa, fixed2_aa)
@@ -311,7 +306,7 @@ Finally, we examined whether In House protocols displayed greater variability in
 
 As an initial test, we conducted separate meta-analyses for the In House and Author Advised labs. For each, we conducted both a fixed-effects (with variance between labs constrained to be equal to zero) and random-effects meta-analysis, and then compared the two models with a chi-squared differences test to assess whether the fit significantly changed. If the random-effects model fit significantly better than the fixed-effects model, this would indicate that allowing for variability in effect sizes between sites improved the model.
 
-In this case, neither In House nor Author Advised labs showed a significant benefit of the random effects model over the fixed effects model across any of the Exclusion Sets: In House labs: Exclusion Set 1: *$\chi$²* (`r fit_comparison_1_ih$diffdf[2]`) = `r fit_comparison_1_ih$diffLL[2]`, *p* = `r fit_comparison_1_ih$p[2]`; Exclusion Set 2: *$\chi$²* (`r fit_comparison_2_ih$diffdf[2]`) = `r fit_comparison_2_ih$diffLL[2]`, *p* = `r fit_comparison_2_ih$p[2]`; Exclusion Set 3: *$\chi$²* (`r fit_comparison_3_ih$diffdf[2]`) = `r fit_comparison_3_ih$diffLL[2]`, *p* = `r fit_comparison_3_ih$p[2]`; Author Advised labs: Exclusion Set 1: *$\chi$²* (`r fit_comparison_1_aa$diffdf[2]`) = `r fit_comparison_1_aa$diffLL[2]`, *p* = `r fit_comparison_1_aa$p[2]`; Exclusion Set 2: *$\chi$²* (`r fit_comparison_2_aa$diffdf[2]`) = `r fit_comparison_2_aa$diffLL[2]`, *p* = `r fit_comparison_2_aa$p[2]`; Exclusion Set 3: *$\chi$²* (`r fit_comparison_3_aa$diffdf[2]`) = `r fit_comparison_3_aa$diffLL[2]`, *p* = `r fit_comparison_3_aa$p[2]`. Overall, this evidence indicates that neither In House nor Author Advised labs showed significant variability in effect size across sites, despite the fact that In House labs were unambiguously more variable in their procedural implementation. This does not mean the variances were equal, but based on the present evidence we cannot conclude that they were different.
+In this case, neither In House nor Author Advised labs showed a significant benefit of the random effects model over the fixed effects model across any of the Exclusion Sets: In House labs: Exclusion Set 1: *$\chi$²* (`r fit_comparison_1_ih$diffdf[2]`) = `r fit_comparison_1_ih$diffLL[2]`, *p* = `r fit_comparison_1_ih$p[2]`; Author Advised labs: Exclusion Set 1: *$\chi$²* (`r fit_comparison_1_aa$diffdf[2]`) = `r fit_comparison_1_aa$diffLL[2]`, *p* = `r fit_comparison_1_aa$p[2]`; Exclusion Set 2: *$\chi$²* (`r fit_comparison_2_aa$diffdf[2]`) = `r fit_comparison_2_aa$diffLL[2]`, *p* = `r fit_comparison_2_aa$p[2]`; Exclusion Set 3: *$\chi$²* (`r fit_comparison_3_aa$diffdf[2]`) = `r fit_comparison_3_aa$diffLL[2]`, *p* = `r fit_comparison_3_aa$p[2]`. Overall, this evidence indicates that neither In House nor Author Advised labs showed significant variability in effect size across sites, despite the fact that In House labs were unambiguously more variable in their procedural implementation. This does not mean the variances were equal, but based on the present evidence we cannot conclude that they were different.
 
 ```{r analysis-exploratory-knowl, include = FALSE}
 # Focused analysis of sites with "expert" or "a lot of knowledge about TMT" leads
