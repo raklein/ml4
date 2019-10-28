@@ -16,7 +16,7 @@ Data and analysis scripts for the [Many Labs 4](https://osf.io/8ccnw/) project. 
 - **002_ml4analysis.R** which produces the results for each site, and primary meta analytic results.
 - **003_metaviz.R** code to produce Figure 1, the forest plot of all results.
 - **004_exp_survey_analysis.R** which analyzes experimenter responses to the 'Experimenters Survey' about researcher expectations.
-- **005_analyses_supplemental.R** produces supplemental analyses such as analyses treating the pro- and anti- author ratings as separate DVs.
+- **005_analyses_supplemental.R** produces supplemental analyses such treating the pro- and anti- author ratings as separate DVs, analyses without kansas_expert and byui (sites where ms condition reported lower sadness than control condition), and possibly other analyses.
 - **006_ml4_papaja_results.Rmd** is an RMarkdown file that generates the results section from the manuscript and automatically populates the statistical results. 
 - **007_tables.Rmd** produces various tables presented in the manuscript.
 - **008_ml4_supplemental_results.Rmd** is an RMarkdown file that generates the supplemental results reporting section and automatically populates the statistical results. 
