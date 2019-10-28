@@ -1181,3 +1181,25 @@ merged_excl_2_aa_effsize <- effsize::cohen.d(merged_excl_2_aa$pro_minus_anti~mer
 merged_excl_3_aa_ttest <- t.test(merged_excl_3_aa$pro_minus_anti~merged_excl_3_aa$ms_condition)
 merged_excl_3_aa_desc <- describeBy(merged_excl_3_aa$pro_minus_anti, group = merged_excl_3_aa$ms_condition)
 merged_excl_3_aa_effsize <- effsize::cohen.d(merged_excl_3_aa$pro_minus_anti~merged_excl_3_aa$ms_condition,pooled=TRUE,paired=FALSE,na.rm=TRUE, hedges.correction=TRUE,conf.level=0.95)
+
+############
+# Exploratory analysis without two sites where ms condition had lower sadness
+############
+# Note: I think it's quite possible this result could simply be due to random
+# variation. However, as below we see including/excluding these samples has 
+# no effect on overall results
+
+library(tidyverse)
+library(metaSEM)
+
+# Read in files in case you want to start from here.
+# these are per-site results using the three exclusion criteria as before
+combinedresults1 <- read.csv("./data/public/combinedresults1.csv")
+combinedresults2 <- read.csv("./data/public/combinedresults2.csv")
+combinedresults3 <- read.csv("./data/public/combinedresults3.csv")
+
+# For simplicity I'm only examining the univariate random-effect meta-analysis.
+# Filtering out kansas_expert and byui sites
+summary( meta(y=yi, v=vi, data=filter(combinedresults1, sitesource != "kansas_expert" & sitesource != "byui")))
+summary( meta(y=yi, v=vi, data=filter(combinedresults2, sitesource != "kansas_expert" & sitesource != "byui")))
+summary( meta(y=yi, v=vi, data=filter(combinedresults3, sitesource != "kansas_expert" & sitesource != "byui")))
