@@ -1200,6 +1200,9 @@ combinedresults3 <- read.csv("./data/public/combinedresults3.csv")
 
 # For simplicity I'm only examining the univariate random-effect meta-analysis.
 # Filtering out kansas_expert and byui sites
+# saving these results to a .txt file with sink()
+sink("./output/supplement_nokansas_nobyui.txt")
 summary( meta(y=yi, v=vi, data=filter(combinedresults1, sitesource != "kansas_expert" & sitesource != "byui")))
 summary( meta(y=yi, v=vi, data=filter(combinedresults2, sitesource != "kansas_expert" & sitesource != "byui")))
 summary( meta(y=yi, v=vi, data=filter(combinedresults3, sitesource != "kansas_expert" & sitesource != "byui")))
+sink()
