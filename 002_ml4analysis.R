@@ -32,6 +32,8 @@ library(tidyverse)
 
 merged <- readRDS("./data/public/merged_deidentified.rds")
 
+## NOTE: some analyses below require the full "merged" dataset, not deidentified (mostly due to age and gender variables). This is private due to participant confidentiality concerns, but inquire with Rick raklein22@gmail.com if you need it. (Typically requires IRB approval from your local institution indicating you'll keep the data properly protected)
+
 ###ANALYSIS 0: no exclusions###
 
 # sample t.test 
