@@ -581,6 +581,27 @@ merged_deidentified$WBL_ID <- NULL
 merged_deidentified$Respondent.ID <- NULL
 merged_deidentified$Collector.ID <- NULL
 
+# dropping potentially triangulating data
+merged_deidentified$age <- NULL
+merged_deidentified$time <- NULL
+merged_deidentified$gender <- NULL
+merged_deidentified$ethnicity <- NULL
+merged_deidentified$ethnicity..1...White.Caucasian..2...Middle.Eastern..3...Asian.Pacific.Islander..4...African.American.Black..5...Hispanic.Latino..6...Indigenous.Aboriginal..7...Would.Rather.Not.Say..8...Other <- NULL
+merged_deidentified$politicalid <- NULL
+merged_deidentified$politicalid.wpi <- NULL
+merged_deidentified$politicalview..1.Republican..2...Democrat..3...Independent..4...Other..5...No.Preference. <- NULL
+merged_deidentified$politicalparty..1...Republican..2...Democrat..3...Libertarian..4...Green..5...Constitution..6...Independent..7...I.don.t.identify.with.a.political.party..8...Other. <- NULL
+merged_deidentified$countryofbirth..187...US. <- NULL
+merged_deidentified$birthcountry <- NULL
+merged_deidentified$raceombmulti <- NULL
+merged_deidentified$In.what.country.were.you.born. <- NULL
+merged_deidentified$race.azusa <- NULL
+merged_deidentified$race.wpi <- NULL
+merged_deidentified$raceomb <- NULL
+
+# for good measure, let's drop all unique questions asked by sites (hard to police exactly what was asked at each site)
+merged_deidentified <- select(merged_deidentified, participantnum:location, proauth_avg:pro_minus_anti)
+
 # save deidentified .csv
 write.csv(merged_deidentified, "./data/public/merged_deidentified.csv",row.names=FALSE)
 # save deidentified .rds for r users, has some advantages so I recommend loading this file
