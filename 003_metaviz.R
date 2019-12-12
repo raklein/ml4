@@ -1,7 +1,13 @@
-# Trying some new forest plot visualizations
+# Creating the main forest plots (Figure 1) with meta-analytic results
 
 library('metaviz')
 library('tidyverse')
+
+# Read per-site results according to the three exclusions criteria levels
+# These files are generated in 002_ml4analysis.R
+combinedresults1 <- read.csv("./data/public/combinedresults1.csv")
+combinedresults2 <- read.csv("./data/public/combinedresults2.csv")
+combinedresults3 <- read.csv("./data/public/combinedresults3.csv")
 
 # metaviz requests sampling errors, not variances
 combinedresults1$sqrt_vi <- sqrt(combinedresults1$vi)
