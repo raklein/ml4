@@ -96,9 +96,9 @@ fonts()
 thick <- thick +
   theme(text=element_text(family="Arial"))
 
-# thick
+thick
 
-# Save the plot, note filename if you're doing a different exclusion set
-ggsave(filename = "./output/ml4_mainfigure_excl1.png", plot = thick, dpi=300, height=5, width=5, units="in", type = "cairo")
+# Uncomment to save the plot, note filename if you're doing a different exclusion set
+#ggsave(filename = "./output/ml4_mainfigure_excl1.png", plot = thick, dpi=300, height=5, width=5, units="in", type = "cairo")
 
 # Repeat for exclusion sets 2 and 3 by changing dat <- combinedresults2 and dat <- combinedresults3

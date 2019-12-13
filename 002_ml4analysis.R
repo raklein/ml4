@@ -30,9 +30,11 @@ library(effsize)
 library(GPArotation)
 library(tidyverse)
 
-merged <- readRDS("./data/public/merged_deidentified.rds")
-
 ## NOTE: some analyses below require the full "merged" dataset, not deidentified (mostly due to age and gender variables). This is private due to participant confidentiality concerns, but inquire with Rick raklein22@gmail.com if you need it. (Typically requires IRB approval from your local institution indicating you'll keep the data properly protected)
+merged <- readRDS("./data/processed_data/merged.rds")
+#alternatively, you can run it with the public data and get most results
+#merged <- readRDS("./data/public/merged_deidentified.rds")
+
 
 ###ANALYSIS 0: no exclusions###
 

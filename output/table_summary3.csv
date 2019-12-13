@@ -1,7 +1,7 @@
 "Location","Author Advised (AA) or In House (IH)","N (TV)","N (MS)","Mean (TV)","Mean (MS)","SD (TV)","SD (MS)","Hedges' g","p"
 "Ashland University","AA",18,14,2.43,1.76,1.85,2.29,-0.32,0.39
 "Azusa Pacific University","IH",15,15,0.22,0.09,1.01,1.54,-0.1,0.78
-"Brigham Young University – Idaho","AA",28,31,1.89,2.69,2.23,1.99,0.37,0.15
+"Brigham Young University <U+0096> Idaho","AA",28,31,1.89,2.69,2.23,1.99,0.37,0.15
 "Ithaca College","IH",87,90,-0.41,-0.53,2.14,2.78,-0.05,0.76
 "Occidental College","AA",6,14,0.5,2.1,1.38,3.42,0.51,0.21
 "Pace University","AA",17,19,2,2.21,2.21,2.16,0.09,0.79

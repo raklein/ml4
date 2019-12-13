@@ -65,10 +65,15 @@ knitr::opts_chunk$set(cache.extra = knitr::rand_seed)
 
 ```{r analysis-loaddata, include = FALSE}
 # Reading in all necessary data
+# Note: Some analyses require confidential (for participant identification concerns) data files. You'll have to comment out those lines for this file to knit. Contact Rick raklein22@gmail.com for information about getting the raw data, which usually simply requires the researcher to obtain IRB/ethics approval from their university stating they will maintain the confidentiality of any sensitive data.
 
-# Primary data file with replication data aggregated across labs (deidentified should suffice)
+# Primary data file with replication data aggregated across labs (deidentified is missing just a couple variables for this -- age and gender)
 # Note: This file is the merged data provided by sites, produced by 001_data_cleaning.R
-merged <- readRDS("./data/public/merged_deidentified.rds")
+merged <- readRDS("./data/processed_data/merged.rds")
+# Alternatively, you can run it with the public data and get most results. The problem with RMarkdown is that the script
+# needs to run completely with no errors or it won't render. So, if you do this, you'll need to comment out any
+# sections that require sensitive data.
+#merged <- readRDS("./data/public/merged_deidentified.rds")
 
 # Read in data from experimenter survey (Google Form - private due to sensitive info)
 exp_surv <- readRDS("./data/raw_site_data/experimenter survey/exp_surv.rds")
