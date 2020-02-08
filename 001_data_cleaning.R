@@ -30,7 +30,7 @@ library(effsize)
 
 # Save information about package versions to a file, may help others 
 # reproduce results.
-writeLines(capture.output(sessionInfo()), "./output/sessionInfo_data_cleaning.txt")
+# writeLines(capture.output(sessionInfo()), "./output/sessionInfo_data_cleaning.txt")
 
 # Read in data template, teams were asked to format their data in a similar fashion. Key found in data.key.docx.
 template <- read.csv("./data/public/data.template.csv", header = TRUE, stringsAsFactor = FALSE)
