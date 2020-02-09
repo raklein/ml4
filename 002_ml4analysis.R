@@ -46,7 +46,7 @@ analysis <- function(data, exclusionrule, sitesource)
   #1. Wrote something for both writing prompts
   #2. Completed all six items evaluating the essay authors)
   index1 <- index0 & # filter for previous conditions
-    (data$msincomplete == 0 | is.na(data$msincomplete)) & # P completed both prompts, or prompts marked as NA
+    ((data$msincomplete == 0 & !is.na(data$msincomplete)) | data$expert == 0 | data$source == "uwmadison_expert") & # P completed both prompts, or site is a non-expert site where this exclusion did not apply, or source is uwmadison_expert: that sample left the msincomplete variable NA instead of coding "0" or "1". However, they took detailed notes and reported that no responses were abnormal. In addition, at the other expert sites that coded this information, none reported a case where a participant left both responses blank. 
     !is.na(data$prous3) & !is.na(data$prous4) & !is.na(data$prous5) & # P provided all 3 ratings of pro-us essay
     !is.na(data$antius3) & !is.na(data$antius4) & !is.na(data$antius5) # P provided all 3 ratings of anti-us essay
   # Exclusion rule 2:
