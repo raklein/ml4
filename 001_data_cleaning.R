@@ -528,81 +528,230 @@ merged$proauth_avg <- rowMeans(merged[, c('prous3','prous4','prous5')], na.rm = 
 merged$antiauth_avg <- rowMeans(merged[, c('antius3','antius4','antius5')], na.rm = TRUE)
 merged$pro_minus_anti <- merged$proauth_avg - merged$antiauth_avg # primary outcome variable, higher scores = greater preference for pro-US author
 
+##
+# We're going to apply some exclusions in later steps due to re-examining the
+# pre-reg. I'm saving the full dataset here for reference.
+##
+
 # save .csv
-write.csv(merged, "./data/processed_data/merged.csv",row.names=FALSE)
+write.csv(merged, "./data/processed_data/merged_full.csv",row.names=FALSE)
 # save .rds for r users, has some advantages so I recommend loading this file
-saveRDS(merged, "./data/processed_data/merged.rds")
+saveRDS(merged, "./data/processed_data/merged_full.rds")
 
 # Create deidentified dataset by dropping the following variables
-merged_deidentified <- merged
+merged_deidentified_full <- merged
 
 # dropping open text responses used at some sites, possibly identifying
-merged_deidentified$MS1 <- NULL 
-merged_deidentified$MS2 <- NULL
-merged_deidentified$control1 <- NULL
-merged_deidentified$control2 <- NULL
-merged_deidentified$race_6_TEXT <- NULL
-merged_deidentified$Please.briefly.describe.the.emotions.that.the.thought.of.your.own.death.arouses.in.you. <- NULL
-merged_deidentified$Jot.down..as.specifically.as.you.can..what.you.think.will.happen.to.you.physically.as.you.die.and... <- NULL
-merged_deidentified$Please.briefly.describe.the.emotions.that.the.thought.of.watching.television.arouses.in.you. <- NULL
-merged_deidentified$Jot.down..as.specifically.as.you.can..what.you.think.happens.to.you.as.you.watch.television..and... <- NULL
-merged_deidentified$The.one.thing.I.fear.the.most.about.my.death.is. <- NULL
-merged_deidentified$My.scariest.thoughts.about.my.death.are. <- NULL
-merged_deidentified$race.elaborate <- NULL
-merged_deidentified$politicalviews_other <- NULL
-merged_deidentified$Did.anything.in.the.survey.strike.you.as.odd.or.unusual. <- NULL
-merged_deidentified$Sometimes.in.psychology.studies..participants.believe.there.is.more.going.on.than.meets.the.eye.... <- NULL
-merged_deidentified$controlresponse2 <- NULL
-merged_deidentified$mortalityresponse1 <- NULL
-merged_deidentified$mortalityresponse2 <- NULL
-merged_deidentified$controlresponse1 <- NULL
-merged_deidentified$Television1 <- NULL
-merged_deidentified$Television2 <- NULL
-merged_deidentified$SubtleOwnDeath1 <- NULL
-merged_deidentified$SubtleOwnDeath2 <- NULL
-merged_deidentified$major <- NULL
-merged_deidentified$The.one.thing.I.fear.most.about.my.death.is. <- NULL
-merged_deidentified$My.scariest.thoughts.about.death.are. <- NULL
-merged_deidentified$Jot.down..as.specifically.as.you.can..what.you.think.happens.to.you.as.you.watch.television.and.o... <- NULL
-merged_deidentified$The.one.thing.I.fear.most.about.television.is. <- NULL
-merged_deidentified$My.scariest.thoughts.about.television.are. <- NULL
-merged_deidentified$Language <- NULL
-merged_deidentified$Jot.down..as.specifically.as.you.can..what.you.think.will.happen.to.you.physically.as.you.die.and.once.you.are.physically.dead. <- NULL
-merged_deidentified$Jot.down..as.specifically.as.you.can..what.you.think.happens.to.you.as.you.watch.television..and.once.you.have.physically.watched.television. <- NULL
+merged_deidentified_full$MS1 <- NULL 
+merged_deidentified_full$MS2 <- NULL
+merged_deidentified_full$control1 <- NULL
+merged_deidentified_full$control2 <- NULL
+merged_deidentified_full$race_6_TEXT <- NULL
+merged_deidentified_full$Please.briefly.describe.the.emotions.that.the.thought.of.your.own.death.arouses.in.you. <- NULL
+merged_deidentified_full$Jot.down..as.specifically.as.you.can..what.you.think.will.happen.to.you.physically.as.you.die.and... <- NULL
+merged_deidentified_full$Please.briefly.describe.the.emotions.that.the.thought.of.watching.television.arouses.in.you. <- NULL
+merged_deidentified_full$Jot.down..as.specifically.as.you.can..what.you.think.happens.to.you.as.you.watch.television..and... <- NULL
+merged_deidentified_full$The.one.thing.I.fear.the.most.about.my.death.is. <- NULL
+merged_deidentified_full$My.scariest.thoughts.about.my.death.are. <- NULL
+merged_deidentified_full$race.elaborate <- NULL
+merged_deidentified_full$politicalviews_other <- NULL
+merged_deidentified_full$Did.anything.in.the.survey.strike.you.as.odd.or.unusual. <- NULL
+merged_deidentified_full$Sometimes.in.psychology.studies..participants.believe.there.is.more.going.on.than.meets.the.eye.... <- NULL
+merged_deidentified_full$controlresponse2 <- NULL
+merged_deidentified_full$mortalityresponse1 <- NULL
+merged_deidentified_full$mortalityresponse2 <- NULL
+merged_deidentified_full$controlresponse1 <- NULL
+merged_deidentified_full$Television1 <- NULL
+merged_deidentified_full$Television2 <- NULL
+merged_deidentified_full$SubtleOwnDeath1 <- NULL
+merged_deidentified_full$SubtleOwnDeath2 <- NULL
+merged_deidentified_full$major <- NULL
+merged_deidentified_full$The.one.thing.I.fear.most.about.my.death.is. <- NULL
+merged_deidentified_full$My.scariest.thoughts.about.death.are. <- NULL
+merged_deidentified_full$Jot.down..as.specifically.as.you.can..what.you.think.happens.to.you.as.you.watch.television.and.o... <- NULL
+merged_deidentified_full$The.one.thing.I.fear.most.about.television.is. <- NULL
+merged_deidentified_full$My.scariest.thoughts.about.television.are. <- NULL
+merged_deidentified_full$Language <- NULL
+merged_deidentified_full$Jot.down..as.specifically.as.you.can..what.you.think.will.happen.to.you.physically.as.you.die.and.once.you.are.physically.dead. <- NULL
+merged_deidentified_full$Jot.down..as.specifically.as.you.can..what.you.think.happens.to.you.as.you.watch.television..and.once.you.have.physically.watched.television. <- NULL
 
 # dropping Qualtrics-recorded location data, and similar
-merged_deidentified$LocationLatitude <- NULL
-merged_deidentified$LocationLongitude <- NULL
-merged_deidentified$LocationAccuracy <- NULL
-merged_deidentified$IP.Address <- NULL
+merged_deidentified_full$LocationLatitude <- NULL
+merged_deidentified_full$LocationLongitude <- NULL
+merged_deidentified_full$LocationAccuracy <- NULL
+merged_deidentified_full$IP.Address <- NULL
 
 # dropping what may be ID numbers of some kind
-merged_deidentified$WBL_ID <- NULL 
-merged_deidentified$Respondent.ID <- NULL
-merged_deidentified$Collector.ID <- NULL
+merged_deidentified_full$WBL_ID <- NULL 
+merged_deidentified_full$Respondent.ID <- NULL
+merged_deidentified_full$Collector.ID <- NULL
 
 # dropping potentially triangulating data
-merged_deidentified$age <- NULL
-merged_deidentified$time <- NULL
-merged_deidentified$gender <- NULL
-merged_deidentified$ethnicity <- NULL
-merged_deidentified$ethnicity..1...White.Caucasian..2...Middle.Eastern..3...Asian.Pacific.Islander..4...African.American.Black..5...Hispanic.Latino..6...Indigenous.Aboriginal..7...Would.Rather.Not.Say..8...Other <- NULL
-merged_deidentified$politicalid <- NULL
-merged_deidentified$politicalid.wpi <- NULL
-merged_deidentified$politicalview..1.Republican..2...Democrat..3...Independent..4...Other..5...No.Preference. <- NULL
-merged_deidentified$politicalparty..1...Republican..2...Democrat..3...Libertarian..4...Green..5...Constitution..6...Independent..7...I.don.t.identify.with.a.political.party..8...Other. <- NULL
-merged_deidentified$countryofbirth..187...US. <- NULL
-merged_deidentified$birthcountry <- NULL
-merged_deidentified$raceombmulti <- NULL
-merged_deidentified$In.what.country.were.you.born. <- NULL
-merged_deidentified$race.azusa <- NULL
-merged_deidentified$race.wpi <- NULL
-merged_deidentified$raceomb <- NULL
+merged_deidentified_full$age <- NULL
+merged_deidentified_full$time <- NULL
+merged_deidentified_full$gender <- NULL
+merged_deidentified_full$ethnicity <- NULL
+merged_deidentified_full$ethnicity..1...White.Caucasian..2...Middle.Eastern..3...Asian.Pacific.Islander..4...African.American.Black..5...Hispanic.Latino..6...Indigenous.Aboriginal..7...Would.Rather.Not.Say..8...Other <- NULL
+merged_deidentified_full$politicalid <- NULL
+merged_deidentified_full$politicalid.wpi <- NULL
+merged_deidentified_full$politicalview..1.Republican..2...Democrat..3...Independent..4...Other..5...No.Preference. <- NULL
+merged_deidentified_full$politicalparty..1...Republican..2...Democrat..3...Libertarian..4...Green..5...Constitution..6...Independent..7...I.don.t.identify.with.a.political.party..8...Other. <- NULL
+merged_deidentified_full$countryofbirth..187...US. <- NULL
+merged_deidentified_full$birthcountry <- NULL
+merged_deidentified_full$raceombmulti <- NULL
+merged_deidentified_full$In.what.country.were.you.born. <- NULL
+merged_deidentified_full$race.azusa <- NULL
+merged_deidentified_full$race.wpi <- NULL
+merged_deidentified_full$raceomb <- NULL
 
 # for good measure, let's drop all unique questions asked by sites (hard to police exactly what was asked at each site)
-merged_deidentified <- select(merged_deidentified, participantnum:location, proauth_avg:pro_minus_anti)
+merged_deidentified_full <- select(merged_deidentified_full, participantnum:location, proauth_avg:pro_minus_anti)
 
 # save deidentified .csv
-write.csv(merged_deidentified, "./data/public/merged_deidentified.csv",row.names=FALSE)
+write.csv(merged_deidentified_full, "./data/public/merged_deidentified_full.csv",row.names=FALSE)
 # save deidentified .rds for r users, has some advantages so I recommend loading this file
-saveRDS(merged_deidentified, "./data/public/merged_deidentified.rds")
+saveRDS(merged_deidentified_full, "./data/public/merged_deidentified_full.rds")
+
+##################
+## Correction: applying sample exclusions based on pre-reg: https://osf.io/4xx6w
+## Exclude samples with N < 60 
+## Exclude data collected before the pre-reg was registered (February 15, 2017).
+## This applied to some In House sites that had their own deadlines.
+##################
+
+# read in the generated full merged dataset
+merged <- readRDS("./data/processed_data/merged_full.rds")
+
+### Under 60: 
+# definitely: ashland, azusa, kansas_expert, sou_inhouse
+# maybe: pace_inhouse hovers right around 60. Glancing over the 
+# raw data, there appear to be over 60 respondants, but that drops below 60 
+# after applying the lowest exclusion criteria. For now, I've left them included.
+
+merged_over60 <- merged %>% filter(
+  source == "byui"|
+  source == "cnj"|
+  source == "illinois"|
+  source == "ithaca"|
+  source == "kansas_inhouse"|
+  source == "occid"|
+  source == "pace_expert"|
+  source == "plu"|
+  source == "riverside"|
+  source == "ufl"|
+  source == "upenn"|
+  source == "uwmadison_expert"|
+  source == "uwmadison_inhouse"|
+  source == "vcu"|
+  source == "wesleyan_inhouse"|
+  source == "wpi"|
+  source == "pace_inhouse")
+
+# Now, drop rows of data from before Feb 15, the date of the pre-reg, 
+# as specified in the pre-reg.
+# occurs in: azusa, ithaca, plu, sou_inhouse, ufl, wesleyan_inhouse
+# azusa and sou_inhouse already filtered out due to < 60 N.
+
+# Note: dates are not in a standard format across labs, so I'm heisitant
+# to deal with them through POSIXlt
+
+# ithaca
+merged_subset <- merged_over60 %>% 
+  filter(source != "ithaca" | (source == "ithaca" & as.numeric(participantnum) > 97 & !is.na(participantnum))) 
+# 97 was last participant run at plu before feb 15, 2017
+
+# plu
+merged_subset <- merged_subset %>% 
+  filter(source != "plu" | (source == "plu" & as.numeric(participantnum) > 187 & !is.na(participantnum))) 
+# 187 was last participant run at plu before feb 15, 2017
+
+# ufl
+merged_subset <- merged_subset %>% 
+  filter(source != "ufl" | (source == "ufl" & as.numeric(X._session_id) > 9453807 & !is.na(X._session_id))) 
+# 9453807 was last session number before feb 15, 2017
+
+# wesleyan_inhouse
+merged_subset <- merged_subset %>% 
+  filter(source != "wesleyan_inhouse" | (source == "wesleyan_inhouse" & as.numeric(participantnum) > 80 & !is.na(participantnum))) 
+# 80 was last participant at wesleyan_inhouse before feb 15, 2017
+
+#now need to deidentify
+
+# save .csv
+write.csv(merged_subset, "./data/processed_data/merged_subset.csv",row.names=FALSE)
+# save .rds for r users, has some advantages so I recommend loading this file
+saveRDS(merged_subset, "./data/processed_data/merged_subset.rds")
+
+# Create deidentified dataset by dropping the following variables
+merged_deidentified_subset <- merged_subset
+
+# dropping open text responses used at some sites, possibly identifying
+merged_deidentified_subset$MS1 <- NULL 
+merged_deidentified_subset$MS2 <- NULL
+merged_deidentified_subset$control1 <- NULL
+merged_deidentified_subset$control2 <- NULL
+merged_deidentified_subset$race_6_TEXT <- NULL
+merged_deidentified_subset$Please.briefly.describe.the.emotions.that.the.thought.of.your.own.death.arouses.in.you. <- NULL
+merged_deidentified_subset$Jot.down..as.specifically.as.you.can..what.you.think.will.happen.to.you.physically.as.you.die.and... <- NULL
+merged_deidentified_subset$Please.briefly.describe.the.emotions.that.the.thought.of.watching.television.arouses.in.you. <- NULL
+merged_deidentified_subset$Jot.down..as.specifically.as.you.can..what.you.think.happens.to.you.as.you.watch.television..and... <- NULL
+merged_deidentified_subset$The.one.thing.I.fear.the.most.about.my.death.is. <- NULL
+merged_deidentified_subset$My.scariest.thoughts.about.my.death.are. <- NULL
+merged_deidentified_subset$race.elaborate <- NULL
+merged_deidentified_subset$politicalviews_other <- NULL
+merged_deidentified_subset$Did.anything.in.the.survey.strike.you.as.odd.or.unusual. <- NULL
+merged_deidentified_subset$Sometimes.in.psychology.studies..participants.believe.there.is.more.going.on.than.meets.the.eye.... <- NULL
+merged_deidentified_subset$controlresponse2 <- NULL
+merged_deidentified_subset$mortalityresponse1 <- NULL
+merged_deidentified_subset$mortalityresponse2 <- NULL
+merged_deidentified_subset$controlresponse1 <- NULL
+merged_deidentified_subset$Television1 <- NULL
+merged_deidentified_subset$Television2 <- NULL
+merged_deidentified_subset$SubtleOwnDeath1 <- NULL
+merged_deidentified_subset$SubtleOwnDeath2 <- NULL
+merged_deidentified_subset$major <- NULL
+merged_deidentified_subset$The.one.thing.I.fear.most.about.my.death.is. <- NULL
+merged_deidentified_subset$My.scariest.thoughts.about.death.are. <- NULL
+merged_deidentified_subset$Jot.down..as.specifically.as.you.can..what.you.think.happens.to.you.as.you.watch.television.and.o... <- NULL
+merged_deidentified_subset$The.one.thing.I.fear.most.about.television.is. <- NULL
+merged_deidentified_subset$My.scariest.thoughts.about.television.are. <- NULL
+merged_deidentified_subset$Language <- NULL
+merged_deidentified_subset$Jot.down..as.specifically.as.you.can..what.you.think.will.happen.to.you.physically.as.you.die.and.once.you.are.physically.dead. <- NULL
+merged_deidentified_subset$Jot.down..as.specifically.as.you.can..what.you.think.happens.to.you.as.you.watch.television..and.once.you.have.physically.watched.television. <- NULL
+
+# dropping Qualtrics-recorded location data, and similar
+merged_deidentified_subset$LocationLatitude <- NULL
+merged_deidentified_subset$LocationLongitude <- NULL
+merged_deidentified_subset$LocationAccuracy <- NULL
+merged_deidentified_subset$IP.Address <- NULL
+
+# dropping what may be ID numbers of some kind
+merged_deidentified_subset$WBL_ID <- NULL 
+merged_deidentified_subset$Respondent.ID <- NULL
+merged_deidentified_subset$Collector.ID <- NULL
+
+# dropping potentially triangulating data
+merged_deidentified_subset$age <- NULL
+merged_deidentified_subset$time <- NULL
+merged_deidentified_subset$gender <- NULL
+merged_deidentified_subset$ethnicity <- NULL
+merged_deidentified_subset$ethnicity..1...White.Caucasian..2...Middle.Eastern..3...Asian.Pacific.Islander..4...African.American.Black..5...Hispanic.Latino..6...Indigenous.Aboriginal..7...Would.Rather.Not.Say..8...Other <- NULL
+merged_deidentified_subset$politicalid <- NULL
+merged_deidentified_subset$politicalid.wpi <- NULL
+merged_deidentified_subset$politicalview..1.Republican..2...Democrat..3...Independent..4...Other..5...No.Preference. <- NULL
+merged_deidentified_subset$politicalparty..1...Republican..2...Democrat..3...Libertarian..4...Green..5...Constitution..6...Independent..7...I.don.t.identify.with.a.political.party..8...Other. <- NULL
+merged_deidentified_subset$countryofbirth..187...US. <- NULL
+merged_deidentified_subset$birthcountry <- NULL
+merged_deidentified_subset$raceombmulti <- NULL
+merged_deidentified_subset$In.what.country.were.you.born. <- NULL
+merged_deidentified_subset$race.azusa <- NULL
+merged_deidentified_subset$race.wpi <- NULL
+merged_deidentified_subset$raceomb <- NULL
+
+# for good measure, let's drop all unique questions asked by sites (hard to police exactly what was asked at each site)
+merged_deidentified_subset <- select(merged_deidentified_subset, participantnum:location, proauth_avg:pro_minus_anti)
+
+# save deidentified .csv
+write.csv(merged_deidentified_subset, "./data/public/merged_deidentified_subset.csv",row.names=FALSE)
+# save deidentified .rds for r users, has some advantages so I recommend loading this file
+saveRDS(merged_deidentified_subset, "./data/public/merged_deidentified_subset.rds")

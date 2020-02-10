@@ -31,9 +31,17 @@ library(GPArotation)
 library(tidyverse)
 
 ## NOTE: some analyses below require the full "merged" dataset, not deidentified (mostly due to age and gender variables). This is private due to participant confidentiality concerns, but inquire with Rick raklein22@gmail.com if you need it. (Typically requires IRB approval from your local institution indicating you'll keep the data properly protected)
-merged <- readRDS("./data/processed_data/merged.rds")
+merged <- readRDS("./data/processed_data/merged_subset.rds")
+
 #alternatively, you can run it with the public data and get most results
 #merged <- readRDS("./data/public/merged_deidentified.rds")
+
+# Also note you can load the merged_subset.rds or merged_full.rds data
+# file. The former adheres strictly to the prereg, the latter
+# contains all data (e.g., the analysis for the original preprint)
+
+# Note that you will need to adjust this script where indicated if 
+# you're using the full dataset.
 
 #Function to generate required stats for meta-analysis.
 analysis <- function(data, exclusionrule, sitesource)
@@ -91,6 +99,10 @@ analysis <- function(data, exclusionrule, sitesource)
   return(result)
 }
 
+### Note: If you're using the subsetted dataset, the below section
+# will give errors due to missing sources. You can safely ignore them,
+# it's simply that some lines are not running.
+
 ###ANALYSIS 0: no exclusions###
 #above function is run for each site identifier
 riverside_results         <- analysis(merged, "e0", "riverside")
@@ -115,20 +127,23 @@ vcu_results               <- analysis(merged, "e0", "vcu")
 byui_results              <- analysis(merged, "e0", "byui")
 pace_inhouse_results      <- analysis(merged, "e0", "pace_inhouse")
 
+### Note: If you're using the full dataset (merged_full or merged_deidentified_full)
+# uncomment the commented samples below.
+
 #merges results from above into a single data frame
 combinedresults0 <- rbind(
-  ashland_results,
-  azusa_results,
+#  ashland_results,
+#  azusa_results,
   cnj_results,
   illinois_results,
   ithaca_results,
-  kansas_expert_results,
+#  kansas_expert_results,
   kansas_inhouse_results,
   occid_results,
   pace_expert_results,
   plu_results,
   riverside_results,
-  sou_inhouse_results,
+#  sou_inhouse_results,
   ufl_results,
   upenn_results,
   uwmadison_expert_results,
@@ -160,6 +175,9 @@ write.csv(combinedresults0, "./data/public/combinedresults0.csv", row.names = FA
 #1. Wrote something for both writing prompts
 #2. Completed all six items evaluating the essay authors)
 
+### Note: If you're using the subsetted dataset, the below section
+# will give errors due to missing sources. You can safely ignore them,
+# it's simply that some lines are not running.
 
 #above function is run for each site identifier
 riverside_results         <- analysis(merged, "e1", "riverside")
@@ -184,20 +202,23 @@ vcu_results               <- analysis(merged, "e1", "vcu")
 byui_results              <- analysis(merged, "e1", "byui")
 pace_inhouse_results      <- analysis(merged, "e1", "pace_inhouse")
 
+### Note: If you're using the full dataset (merged_full or merged_deidentified_full)
+# uncomment the commented samples below.
+
 #merges results from above into a single data frame
 combinedresults1 <- rbind(
-  ashland_results,
-  azusa_results,
+#  ashland_results,
+#  azusa_results,
   cnj_results,
   illinois_results,
   ithaca_results,
-  kansas_expert_results,
+#  kansas_expert_results,
   kansas_inhouse_results,
   occid_results,
   pace_expert_results,
   plu_results,
   riverside_results,
-  sou_inhouse_results,
+#  sou_inhouse_results,
   ufl_results,
   upenn_results,
   uwmadison_expert_results,
@@ -227,6 +248,10 @@ write.csv(combinedresults1, "./data/public/combinedresults1.csv", row.names = FA
 #in-house sites don't necessarily have the data necessary to implement these exclusions
 #Below, analysis1 (basic exclusions) is run for in-house, while analysis 2 is run for expert versions
 
+### Note: If you're using the subsetted dataset, the below section
+# will give errors due to missing sources. You can safely ignore them,
+# it's simply that some lines are not running.
+
 #expert sites
 riverside_results         <- analysis(merged, "e2", "riverside")
 cnj_results               <- analysis(merged, "e2", "cnj")
@@ -252,20 +277,23 @@ wpi_results               <- analysis(merged, "e1", "wpi")
 plu_results               <- analysis(merged, "e1", "plu")
 pace_inhouse_results      <- analysis(merged, "e1", "pace_inhouse")
 
+### Note: If you're using the full dataset (merged_full or merged_deidentified_full)
+# uncomment the commented samples below.
+
 #merges results from above into a single data frame
 combinedresults2 <- rbind(
-  ashland_results,
-  azusa_results,
+#  ashland_results,
+#  azusa_results,
   cnj_results,
   illinois_results,
   ithaca_results,
-  kansas_expert_results,
+#  kansas_expert_results,
   kansas_inhouse_results,
   occid_results,
   pace_expert_results,
   plu_results,
   riverside_results,
-  sou_inhouse_results,
+#  sou_inhouse_results,
   ufl_results,
   upenn_results,
   uwmadison_expert_results,
@@ -296,6 +324,10 @@ write.csv(combinedresults2, "./data/public/combinedresults2.csv", row.names = FA
 # in-house sites don't necessarily have the data necessary to implement these exclusions
 # Below, analysis1 (basic exclusions) is run for in-house, while analysis 3 is run for expert versions
 
+### Note: If you're using the subsetted dataset, the below section
+# will give errors due to missing sources. You can safely ignore them,
+# it's simply that some lines are not running.
+
 # expert sites
 riverside_results         <- analysis(merged, "e3", "riverside")
 cnj_results               <- analysis(merged, "e3", "cnj")
@@ -321,20 +353,23 @@ wpi_results               <- analysis(merged, "e1", "wpi")
 plu_results               <- analysis(merged, "e1", "plu")
 pace_inhouse_results      <- analysis(merged, "e1", "pace_inhouse")
 
+### Note: If you're using the full dataset (merged_full or merged_deidentified_full)
+# uncomment the commented samples below.
+
 # merges results from above into a single data frame
 combinedresults3 <- rbind(
-  ashland_results,
-  azusa_results,
+#  ashland_results,
+#  azusa_results,
   cnj_results,
   illinois_results,
   ithaca_results,
-  kansas_expert_results,
+#  kansas_expert_results,
   kansas_inhouse_results,
   occid_results,
   pace_expert_results,
   plu_results,
   riverside_results,
-  sou_inhouse_results,
+#  sou_inhouse_results,
   ufl_results,
   upenn_results,
   uwmadison_expert_results,
@@ -471,11 +506,12 @@ anova(random3_aa, fixed3_aa)
 # Repeating analyses of "expert" sites in the aggregate, ignoring site dependence.
 # This is a simple alternative and useful for most stringent exclusion criteria which drastically reduces overall N (exclusion set 3)
 # read in .rds data
-data <- readRDS("./data/public/merged_deidentified.rds")
+data <- readRDS("./data/public/merged_deidentified_subset.rds") # can also choose to use merged_deidentified_full
 # selecting only expert labs
 data <- subset(data, expert==1)
 
-###ANALYSIS 0: no exclusions###
+###ANALYSIS 0: no special exclusions###
+data <- subset(data, !is.na(data$pro_minus_anti))
 # t.test and descriptive statistics per condition from psych package
 t.test(data$pro_minus_anti~data$ms_condition)
 describeBy(data$pro_minus_anti, group = data$ms_condition)
@@ -483,12 +519,14 @@ effsize::cohen.d(data$pro_minus_anti~data$ms_condition,pooled=TRUE,paired=FALSE,
                  na.rm=TRUE, hedges.correction=TRUE,
                  conf.level=0.95)
 
+
+
 ###ANALYSIS 1: Exclusion set 1###
 # 1. Wrote something for both writing prompts
-data <- subset(data, (data$msincomplete == 0 | is.na(data$msincomplete)))
 # 2. Completed all six items evaluating the essay authors)
-data <- subset(data, (!is.na(data$prous3) & !is.na(data$prous4) & !is.na(data$prous5) & 
-                      !is.na(data$antius3) & !is.na(data$antius4) & !is.na(data$antius5)))
+data <- subset(data, ((data$msincomplete == 0 & !is.na(data$msincomplete)) | data$expert == 0 | data$source == "uwmadison_expert") & # P completed both prompts, or site is a non-expert site where this exclusion did not apply, or source is uwmadison_expert: that sample left the msincomplete variable NA instead of coding "0" or "1". However, they took detailed notes and reported that no responses were abnormal. In addition, at the other expert sites that coded this information, none reported a case where a participant left both responses blank. 
+                 !is.na(data$prous3) & !is.na(data$prous4) & !is.na(data$prous5) & # P provided all 3 ratings of pro-us essay
+                 !is.na(data$antius3) & !is.na(data$antius4) & !is.na(data$antius5)) # P provided all 3 ratings of anti-us essay
 # t.test and descriptive statistics per condition from psych package
 t.test(data$pro_minus_anti~data$ms_condition)
 describeBy(data$pro_minus_anti, group = data$ms_condition)
@@ -502,7 +540,7 @@ effsize::cohen.d(data$pro_minus_anti~data$ms_condition,pooled=TRUE,paired=FALSE,
 # 3. Identify as White (race == 1)
 data <- subset(data, data$race == 1 & !is.na(data$race))
 # 4. Born in USA (countryofbirth == 1)
-data <- subset(data, data$countryofbirth == 1 & !is.na(data$race))
+data <- subset(data, data$countryofbirth == 1 & !is.na(data$countryofbirth))
 # t.test and descriptive statistics per condition from psych package
 t.test(data$pro_minus_anti~data$ms_condition)
 describeBy(data$pro_minus_anti, group = data$ms_condition)
@@ -561,12 +599,13 @@ merged$race <- as.numeric(as.character(merged$race))
 
 # Read data
 data <- merged
-# Applying exclusion criteria 1
+# Applying exclusion criteria 0 and 1
+data <- subset(data, !is.na(data$pro_minus_anti))
 # 1. Wrote something for both writing prompts
-data <- subset(data, (data$msincomplete == 0 | is.na(data$msincomplete)))
-# 2. Completed all six items evaluating the essay authors)
-data <- subset(data, (!is.na(data$prous3) & !is.na(data$prous4) & !is.na(data$prous5) 
-                      & !is.na(data$antius3) & !is.na(data$antius4) & !is.na(data$antius5)))
+data <- subset(data, ((data$msincomplete == 0 & !is.na(data$msincomplete)) | data$expert == 0 | data$source == "uwmadison_expert") & # P completed both prompts, or site is a non-expert site where this exclusion did not apply, or source is uwmadison_expert: that sample left the msincomplete variable NA instead of coding "0" or "1". However, they took detailed notes and reported that no responses were abnormal. In addition, at the other expert sites that coded this information, none reported a case where a participant left both responses blank. 
+                 !is.na(data$prous3) & !is.na(data$prous4) & !is.na(data$prous5) & # P provided all 3 ratings of pro-us essay
+                 !is.na(data$antius3) & !is.na(data$antius4) & !is.na(data$antius5)) # P provided all 3 ratings of anti-us essay
+
 length(which(data$gender== 1)) #number of women
 length(which(data$gender== 2)) #number of men
 length(which(data$gender== 3)) #other responses
@@ -594,6 +633,7 @@ length(which(data$race == 6))/nrow(data)*100 #percent other
 #University of Kansas (in-house)
 #Pace University (expert)
 #Virginia Commonwealth University, Richmond, VA
+# Note: not all of these exist in the subsetted dataset
 data <- subset(data, data$source=="uwmadison_inhouse" | data$source=="cnj" | data$source=="kansas_expert" | data$source=="kansas_inhouse" | data$source=="pace_expert" | data$source=="vcu")
 # Applying the same levels fix as earlier, only because it caused problems in 
 # cohen.d() below. May not be necessary anymore.
@@ -608,11 +648,13 @@ effsize::cohen.d(data$pro_minus_anti~data$ms_condition,pooled=TRUE,paired=FALSE,
 # Computing alpha for the essay author ratings, basic exclusions
 # Read data
 data <- merged
-# Applying exclusion criteria 1
+# Applying exclusion criteria 0 and 1
+data <- subset(data, !is.na(data$pro_minus_anti))
 # 1. Wrote something for both writing prompts
-data <- subset(data, (data$msincomplete == 0 | is.na(data$msincomplete)))
 # 2. Completed all six items evaluating the essay authors)
-data <- subset(data, (!is.na(data$prous3) & !is.na(data$prous4) & !is.na(data$prous5) & !is.na(data$antius3) & !is.na(data$antius4) & !is.na(data$antius5)))
+data <- subset(data, ((data$msincomplete == 0 & !is.na(data$msincomplete)) | data$expert == 0 | data$source == "uwmadison_expert") & # P completed both prompts, or site is a non-expert site where this exclusion did not apply, or source is uwmadison_expert: that sample left the msincomplete variable NA instead of coding "0" or "1". However, they took detailed notes and reported that no responses were abnormal. In addition, at the other expert sites that coded this information, none reported a case where a participant left both responses blank. 
+                 !is.na(data$prous3) & !is.na(data$prous4) & !is.na(data$prous5) & # P provided all 3 ratings of pro-us essay
+                 !is.na(data$antius3) & !is.na(data$antius4) & !is.na(data$antius5)) # P provided all 3 ratings of anti-us essay
 
 # create a data frame of only pro-us ratings for the alpha() function
 pro_df <- data.frame(data$prous3,data$prous4,data$prous5)
