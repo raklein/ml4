@@ -69,6 +69,9 @@ thick <- thick +
   theme(axis.title.x = element_text(hjust = 0.407, face = "plain")) +
   theme(axis.ticks = element_blank())
 
+# If using full dataset, replace the above theme(axis.text.y...) line to reflect the additional samples.
+# theme(axis.text.y = element_text(face = c("plain", "plain", "plain", "plain", "plain", "plain", "plain", "plain", "plain", "plain", "plain", "plain", "bold", "plain", "plain", "plain", "plain", "plain", "plain", "plain", "plain", "plain", "bold"), color = c("#555555", "#555555", "#555555", "#555555", "#555555", "#555555", "#555555", "#555555", "#555555", "#555555", "#555555", "#555555", "#000000", "#555555", "#555555", "#555555", "#555555", "#555555", "#555555", "#555555", "#555555", "#555555", "#000000"))) +
+
 # thick
 
 # I'm having trouble editing the geom objects given I'm not generating
