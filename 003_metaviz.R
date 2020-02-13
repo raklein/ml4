@@ -24,7 +24,7 @@ combinedresults3 <- arrange(combinedresults3, expert, yi)
 
 # Change this to 'combinedresults2' or 'combinedresults3' to generate plots
 # for the other two exclusion sets
-dat <- combinedresults1
+dat <- combinedresults3
 
 # # Rain plot - tried it, prefer variant = 'thick'
 # rain <- dat[, c("yi", "sqrt_vi")] %>% 
@@ -61,10 +61,10 @@ thick <- dat[, c("yi", "sqrt_vi")] %>%
 
 # viz_forest conveniently outputs a ggplot object, so I'll add some additional
 # customzation using ggplot2 arguments
-
+#this customization needs adjusted based on number of labs (e.g., whether you exclude < 60 or not)
 thick <- thick + 
   theme(panel.border = element_blank()) + 
-  theme(axis.text.y = element_text(face = c("plain", "plain", "plain", "plain", "plain", "plain", "plain", "plain", "plain", "plain", "plain", "plain", "bold", "plain", "plain", "plain", "plain", "plain", "plain", "plain", "plain", "plain", "bold"), color = c("#555555", "#555555", "#555555", "#555555", "#555555", "#555555", "#555555", "#555555", "#555555", "#555555", "#555555", "#555555", "#000000", "#555555", "#555555", "#555555", "#555555", "#555555", "#555555", "#555555", "#555555", "#555555", "#000000"))) +
+  theme(axis.text.y = element_text(face = c("plain", "plain", "plain", "plain", "plain", "plain", "plain", "plain", "plain", "plain", "bold", "plain", "plain", "plain", "plain", "plain", "plain", "plain", "bold"), color = c("#555555", "#555555", "#555555", "#555555", "#555555", "#555555", "#555555", "#555555", "#555555", "#555555", "#000000", "#555555", "#555555", "#555555", "#555555", "#555555", "#555555", "#555555", "#000000"))) +
   theme(axis.text.x = element_text(face = c("bold"), color = "#000000")) +
   theme(axis.title.x = element_text(hjust = 0.407, face = "plain")) +
   theme(axis.ticks = element_blank())
