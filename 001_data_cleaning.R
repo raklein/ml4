@@ -497,32 +497,18 @@ merged <- bind_rows(template, allsitedata)
 numeric.columns <- c("prous1", "prous2", "prous3", "prous4", "prous5",
                      "antius1", "antius2", "antius3", "antius4", "antius5",
                      "expert", "americanid")
-merged <- mutate_at(merged, .vars = vars(numeric.columns), .funs = as.numeric)
+merged <- mutate_at(merged, .vars = vars(all_of(numeric.columns)), .funs = as.numeric)
+
+# convert in-house open text for race to numeric code
+source("./sources/race_text_to_num.R") # load custom function
+merged$race <- race_text_to_num(merged$race)
 
 # some of these were treated as numeric, I believe they are factor
 # TODO: check number of factor levels
 # TODO: handle text-response data for race
 factor.columns <- c("ms_condition", "msincomplete", 
                     "countryofbirth","ethnicity", "race")
-merged <- mutate_at(merged, .vars = vars(factor.columns), .funs = as.factor)
-
-merged$prous1 <- as.numeric(as.character(merged$prous1))
-merged$prous2 <- as.numeric(as.character(merged$prous2))
-merged$prous3 <- as.numeric(as.character(merged$prous3))
-merged$prous4 <- as.numeric(as.character(merged$prous4))
-merged$prous5 <- as.numeric(as.character(merged$prous5))
-merged$antius1 <- as.numeric(as.character(merged$antius1))
-merged$antius2 <- as.numeric(as.character(merged$antius2))
-merged$antius3 <- as.numeric(as.character(merged$antius3))
-merged$antius4 <- as.numeric(as.character(merged$antius4))
-merged$antius5 <- as.numeric(as.character(merged$antius5))
-merged$expert <- as.numeric(as.character(merged$expert))
-merged$ms_condition <- as.factor(as.character(merged$ms_condition))
-merged$msincomplete <- as.numeric(as.character(merged$msincomplete))
-merged$countryofbirth <- as.numeric(as.character(merged$countryofbirth))
-merged$ethnicity <- as.numeric(as.character(merged$ethnicity))
-merged$race <- as.numeric(as.character(merged$race))
-merged$americanid <- as.numeric(as.character(merged$americanid))
+merged <- mutate_at(merged, .vars = vars(all_of(factor.columns)), .funs = as.factor)
 
 # We appear to have some entirely NA rows, except meta data. To address this I'm
 # going to remove responses that are blank in all of these variables:
