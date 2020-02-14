@@ -32,7 +32,8 @@ library(effsize)
 # reproduce results.
 # writeLines(capture.output(sessionInfo()), "./output/sessionInfo_data_cleaning.txt")
 
-# Read in data template, teams were asked to format their data in a similar fashion. Key found in data.key.docx.
+# Read in data template, teams were asked to format their data in a similar fashion. 
+# Key found in data.key.docx.
 template <- read.csv("./data/public/data.template.csv", header = TRUE, stringsAsFactor = FALSE)
 
 # Below, I reformat all data from individual sites into this format.
@@ -40,8 +41,9 @@ template <- read.csv("./data/public/data.template.csv", header = TRUE, stringsAs
 # to those above, but they are not always in a clear format. When in doubt,
 # I left them out, although these could be added later with closer examination.
 
-# Read in Occidental College Expert data
-occid <- read.csv("./data/raw_site_data/Occidental College Expert/Oxy_TMT_data.csv", header = TRUE, stringsAsFactor = FALSE)
+# Read in Occidental College Expert data ----
+occid <- read.csv("./data/raw_site_data/Occidental College Expert/Oxy_TMT_data.csv", 
+                  header = TRUE, stringsAsFactor = FALSE)
 # add column indicating it's from the expert condition, 1 = expert 0 = in-house
 occid$expert <- 1
 # add site identifier
@@ -52,7 +54,7 @@ occid$location <- "occid"
 # If that happens, you can uncomment the below line to simply read in the pre-processed .rds file.
 # occid <- readRDS("./data/raw_site_data/Occidental College Expert/occid.rds")
 
-# read in College of New Jersey expert data
+# read in College of New Jersey expert data ----
 cnj <- read_sav("./data/raw_site_data/The College of New Jersey expert/TCNJ ML4 completed data set.sav")
 # add column indicating it's from the expert condition
 cnj$expert <- 1
@@ -94,8 +96,9 @@ cnj$ms_condition[cnj$ms_condition==1] <- "ms"
 # If that happens, you can uncomment the below line to simply read in the pre-processed .rds file.
 # cnj <- readRDS("./data/raw_site_data/The College of New Jersey expert/cnj.rds")
 
-# read in UC riverside expert data
-riverside <- read.csv("./data/raw_site_data/UC riverside expert/ML4 data combined.csv", header = TRUE, stringsAsFactor = FALSE)
+# read in UC riverside expert data ----
+riverside <- read.csv("./data/raw_site_data/UC riverside expert/ML4 data combined.csv", 
+                      header = TRUE, stringsAsFactor = FALSE)
 # add column indicating it's from the expert condition
 riverside$expert <- 1
 # add site identifier
@@ -107,13 +110,14 @@ riverside$date <- NA
 riverside$time <- NA
 # riverside site used "0" for blank responses
 riverside[riverside == 0] <- NA
-riverside$msincomplete <- 0 # this one variable actually used 0 as a value, so changing it back
+riverside$msincomplete[is.na(riverside$msincomplete)] <- 0 # this variable actually used 0 as a value, so changing it back
 # Note: One R user was having issues with some .csv files.
 # If that happens, you can uncomment the below line to simply read in the pre-processed .rds file.
 # riverside <- readRDS("./data/raw_site_data/UC riverside expert/riverside.rds")
 
-# read in UW madison expert data
-uwmadison_expert <- read.csv("./data/raw_site_data/UWmadison expert/Paper-and-pencil condition_Data Entry complete_UW-Madison.csv", header = TRUE, stringsAsFactor = FALSE)
+# read in UW madison expert data ----
+uwmadison_expert <- read.csv("./data/raw_site_data/UWmadison expert/Paper-and-pencil condition_Data Entry complete_UW-Madison.csv", 
+                             header = TRUE, stringsAsFactor = FALSE)
 # add column indicating it's from the expert condition
 uwmadison_expert$expert <- 1
 # add site identifier
@@ -127,7 +131,7 @@ uwmadison_expert$gender[uwmadison_expert$gender=="M"] <- 2
 # If that happens, you can uncomment the below line to simply read in the pre-processed .rds file.
 # uwmadison_expert <- readRDS("./data/raw_site_data/UWmadison expert/uwmadison_expert.rds")
 
-# read in Azusa in-house data
+# read in Azusa in-house data ----
 azusa <- read_sav("./data/raw_site_data/azusa inhouse/TMT_replication_APU site.sav")
 # add column indicating it's from the inhouse condition
 azusa$expert <- 0
@@ -156,6 +160,12 @@ names(azusa)[names(azusa) == 'race_r_TEXT'] <- 'race_other'
 names(azusa)[names(azusa) == 'race'] <- 'race.azusa'
 # convert to string to make recoding changes
 azusa <- data.frame(lapply(azusa, as.character), stringsAsFactors=FALSE)
+# recode race from race.azusa
+azusa$race <- case_when(azusa$race.azusa == "3" ~ NA_character_, # don't know "race" of hispanic participants
+                        azusa$race.azusa == "5" ~ NA_character_, # don't know "races" of biracial participants
+                        TRUE                    ~ azusa$race.azusa) # otherwise retain codes
+# generate ethnicity: participants who ID'd as "hispanic" are hispanic
+azusa$ethnicity <- ifelse(azusa$race.azusa == 3, 2, 1)
 # 1 = ms 2 = tv
 azusa$ms_condition[azusa$ms_condition==2] <- "tv"
 azusa$ms_condition[azusa$ms_condition==1] <- "ms"
@@ -164,12 +174,14 @@ azusa$gender[azusa$gender==2] <- "female"
 azusa$gender[azusa$gender==1] <- "male"
 azusa$gender[azusa$gender=="female"] <- "1"
 azusa$gender[azusa$gender=="male"] <- "2"
+
 # Note: One R user was having issues with some .csv files.
 # If that happens, you can uncomment the below line to simply read in the pre-processed .rds file.
 # azusa <- readRDS("./data/raw_site_data/azusa inhouse/azusa.rds")
 
-# read in Ithaca in-house data
-ithaca <- read.csv("./data/raw_site_data/ithaca inhouse/Ithaca data.csv", header = TRUE, stringsAsFactor = FALSE)
+# read in Ithaca in-house data ----
+ithaca <- read.csv("./data/raw_site_data/ithaca inhouse/Ithaca data.csv", 
+                   header = TRUE, stringsAsFactor = FALSE)
 # add column indicating it's from the inhouse condition
 ithaca$expert <- 0
 # add site identifier
@@ -180,7 +192,7 @@ ithaca$location <- "ithaca"
 # If that happens, you can uncomment the below line to simply read in the pre-processed .rds file.
 # ithaca <- readRDS("./data/raw_site_data/ithaca inhouse/ithaca.rds")
 
-# read in wpi in-house data
+# read in wpi in-house data ----
 wpi <- read.csv("./data/raw_site_data/wpi inhouse/A13.csv", header = TRUE, stringsAsFactor = FALSE)
 # add column indicating it's from the inhouse condition
 wpi$expert <- 0
@@ -198,7 +210,7 @@ names(wpi)[names(wpi) == 'countryofbirth (187 = US)'] <- 'countryofbirth'
 # If that happens, you can uncomment the below line to simply read in the pre-processed .rds file.
 # wpi <- readRDS("./data/raw_site_data/wpi inhouse/wpi.rds")
 
-# read in ufl in-house data
+# read in ufl in-house data ----
 ufl <- read_sav("./data/raw_site_data/ufl inhouse/ml4.clean.sav")
 # add column indicating it's from the inhouse condition
 ufl$expert <- 0
@@ -230,8 +242,9 @@ ufl$ms_condition[ufl$ms_condition=="2"] <- "ms"
 # If that happens, you can uncomment the below line to simply read in the pre-processed .rds file.
 # ufl <- readRDS("./data/raw_site_data/ufl inhouse/ufl.rds")
 
-# read in illinois in-house data
-illinois <- read.csv("./data/raw_site_data/universityillinois inhouse/ML4_Storage_Dataset.csv", header = TRUE, stringsAsFactor = FALSE)
+# read in illinois in-house data ----
+illinois <- read.csv("./data/raw_site_data/universityillinois inhouse/ML4_Storage_Dataset.csv", 
+                     header = TRUE, stringsAsFactor = FALSE)
 # add column indicating it's from the inhouse condition
 illinois$expert <- 0
 # add site identifier
@@ -244,8 +257,9 @@ names(illinois)[names(illinois) == 'msincomplete..1...incomplete..0...complete.'
 # If that happens, you can uncomment the below line to simply read in the pre-processed .rds file.
 # illinois <- readRDS("./data/raw_site_data/universityillinois inhouse/illinois.rds")
 
-# read in upenn inhouse data
-upenn <- read.csv("./data/raw_site_data/upenn inhouse/Greenberg Data Recoded.csv", header = TRUE, stringsAsFactor = FALSE)
+# read in upenn inhouse data ----
+upenn <- read.csv("./data/raw_site_data/upenn inhouse/Greenberg Data Recoded.csv", 
+                  header = TRUE, stringsAsFactor = FALSE)
 # add column indicating it's from the inhouse condition
 upenn$expert <- 0
 # add site identifier
@@ -256,10 +270,11 @@ upenn$location <- "upenn"
 # If that happens, you can uncomment the below line to simply read in the pre-processed .rds file.
 # upenn <- readRDS("./data/raw_site_data/upenn inhouse/upenn.rds")
 
-# read in UWmadison inhouse data
+# read in UWmadison inhouse data ----
 # note: this was giving me encoding errors so I manually recoded to UTF-8,
 # original .csv in /old
-uwmadison_inhouse <- read.csv("./data/raw_site_data/UWmadison inhouse/Terror_Management.csv", header = TRUE, stringsAsFactor = FALSE, encoding = "UTF-8")
+uwmadison_inhouse <- read.csv("./data/raw_site_data/UWmadison inhouse/Terror_Management.csv", 
+                              header = TRUE, stringsAsFactor = FALSE, encoding = "UTF-8")
 # add column indicating it's from the inhouse condition
 uwmadison_inhouse$expert <- 0
 # add site identifier
@@ -270,18 +285,18 @@ uwmadison_inhouse$location <- "uwmadison"
 uwmadison_inhouse <- data.frame(lapply(uwmadison_inhouse, as.character), stringsAsFactors=FALSE)
 # rename to match template
 # these are from 1-7
-names(uwmadison_inhouse)[names(uwmadison_inhouse) == 'Click.to.write.the.question.text.I.liked.the.author.of.the.first.essay'] <- 'prous4'
-names(uwmadison_inhouse)[names(uwmadison_inhouse) == 'Click.to.write.the.question.text.I.think.the.author.of.the.first.essay.was.intelligent'] <- 'prous3'
-names(uwmadison_inhouse)[names(uwmadison_inhouse) == 'Click.to.write.the.question.text.I.think.the.author.of.the.first.essay.was.knowledgeable'] <- 'prous5'
-names(uwmadison_inhouse)[names(uwmadison_inhouse) == 'Click.to.write.the.question.text.I.agree.with.the.arguments.of.the.first.essay'] <- 'prous2'
-names(uwmadison_inhouse)[names(uwmadison_inhouse) == 'Click.to.write.the.question.text.I.think.the.arguments.in.the.first.essay.were.valid'] <- 'prous1'
-names(uwmadison_inhouse)[names(uwmadison_inhouse) == 'Click.to.write.the.question.text.I.liked.the.author.of.the.second.essay'] <- 'antius4'
-names(uwmadison_inhouse)[names(uwmadison_inhouse) == 'Click.to.write.the.question.text.I.think.the.author.of.the.second.essay.was.intelligent'] <- 'antius3'
-names(uwmadison_inhouse)[names(uwmadison_inhouse) == 'Click.to.write.the.question.text.I.think.the.author.of.the.second.essay.was.knowledgeable'] <- 'antius5'
-names(uwmadison_inhouse)[names(uwmadison_inhouse) == 'Click.to.write.the.question.text.I.agree.with.the.arguments.of.the.second.essay'] <- 'antius2'
-names(uwmadison_inhouse)[names(uwmadison_inhouse) == 'Click.to.write.the.question.text.I.think.the.arguments.in.the.second.essay.were.valid'] <- 'antius1'
-names(uwmadison_inhouse)[names(uwmadison_inhouse) == 'What.is.your.gender'] <- 'gender'
-names(uwmadison_inhouse)[names(uwmadison_inhouse) == 'How.old.are.you.'] <- 'age'
+uwmadison_inhouse <- rename(uwmadison_inhouse, 
+                            prous4  = Click.to.write.the.question.text.I.liked.the.author.of.the.first.essay, 
+                            prous3  = Click.to.write.the.question.text.I.think.the.author.of.the.first.essay.was.intelligent,   
+                            prous5  = Click.to.write.the.question.text.I.think.the.author.of.the.first.essay.was.knowledgeable, 
+                            prous2  = Click.to.write.the.question.text.I.agree.with.the.arguments.of.the.first.essay,           
+                            prous1  = Click.to.write.the.question.text.I.think.the.arguments.in.the.first.essay.were.valid,     
+                            antius4 = Click.to.write.the.question.text.I.liked.the.author.of.the.second.essay,                  
+                            antius3 = Click.to.write.the.question.text.I.think.the.author.of.the.second.essay.was.intelligent,  
+                            antius5 = Click.to.write.the.question.text.I.think.the.author.of.the.second.essay.was.knowledgeable,
+                            antius2 = Click.to.write.the.question.text.I.agree.with.the.arguments.of.the.second.essay,          
+                            antius1 = Click.to.write.the.question.text.I.think.the.arguments.in.the.second.essay.were.valid
+                            )
 # no condition variable exists, so creating one based on whether they responded to the tv or ms prompt
 uwmadison_inhouse$ms_condition <- NA
 uwmadison_inhouse$ms_condition[nchar(uwmadison_inhouse$Please.briefly.describe.the.emotions.that.the.thought.of.your.own.death.arouses.in.you.) > 1] <- "ms"
@@ -290,8 +305,9 @@ uwmadison_inhouse$ms_condition[nchar(uwmadison_inhouse$X.Please.briefly.describe
 # If that happens, you can uncomment the below line to simply read in the pre-processed .rds file.
 # uwmadison_inhouse <- readRDS("./data/raw_site_data/UWmadison inhouse/uwmadison_inhouse.rds")
 
-# read in kansas inhouse data
-kansas_inhouse <- read.csv("./data/raw_site_data/kansas inhouse/in house condition, Kansas, TMT replication.csv", header = TRUE, stringsAsFactor = FALSE)
+# read in kansas inhouse data ----
+kansas_inhouse <- read.csv("./data/raw_site_data/kansas inhouse/in house condition, Kansas, TMT replication.csv", 
+                           header = TRUE, stringsAsFactor = FALSE)
 # add column indicating it's from the inhouse condition
 kansas_inhouse$expert <- 0
 # add site identifier
@@ -302,8 +318,9 @@ kansas_inhouse$location <- "kansas"
 # If that happens, you can uncomment the below line to simply read in the pre-processed .rds file.
 # kansas_inhouse <- readRDS("./data/raw_site_data/kansas inhouse/kansas_inhouse.rds")
 
-# read in Pace expert data
-pace_expert <- read.csv("./data/raw_site_data/pace expert/mancini_gosnell_Pace_expert_TMT_replication_data_FINAL_2017.csv", header = TRUE, stringsAsFactor = FALSE)
+# read in Pace expert data ----
+pace_expert <- read.csv("./data/raw_site_data/pace expert/mancini_gosnell_Pace_expert_TMT_replication_data_FINAL_2017.csv", 
+                        header = TRUE, stringsAsFactor = FALSE)
 # add column indicating it's from the expert condition
 pace_expert$expert <- 1
 # add site identifier
@@ -314,9 +331,10 @@ pace_expert$location <- "pace"
 # If that happens, you can uncomment the below line to simply read in the pre-processed .rds file.
 # pace_expert <- readRDS("./data/raw_site_data/pace expert/pace_expert.rds")
 
-# read in wesleyan inhouse data
+# read in wesleyan inhouse data ----
 # double-check politicalID coding
-wesleyan_inhouse <- read.csv("./data/raw_site_data/wesleyan inhouse/schmidtmsrep.csv", header = TRUE, stringsAsFactor = FALSE)
+wesleyan_inhouse <- read.csv("./data/raw_site_data/wesleyan inhouse/schmidtmsrep.csv", 
+                             header = TRUE, stringsAsFactor = FALSE)
 # add column indicating it's from the inhouse condition
 wesleyan_inhouse$expert <- 0
 # add site identifier
@@ -327,7 +345,7 @@ wesleyan_inhouse$location <- "wesleyan"
 # If that happens, you can uncomment the below line to simply read in the pre-processed .rds file.
 # wesleyan_inhouse <- readRDS("./data/raw_site_data/wesleyan inhouse/wesleyan_inhouse.rds")
 
-# read in sou inhouse data
+# read in sou inhouse data ----
 sou_inhouse <- read.csv("./data/raw_site_data/sou inhouse/data to send.csv", header = TRUE, stringsAsFactor = FALSE)
 # add column indicating it's from the inhouse condition
 sou_inhouse$expert <- 0
@@ -338,8 +356,9 @@ sou_inhouse$location <- "sou"
 # If that happens, you can uncomment the below line to simply read in the pre-processed .rds file.
 # sou_inhouse <- readRDS("./data/raw_site_data/sou inhouse/sou_inhouse.rds")
 
-# read in Kansas expert data
-kansas_expert <- read.csv("./data/raw_site_data/kansas expert/Swanson_KUdata.csv", header = TRUE, stringsAsFactor = FALSE)
+# read in Kansas expert data ----
+kansas_expert <- read.csv("./data/raw_site_data/kansas expert/Swanson_KUdata.csv", 
+                          header = TRUE, stringsAsFactor = FALSE)
 # add column indicating it's from the expert condition
 kansas_expert$expert <- 1
 # add site identifier
@@ -360,7 +379,7 @@ kansas_expert$ms_condition[kansas_expert$ms_condition=="TV"|kansas_expert$ms_con
 # If that happens, you can uncomment the below line to simply read in the pre-processed .rds file.
 # kansas_expert <- readRDS("./data/raw_site_data/kansas expert/kansas_expert.rds")
 
-# read in PLU inhouse data
+# read in PLU inhouse data ----
 plu <- read.csv("./data/raw_site_data/plu/Pacific Lutheran University Many Labs 4 Clean Data.csv", header = TRUE, stringsAsFactor = FALSE)
 # add column indicating it's from the inhouse condition
 plu$expert <- 0
@@ -371,8 +390,9 @@ plu$location <- "plu"
 # If that happens, you can uncomment the below line to simply read in the pre-processed .rds file.
 # plu <- readRDS("./data/raw_site_data/plu/plu.rds")
 
-# read in ashland expert data
-ashland <- read.csv("./data/raw_site_data/ashland/ML 4 AU Data Chartier & Brady.csv", header = TRUE, stringsAsFactor = FALSE)
+# read in ashland expert data ----
+ashland <- read.csv("./data/raw_site_data/ashland/ML 4 AU Data Chartier & Brady.csv", 
+                    header = TRUE, stringsAsFactor = FALSE)
 # it's reading a bunch of empty cells, selecting only those with actual data
 ashland <- ashland[1:56,]
 # add column indicating it's from the expert condition
@@ -386,7 +406,7 @@ ashland$location <- "ashland"
 # If that happens, you can uncomment the below line to simply read in the pre-processed .rds file.
 # ashland <- readRDS("./data/raw_site_data/ashland/ashland.rds")
 
-# read in vcu expert data
+# read in vcu expert data ----
 vcu <- read.csv("./data/raw_site_data/vcu/manylabsVCU.csv", header = TRUE, stringsAsFactor = FALSE)
 # add column indicating it's from the expert condition
 vcu$expert <- 1
@@ -397,7 +417,7 @@ vcu$location <- "vcu"
 # If that happens, you can uncomment the below line to simply read in the pre-processed .rds file.
 # vcu <- readRDS("./data/raw_site_data/vcu/vcu.rds")
 
-# read in BYU in-house data
+# read in BYU in-house data ----
 byui <- read.csv("./data/raw_site_data/byui_expert/ML4 BYUI Wiggins.csv", header = TRUE, stringsAsFactor = FALSE)
 # add column indicating it's from the expert condition
 byui$expert <- 1
@@ -406,7 +426,7 @@ byui$source <- "byui"
 # add location, usually identical to source
 byui$location <- "byui"
 
-# read in Pace in-house data
+# read in Pace in-house data ----
 # Note: I saved the original data (TMT.xlsx) but did some manual reformatting
 # to TMT.csv
 pace_inhouse <- read.csv("./data/raw_site_data/pace_inhouse/TMT.csv", sep = ";", header = TRUE, stringsAsFactor = FALSE)
@@ -418,18 +438,20 @@ pace_inhouse$source <- "pace_inhouse"
 pace_inhouse$location <- "pace"
 # change column names to match template
 # author A is always anti-us and author P is always pro-us
-names(pace_inhouse)[names(pace_inhouse) == 'How.much.do.you.like.Author.P.'] <- 'prous4'
-names(pace_inhouse)[names(pace_inhouse) == 'How.intelligent.is.Author.P.'] <- 'prous3'
-names(pace_inhouse)[names(pace_inhouse) == 'How.knowledgeable.about.America.is.Author.P.'] <- 'prous5'
-names(pace_inhouse)[names(pace_inhouse) == 'How.much.do.you.agree.with.Author.P.s.essay.'] <- 'prous2'
-names(pace_inhouse)[names(pace_inhouse) == 'How.valid..true.or.logical..are.Author.P.s.arguments.'] <- 'prous1'
-names(pace_inhouse)[names(pace_inhouse) == 'How.much.do.you.like.Author.A.'] <- 'antius4'
-names(pace_inhouse)[names(pace_inhouse) == 'How.intelligent.is.Author.A.'] <- 'antius3'
-names(pace_inhouse)[names(pace_inhouse) == 'How.knowledgeable.about.America.is.Author.A.'] <- 'antius5'
-names(pace_inhouse)[names(pace_inhouse) == 'How.much.do.you.agree.with.Author.A.s.essay.'] <- 'antius2'
-names(pace_inhouse)[names(pace_inhouse) == 'How.valid..true.or.logical..are.Author.A.s.arguments.'] <- 'antius1'
-names(pace_inhouse)[names(pace_inhouse) == 'What.is.your.gender.'] <- 'gender'
-names(pace_inhouse)[names(pace_inhouse) == 'What.is.your.age.'] <- 'age'
+pace_inhouse <- rename(pace_inhouse,
+                       prous4 = How.much.do.you.like.Author.P.,                      
+                       prous3 = How.intelligent.is.Author.P.,                        
+                       prous5 = How.knowledgeable.about.America.is.Author.P.,        
+                       prous2 = How.much.do.you.agree.with.Author.P.s.essay.,        
+                       prous1 = How.valid..true.or.logical..are.Author.P.s.arguments.,
+                       antius4 = How.much.do.you.like.Author.A.,                      
+                       antius3 = How.intelligent.is.Author.A.,                        
+                       antius5 = How.knowledgeable.about.America.is.Author.A.,        
+                       antius2 = How.much.do.you.agree.with.Author.A.s.essay.,        
+                       antius1 = How.valid..true.or.logical..are.Author.A.s.arguments.,
+                       gender = What.is.your.gender.,                                
+                       age = What.is.your.age.                                   
+                       )
 # no condition variable exists, so creating one based on whether they responded to the tv or ms prompt
 pace_inhouse$ms_condition <- NA
 pace_inhouse$ms_condition[nchar(pace_inhouse$Please.briefly.describe.the.emotions.that.the.thought.of.your.own.death.arouses.in.you.) > 1] <- "ms"
@@ -437,55 +459,53 @@ pace_inhouse$ms_condition[nchar(pace_inhouse$Please.briefly.describe.the.emotion
 # For users having trouble with .csv: can uncomment below line and read processed .rds
 # pace_inhouse <- readRDS("./data/raw_site_data/pace_inhouse/TMT.rds")
 
-# convert all dataframe columns to character for easier merging
-riverside <- data.frame(lapply(riverside, as.character), stringsAsFactors=FALSE)
-uwmadison_expert <- data.frame(lapply(uwmadison_expert, as.character), stringsAsFactors=FALSE)
-occid <- data.frame(lapply(occid, as.character), stringsAsFactors=FALSE)
-cnj <- data.frame(lapply(cnj, as.character), stringsAsFactors=FALSE)
-azusa <- data.frame(lapply(azusa, as.character), stringsAsFactors=FALSE)
-ithaca <- data.frame(lapply(ithaca, as.character), stringsAsFactors=FALSE)
-wpi <- data.frame(lapply(wpi, as.character), stringsAsFactors=FALSE)
-ufl <- data.frame(lapply(ufl, as.character), stringsAsFactors=FALSE)
-illinois <- data.frame(lapply(illinois, as.character), stringsAsFactors=FALSE)
-upenn <- data.frame(lapply(upenn, as.character), stringsAsFactors=FALSE)
-uwmadison_inhouse <- data.frame(lapply(uwmadison_inhouse, as.character), stringsAsFactors=FALSE)
-kansas_inhouse <- data.frame(lapply(kansas_inhouse, as.character), stringsAsFactors=FALSE)
-pace_expert <- data.frame(lapply(pace_expert, as.character), stringsAsFactors=FALSE)
-wesleyan_inhouse <- data.frame(lapply(wesleyan_inhouse, as.character), stringsAsFactors=FALSE)
-sou_inhouse <- data.frame(lapply(sou_inhouse, as.character), stringsAsFactors=FALSE)
-kansas_expert <- data.frame(lapply(kansas_expert, as.character), stringsAsFactors=FALSE)
-plu <- data.frame(lapply(plu, as.character), stringsAsFactors=FALSE)
-ashland <- data.frame(lapply(ashland, as.character), stringsAsFactors=FALSE)
-vcu <- data.frame(lapply(vcu, as.character), stringsAsFactors=FALSE)
-byui <- data.frame(lapply(byui, as.character), stringsAsFactors=FALSE)
-pace_inhouse <- data.frame(lapply(pace_inhouse, as.character), stringsAsFactors=FALSE)
 
-# merging data frames vertically
-merged <- bind_rows(template,
-                    riverside, 
+# Merge individual datasets ----
+
+# make list object. Each data frame is an entry in the list
+allsitedata <- list(riverside, 
                     uwmadison_expert, 
-                    cnj, 
                     occid, 
+                    cnj, 
                     azusa, 
                     ithaca, 
-                    wpi, 
+                    wpi,
                     ufl, 
                     illinois, 
                     upenn, 
                     uwmadison_inhouse, 
                     kansas_inhouse, 
                     pace_expert,
-                    wesleyan_inhouse,
-                    sou_inhouse,
-                    kansas_expert,
-                    plu,
+                    wesleyan_inhouse, 
+                    sou_inhouse, 
+                    kansas_expert, 
+                    plu, 
                     ashland,
-                    vcu,
-                    byui,
-                    pace_inhouse
-)
+                    vcu, 
+                    byui, 
+                    pace_inhouse)
+
+# convert all dataframe columns to character for easier merging
+for (i in 1:length(allsitedata)) {
+  allsitedata[[i]] <- data.frame(lapply(allsitedata[[i]], as.character), stringsAsFactors=FALSE)
+}
+
+# merge data frames vertically
+merged <- bind_rows(template, allsitedata)
 
 # convert columns back to numeric/factor where needed
+numeric.columns <- c("prous1", "prous2", "prous3", "prous4", "prous5",
+                     "antius1", "antius2", "antius3", "antius4", "antius5",
+                     "expert", "americanid")
+merged <- mutate_at(merged, .vars = vars(numeric.columns), .funs = as.numeric)
+
+# some of these were treated as numeric, I believe they are factor
+# TODO: check number of factor levels
+# TODO: handle text-response data for race
+factor.columns <- c("ms_condition", "msincomplete", 
+                    "countryofbirth","ethnicity", "race")
+merged <- mutate_at(merged, .vars = vars(factor.columns), .funs = as.factor)
+
 merged$prous1 <- as.numeric(as.character(merged$prous1))
 merged$prous2 <- as.numeric(as.character(merged$prous2))
 merged$prous3 <- as.numeric(as.character(merged$prous3))
@@ -510,7 +530,9 @@ merged$americanid <- as.numeric(as.character(merged$americanid))
 # an experimental condition assignment. 
 # I think this is a conservative approach that does not lose any real data, at trade-off
 # of retaining some rows with little/no information.
-merged <- subset(merged, (!is.na(merged$prous3) | !is.na(merged$prous4) | !is.na(merged$prous5) | !is.na(merged$antius3) | !is.na(merged$antius4) | !is.na(merged$antius5) | !is.na(merged$ms_condition)))
+merged <- subset(merged, (!is.na(merged$prous3) | !is.na(merged$prous4) | !is.na(merged$prous5) | 
+                          !is.na(merged$antius3) | !is.na(merged$antius4) | !is.na(merged$antius5) | 
+                          !is.na(merged$ms_condition)))
 
 # If you skip these lines, you'll later find we have an issue with the # of levels
 # in data$ms_condition. This is a common problem where a "phantom" level with
@@ -605,7 +627,9 @@ merged_deidentified_full$race.wpi <- NULL
 merged_deidentified_full$raceomb <- NULL
 
 # for good measure, let's drop all unique questions asked by sites (hard to police exactly what was asked at each site)
-merged_deidentified_full <- select(merged_deidentified_full, participantnum:location, proauth_avg:pro_minus_anti)
+merged_deidentified_full <- select(merged_deidentified_full, 
+                                   participantnum:location, 
+                                   proauth_avg:pro_minus_anti)
 
 # save deidentified .csv
 write.csv(merged_deidentified_full, "./data/public/merged_deidentified_full.csv",row.names=FALSE)
@@ -625,8 +649,8 @@ merged <- readRDS("./data/processed_data/merged_full.rds")
 ### Under 60: 
 # definitely: ashland, azusa, kansas_expert, sou_inhouse
 # maybe: pace_inhouse hovers right around 60. Glancing over the 
-# raw data, there appear to be over 60 respondants, but that drops below 60 
-# after applying the lowest exclusion criteria. For now, I've left them included.
+#   raw data, there appear to be over 60 respondants, but that drops below 60 
+#   after applying the lowest exclusion criteria. For now, I've left them included.
 
 merged_over60 <- merged %>% filter(
   source == "byui"|
