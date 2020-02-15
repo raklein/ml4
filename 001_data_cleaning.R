@@ -28,6 +28,10 @@ library(psych)
 library(tidyverse)
 library(effsize)
 
+# load some custom helper functions
+source("./sources/race_text_to_num.R") # for converting text responses to numeric codes for race
+source("./sources/test_msincomplete.R") # for generating msincomplete based on text response to prompt
+
 # Save information about package versions to a file, may help others 
 # reproduce results.
 # writeLines(capture.output(sessionInfo()), "./output/sessionInfo_data_cleaning.txt")
@@ -63,24 +67,25 @@ cnj$source <- "cnj"
 # add location, usually identical to source
 cnj$location <- "cnj"
 # renaming columns to match template
-names(cnj)[names(cnj) == 'participantnumber'] <- 'participantnum'
-names(cnj)[names(cnj) == 'condition'] <- 'ms_condition'
-names(cnj)[names(cnj) == 'essayorder'] <- 'dv_order'
-names(cnj)[names(cnj) == 'provalid'] <- 'prous1'
-names(cnj)[names(cnj) == 'proagree'] <- 'prous2'
-names(cnj)[names(cnj) == 'prointelligent'] <- 'prous3'
-names(cnj)[names(cnj) == 'prolike'] <- 'prous4'
-names(cnj)[names(cnj) == 'proknowledge'] <- 'prous5'
-names(cnj)[names(cnj) == 'antivalid'] <- 'antius1'
-names(cnj)[names(cnj) == 'antiagree'] <- 'antius2'
-names(cnj)[names(cnj) == 'antiintelligent'] <- 'antius3'
-names(cnj)[names(cnj) == 'antilike'] <- 'antius4'
-names(cnj)[names(cnj) == 'antiknowledge'] <- 'antius5'
-names(cnj)[names(cnj) == 'country'] <- 'countryofbirth'
-names(cnj)[names(cnj) == 'ideology'] <- 'politicalid'
-names(cnj)[names(cnj) == 'patriotism'] <- 'americanid'
-names(cnj)[names(cnj) == 'writingpromptblank'] <- 'msincomplete'
-# dropping last three columns with data we don't need (filter and averages which we will compute ourselves)
+cnj <- rename(cnj,
+              participantnum = participantnumber, 
+              ms_condition = condition,
+              dv_order = essayorder,   
+              prous1 = provalid,       
+              prous2 = proagree,       
+              prous3 = prointelligent, 
+              prous4 = prolike,        
+              prous5 = proknowledge,   
+              antius1 = antivalid,     
+              antius2 = antiagree,      
+              antius3 = antiintelligent,
+              antius4 = antilike,       
+              antius5 = antiknowledge,  
+              countryofbirth = country,
+              politicalid = ideology,   
+              americanid = patriotism,  
+              msincomplete = writingpromptblank) 
+  # dropping last three columns with data we don't need (filter and averages which we will compute ourselves)
 drops <- c("filter_$","proAmericanrating", "antiAmericanrating")
 cnj <- cnj[ , !(names(cnj) %in% drops)]
 # recode responses to template, can see coding in original .sav file
@@ -127,6 +132,8 @@ uwmadison_expert$location <- "uwmadison"
 # recoding gender
 uwmadison_expert$gender[uwmadison_expert$gender=="F"] <- 1
 uwmadison_expert$gender[uwmadison_expert$gender=="M"] <- 2
+# TODO: Waiting to hear from UWMadison group whether there were/weren't incomplete MS responses
+# uwmadison_expert$msincomplete <- 0
 # Note: One R user was having issues with some .csv files.
 # If that happens, you can uncomment the below line to simply read in the pre-processed .rds file.
 # uwmadison_expert <- readRDS("./data/raw_site_data/UWmadison expert/uwmadison_expert.rds")
@@ -169,6 +176,9 @@ azusa$ethnicity <- ifelse(azusa$race.azusa == 3, 2, 1)
 # 1 = ms 2 = tv
 azusa$ms_condition[azusa$ms_condition==2] <- "tv"
 azusa$ms_condition[azusa$ms_condition==1] <- "ms"
+# coding msincomplete: subject must write at least 10char for each of their prompts
+azusa$msincomplete <- with(azusa,
+                           test_msincomplete(MS1, MS2, control1, control2))
 # recoding gender
 azusa$gender[azusa$gender==2] <- "female"
 azusa$gender[azusa$gender==1] <- "male"
@@ -238,6 +248,10 @@ ufl$dv_order[ufl$dv_order=="1"] <- "pro-first"
 ufl$dv_order[ufl$dv_order=="2"] <- "anti-first"
 ufl$ms_condition[ufl$ms_condition=="1"] <- "tv"
 ufl$ms_condition[ufl$ms_condition=="2"] <- "ms"
+# create msincomplete variable
+ufl$msincomplete <- with(ufl,
+                         test_msincomplete(mortalityresponse1, mortalityresponse2,
+                                         controlresponse1, controlresponse2))
 # Note: One R user was having issues with some .csv files.
 # If that happens, you can uncomment the below line to simply read in the pre-processed .rds file.
 # ufl <- readRDS("./data/raw_site_data/ufl inhouse/ufl.rds")
@@ -266,6 +280,10 @@ upenn$expert <- 0
 upenn$source <- "upenn"
 # add location, usually identical to source
 upenn$location <- "upenn"
+# code for msincomplete from text data
+upenn$msincomplete <- with(upenn,
+                           test_msincomplete(SubtleOwnDeath1, SubtleOwnDeath2,
+                                           Television1, Television2))
 # Note: One R user was having issues with some .csv files.
 # If that happens, you can uncomment the below line to simply read in the pre-processed .rds file.
 # upenn <- readRDS("./data/raw_site_data/upenn inhouse/upenn.rds")
@@ -295,12 +313,30 @@ uwmadison_inhouse <- rename(uwmadison_inhouse,
                             antius3 = Click.to.write.the.question.text.I.think.the.author.of.the.second.essay.was.intelligent,  
                             antius5 = Click.to.write.the.question.text.I.think.the.author.of.the.second.essay.was.knowledgeable,
                             antius2 = Click.to.write.the.question.text.I.agree.with.the.arguments.of.the.second.essay,          
-                            antius1 = Click.to.write.the.question.text.I.think.the.arguments.in.the.second.essay.were.valid
+                            antius1 = Click.to.write.the.question.text.I.think.the.arguments.in.the.second.essay.were.valid,
+                            MS1 = Please.briefly.describe.the.emotions.that.the.thought.of.your.own.death.arouses.in.you.,
+                            MS2 = Jot.down..as.specifically.as.you.can..what.you.think.will.happen.to.you.physically.as.you.die.and...,
+                            MS3 = The.one.thing.I.fear.most.about.my.death.is.,
+                            MS4 = My.scariest.thoughts.about.death.are.,
+                            control1 = X.Please.briefly.describe.the.emotions.that.the.thought.of.watching.television.arouses.in.you.,
+                            control2 = Jot.down..as.specifically.as.you.can..what.you.think.happens.to.you.as.you.watch.television.and.o...,
+                            control3 = The.one.thing.I.fear.most.about.television.is.,
+                            control4 = My.scariest.thoughts.about.television.are.
                             )
 # no condition variable exists, so creating one based on whether they responded to the tv or ms prompt
-uwmadison_inhouse$ms_condition <- NA
-uwmadison_inhouse$ms_condition[nchar(uwmadison_inhouse$Please.briefly.describe.the.emotions.that.the.thought.of.your.own.death.arouses.in.you.) > 1] <- "ms"
-uwmadison_inhouse$ms_condition[nchar(uwmadison_inhouse$X.Please.briefly.describe.the.emotions.that.the.thought.of.watching.television.arouses.in.you.) > 1] <- "tv"
+uwmadison_inhouse <- mutate(uwmadison_inhouse,
+                            ms_condition = case_when(nchar(MS1) > 1 | nchar(MS2) > 1 | 
+                                                       nchar(MS3) > 1 | nchar(MS4) > 1 ~ "ms",
+                                                     # or did they complete control prompt?
+                                                     nchar(control1) > 1 | nchar(control2) > 1 |
+                                                       nchar(control3) > 1 | nchar(control4) > 1 ~ "tv",
+                                                     # all other cases fall through to NA
+                                                     T ~ NA_character_),
+                            # did they fully complete prompts 1 and 2?
+                            # TODO: decide whether to test all four prompts
+                            msincomplete = test_msincomplete(MS1, MS2,
+                                                             control1, control2)
+                            )
 # Note: One R user was having issues with some .csv files.
 # If that happens, you can uncomment the below line to simply read in the pre-processed .rds file.
 # uwmadison_inhouse <- readRDS("./data/raw_site_data/UWmadison inhouse/uwmadison_inhouse.rds")
@@ -450,12 +486,23 @@ pace_inhouse <- rename(pace_inhouse,
                        antius2 = How.much.do.you.agree.with.Author.A.s.essay.,        
                        antius1 = How.valid..true.or.logical..are.Author.A.s.arguments.,
                        gender = What.is.your.gender.,                                
-                       age = What.is.your.age.                                   
+                       age = What.is.your.age.,
+                       MS1 = Please.briefly.describe.the.emotions.that.the.thought.of.your.own.death.arouses.in.you.,
+                       MS2 = Jot.down..as.specifically.as.you.can..what.you.think.will.happen.to.you.physically.as.you.die.and.once.you.are.physically.dead.,
+                       control1 = Please.briefly.describe.the.emotions.that.the.thought.of.watching.television.arouses.in.you.,
+                       control2 = Jot.down..as.specifically.as.you.can..what.you.think.happens.to.you.as.you.watch.television..and.once.you.have.physically.watched.television.
                        )
-# no condition variable exists, so creating one based on whether they responded to the tv or ms prompt
-pace_inhouse$ms_condition <- NA
-pace_inhouse$ms_condition[nchar(pace_inhouse$Please.briefly.describe.the.emotions.that.the.thought.of.your.own.death.arouses.in.you.) > 1] <- "ms"
-pace_inhouse$ms_condition[nchar(pace_inhouse$Please.briefly.describe.the.emotions.that.the.thought.of.watching.television.arouses.in.you.) > 1] <- "tv"
+# create condition & msincomplete variables
+pace_inhouse <- mutate(pace_inhouse,
+                       # make ms_condition based on whether they responded to MS or TV prompt
+                       # if they replied to both, that would be an error
+                       ms_condition = case_when(nchar(MS1) > 1 & nchar(control1) > 1 ~ "error", #shouldn't happen
+                                                nchar(MS1) > 1 ~ "ms",
+                                                nchar(control1) > 1 ~ "tv",
+                                                T ~ NA_character_),
+                       # make msincomplete based on whether they did both prompts
+                       msincomplete = test_msincomplete(MS1, MS2, control1, control2)
+)
 # For users having trouble with .csv: can uncomment below line and read processed .rds
 # pace_inhouse <- readRDS("./data/raw_site_data/pace_inhouse/TMT.rds")
 
@@ -494,21 +541,22 @@ for (i in 1:length(allsitedata)) {
 merged <- bind_rows(template, allsitedata)
 
 # convert columns back to numeric/factor where needed
-numeric.columns <- c("prous1", "prous2", "prous3", "prous4", "prous5",
-                     "antius1", "antius2", "antius3", "antius4", "antius5",
-                     "expert", "americanid")
-merged <- mutate_at(merged, .vars = vars(all_of(numeric.columns)), .funs = as.numeric)
+merged <- mutate_at(merged, 
+                    .vars = vars(prous1, prous2, prous3, prous4, prous5,
+                                 antius1, antius2, antius3, antius4, antius5,
+                                 expert, americanid), 
+                    .funs = as.numeric)
 
 # convert in-house open text for race to numeric code
-source("./sources/race_text_to_num.R") # load custom function
 merged$race <- race_text_to_num(merged$race)
 
 # some of these were treated as numeric, I believe they are factor
 # TODO: check number of factor levels
-# TODO: handle text-response data for race
-factor.columns <- c("ms_condition", "msincomplete", 
-                    "countryofbirth","ethnicity", "race")
-merged <- mutate_at(merged, .vars = vars(all_of(factor.columns)), .funs = as.factor)
+# TODO: handle text-response data for hispanic ethnicity
+merged <- mutate_at(merged, 
+                    .vars = vars(ms_condition, msincomplete, 
+                                 countryofbirth,ethnicity, race), 
+                    .funs = as.factor)
 
 # We appear to have some entirely NA rows, except meta data. To address this I'm
 # going to remove responses that are blank in all of these variables:
@@ -516,9 +564,9 @@ merged <- mutate_at(merged, .vars = vars(all_of(factor.columns)), .funs = as.fac
 # an experimental condition assignment. 
 # I think this is a conservative approach that does not lose any real data, at trade-off
 # of retaining some rows with little/no information.
-merged <- subset(merged, (!is.na(merged$prous3) | !is.na(merged$prous4) | !is.na(merged$prous5) | 
-                          !is.na(merged$antius3) | !is.na(merged$antius4) | !is.na(merged$antius5) | 
-                          !is.na(merged$ms_condition)))
+merged <- subset(merged, !(is.na(merged$prous3)  & is.na(merged$prous4)  & is.na(merged$prous5)  & 
+                             is.na(merged$antius3) & is.na(merged$antius4) & is.na(merged$antius5) & 
+                             is.na(merged$ms_condition)))
 
 # If you skip these lines, you'll later find we have an issue with the # of levels
 # in data$ms_condition. This is a common problem where a "phantom" level with
@@ -531,7 +579,11 @@ merged$ms_condition <- factor(merged$ms_condition, levels = c("ms", "tv"))
 
 merged <- filter(merged, ms_condition == "ms" | ms_condition == "tv")
 
+# considering restricting "merged" to just columns in "template"
+select(merged, names(template))
+
 # compute primary indexes (mean of pro-US author ratings minus mean of anti-US author ratings)
+# TODO: Consider/justify use of na.rm here.
 merged$proauth_avg <- rowMeans(merged[, c('prous3','prous4','prous5')], na.rm = TRUE)
 merged$antiauth_avg <- rowMeans(merged[, c('antius3','antius4','antius5')], na.rm = TRUE)
 merged$pro_minus_anti <- merged$proauth_avg - merged$antiauth_avg # primary outcome variable, higher scores = greater preference for pro-US author
@@ -547,6 +599,7 @@ write.csv(merged, "./data/processed_data/merged_full.csv",row.names=FALSE)
 saveRDS(merged, "./data/processed_data/merged_full.rds")
 
 # Create deidentified dataset by dropping the following variables
+# TODO: Much easier / cleaner to do this w/ dplyr::select()
 merged_deidentified_full <- merged
 
 # dropping open text responses used at some sites, possibly identifying
