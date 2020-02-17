@@ -30,11 +30,16 @@ library(effsize)
 library(GPArotation)
 library(tidyverse)
 
-## NOTE: some analyses below require the full "merged" dataset, not deidentified (mostly due to age and gender variables). This is private due to participant confidentiality concerns, but inquire with Rick raklein22@gmail.com if you need it. (Typically requires IRB approval from your local institution indicating you'll keep the data properly protected)
+## NOTE: some analyses below require the full "merged" dataset, 
+#    not deidentified (mostly due to age and gender variables). 
+#This is private due to participant confidentiality concerns, 
+#    but inquire with Rick raklein22@gmail.com if you need it. 
+#    (Typically requires IRB approval from your local institution 
+#         indicating you'll keep the data properly protected)
 merged <- readRDS("./data/processed_data/merged_subset.rds")
 
 #alternatively, you can run it with the public data and get most results
-#merged <- readRDS("./data/public/merged_deidentified.rds")
+#merged <- readRDS("./data/public/merged_deidentified_subset.rds")
 
 # Also note you can load the merged_subset.rds or merged_full.rds data
 # file. The former adheres strictly to the prereg, the latter
@@ -43,61 +48,58 @@ merged <- readRDS("./data/processed_data/merged_subset.rds")
 # Note that you will need to adjust this script where indicated if 
 # you're using the full dataset.
 
-#Function to generate required stats for meta-analysis.
-analysis <- function(data, exclusionrule, sitesource)
-{
-  
-  # Create exclusion rules
-  # Exclusion rule 0: no special exclusions
-  index0 <- !is.na(data$pro_minus_anti) & data$source==sitesource # filter for data from site & has primary DV
-  # Exclusion rule 1:
-  #1. Wrote something for both writing prompts
-  #2. Completed all six items evaluating the essay authors)
-  index1 <- index0 & # filter for previous conditions
-    ((data$msincomplete == 0 & !is.na(data$msincomplete)) | data$expert == 0 | data$source == "uwmadison_expert") & # P completed both prompts, or site is a non-expert site where this exclusion did not apply, or source is uwmadison_expert: that sample left the msincomplete variable NA instead of coding "0" or "1". However, they took detailed notes and reported that no responses were abnormal. In addition, at the other expert sites that coded this information, none reported a case where a participant left both responses blank. 
-    !is.na(data$prous3) & !is.na(data$prous4) & !is.na(data$prous5) & # P provided all 3 ratings of pro-us essay
-    !is.na(data$antius3) & !is.na(data$antius4) & !is.na(data$antius5) # P provided all 3 ratings of anti-us essay
-  # Exclusion rule 2:
-  #1. Wrote something for both writing prompts
-  #2. Completed all six items evaluating the essay authors
-  #3. Identify as White (race == 1)
-  #4. Born in USA (countryofbirth == 1)
-  index2 <- index1 & # filter for previous Exclusion1 conditions
-    (data$race == 1 & !is.na(data$race)) & # white ps, NA race discarded
-    (data$countryofbirth == 1 & !is.na(data$countryofbirth)) # US-born Ps, NA race discarded
-  # Exclusion rule 3
-  # 1. Wrote something for both writing prompts
-  # 2. Completed all six items evaluating the essay authors
-  # 3. Identify as White
-  # 4. Born in USA
-  # 5. Score a 7 or higher on the American Identity item
-  index3 <- index2 & # filter for previous Exclusion conditions
-    (data$americanid >= 7 & !is.na(data$americanid)) # strongly ID as american, NAs discarded
-  
-  # choose index based on user-specified exclusion rule
-  if(exclusionrule == "e0") {index <- index0
-  } else if(exclusionrule == "e1") {index <- index1
-  } else if (exclusionrule == "e2") {index <- index2
-  } else if (exclusionrule == "e3") {index <- index3
-  } else stop("Must specify exclusion rule: e0, e1, e2, or e3")
-  
-  # create statistics after filtering for cases that match index
-  location <- merged$location[data$source==sitesource][1] #saves first row from location variable
-  n_tv    <- length(data$pro_minus_anti[index & data$ms_condition == 'tv']) #n for tv condition
-  n_ms    <- length(data$pro_minus_anti[index & data$ms_condition == 'ms']) #n for ms condition
-  sd_tv   <-     sd(data$pro_minus_anti[index & data$ms_condition == 'tv']) #sd for tv participants at that site
-  sd_ms   <-     sd(data$pro_minus_anti[index & data$ms_condition == 'ms']) #sd for ms participants at that site
-  mean_tv <-   mean(data$pro_minus_anti[index & data$ms_condition == 'tv']) #mean for tv participants at that site
-  mean_ms <-   mean(data$pro_minus_anti[index & data$ms_condition == 'ms']) #mean for ms participants at that site
-  expert <- mean(merged$expert[data$source==sitesource]) #shortcut to indicate whether site is expert or not (0 = inhouse 1 = expert)
-  d_diff <- (mean_ms - mean_tv)/ sqrt((sd_ms^2+sd_tv^2)/2) #computes Cohen's D effect size
-  nhst <- t.test(data$pro_minus_anti~data$ms_condition, subset = index)
-  t <- nhst$statistic
-  df <- nhst$parameter
-  p.value <- nhst$p.value
-  result <- data.frame(location, sitesource, expert, n_tv, mean_tv, sd_tv, n_ms, mean_ms, sd_ms, d_diff, t, df, p.value) #results to be reported
-  return(result)
+# create statistics after filtering for cases that match index
+# location <- merged$location[data$source==sitesource][1] #saves first row from location variable
+# n_tv    <- length(data$pro_minus_anti[index & data$ms_condition == 'tv']) #n for tv condition
+# n_ms    <- length(data$pro_minus_anti[index & data$ms_condition == 'ms']) #n for ms condition
+# sd_tv   <-     sd(data$pro_minus_anti[index & data$ms_condition == 'tv']) #sd for tv participants at that site
+# sd_ms   <-     sd(data$pro_minus_anti[index & data$ms_condition == 'ms']) #sd for ms participants at that site
+# mean_tv <-   mean(data$pro_minus_anti[index & data$ms_condition == 'tv']) #mean for tv participants at that site
+# mean_ms <-   mean(data$pro_minus_anti[index & data$ms_condition == 'ms']) #mean for ms participants at that site
+# expert <- mean(merged$expert[data$source==sitesource]) #shortcut to indicate whether site is expert or not (0 = inhouse 1 = expert)
+# d_diff <- (mean_ms - mean_tv)/ sqrt((sd_ms^2+sd_tv^2)/2) #computes Cohen's D effect size
+# nhst <- t.test(data$pro_minus_anti~data$ms_condition, subset = index)
+# t <- nhst$statistic
+# df <- nhst$parameter
+# p.value <- nhst$p.value
+
+# Use dplyr::summarize to calculate summary stats per cell per site per exclusion rules
+analyse <- function(data) {
+  dat <- group_by(data, source, ms_condition) %>% 
+    summarize(n = n(),
+              mean = mean(pro_minus_anti),
+              sd = sd(pro_minus_anti),
+              expert = first(expert)
+    ) %>% 
+    pivot_longer(cols = c(n, mean, sd)) %>% 
+    unite(name, name, ms_condition) %>% 
+    pivot_wider(names_from = name,
+                values_from = value) %>% 
+    # TODO: check about denominator for d given unequal cell sizes
+    mutate((mean_ms - mean_tv)/ sqrt((sd_ms^2+sd_tv^2)/2)) #computes Cohen's D effect size
+
+  #nhst <- t.test(data$pro_minus_anti~data$ms_condition)
+  # df <- nhst$parameter
+  # p.value <- nhst$p.value
+  # result <- data.frame(location, sitesource, expert, n_tv, mean_tv, sd_tv, n_ms, mean_ms, sd_ms, d_diff, t, df, p.value) #results to be reported
+  # return(result)
 }
+
+combinedresults0 <- filter(merged, !is.na(pro_minus_anti)) %>% 
+  analyse()
+
+combinedresults1 <- filter(merged, !is.na(pro_minus_anti),
+                           pass_ER1 == T) %>% 
+  analyse()
+
+combinedresults2 <- filter(merged, !is.na(pro_minus_anti),
+                           pass_ER2 == T) %>% 
+  analyse()
+
+combinedresults3 <- filter(merged, !is.na(pro_minus_anti),
+                           pass_ER3 == T) %>% 
+  analyse()
+
 
 ### Note: If you're using the subsetted dataset, the below section
 # will give errors due to missing sources. You can safely ignore them,

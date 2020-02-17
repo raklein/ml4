@@ -220,6 +220,8 @@ names(wpi)[names(wpi) == 'race'] <- 'race.wpi'
 names(wpi)[names(wpi) == 'politicalid'] <- 'politicalid.wpi'
 # change some variable names to match template
 names(wpi)[names(wpi) == 'countryofbirth (187 = US)'] <- 'countryofbirth'
+# remove redundant ms_condition.1 column
+wpi$ms_condition.1 <- NULL
 # Note: One R user was having issues with some .csv files.
 # If that happens, you can uncomment the below line to simply read in the pre-processed .rds file.
 # wpi <- readRDS("./data/raw_site_data/wpi inhouse/wpi.rds")
@@ -753,7 +755,8 @@ merged_deidentified_subset <- select(merged_subset, -all_of(identifying_vars))
 merged_deidentified_subset <- select(merged_deidentified_subset, 
                                      participantnum:location, 
                                      proauth_avg:pro_minus_anti,
-                                     pass_ER1:pass_ER3)
+                                     pass_ER1:pass_ER3,
+                                     source_n)
 
 # save deidentified .csv
 write.csv(merged_deidentified_subset, "./data/public/merged_deidentified_subset.csv",row.names=FALSE)
