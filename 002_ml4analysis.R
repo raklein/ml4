@@ -51,7 +51,7 @@ merged <- readRDS("./data/processed_data/merged_subset.rds")
 # Use dplyr::summarize to calculate summary stats per cell per site per exclusion rules
 analyse <- function(data) {
   # Make means, sds, and ns
-  sumstats <- group_by(data, source, ms_condition) %>% 
+  sumstats <- group_by(data, location, source, ms_condition) %>% 
     summarize(n = n(),
               mean = mean(pro_minus_anti),
               sd = sd(pro_minus_anti),
@@ -71,8 +71,36 @@ analyse <- function(data) {
               df = t.test(pro_minus_anti ~ ms_condition)$parameter,
               p.value = t.test(pro_minus_anti ~ ms_condition)$p.value)
   
-  left_join(sumstats, nhst, by = "source") %>% 
-    return()
+  # combine stats
+  dat <- left_join(sumstats, nhst, by = "source")
+  
+  # make pretty names per site
+  dat <- mutate(dat, 
+                case_when(source == "ufl" ~ "University of Florida",
+                          source == "occid" ~ "Occidental College",
+                          source == "ashland" ~ "Ashland University",
+                          source == "ithaca" ~ "Ithaca College",
+                          source == "riverside" ~ "University of California, Riverside",
+                          source == "wesleyan_inhouse" ~ "Wesleyan University",
+                          source == "uwmadison_expert" ~ "University of Wisconsin",
+                          source == "uwmadison_inhouse" ~ "University of Wisconsin",
+                          source == "vcu" ~ "Virginia Commonwealth University",
+                          source == "sou_inhouse" ~ "Southern Oregon University",
+                          source == "plu" ~ "Pacific Lutheran University",
+                          source == "byui" ~ "Brigham Young University – Idaho",
+                          source == "azusa" ~ "Azusa Pacific University",
+                          source == "cnj" ~ "The College of New Jersey",
+                          source == "wpi" ~ "Worcester Polytechnic Institute",
+                          source == "illinois" ~ "University of Illinois",
+                          source == "kansas_expert" ~ "University of Kansas",
+                          source == "kansas_inhouse" ~ "University of Kansas",
+                          source == "upenn" ~ "University of Pennsylvania",
+                          source == "pace_inhouse" ~ "Pace University",
+                          source == "pace_expert" ~ "Pace University")
+  )
+  
+  # return analysed dataset
+  return(dat)
 }
 
 combinedresults0 <- filter(merged, !is.na(pro_minus_anti)) %>% 
@@ -156,6 +184,7 @@ combinedresults3 <- escalc(n1i = n_ms, n2i = n_tv, m1i = mean_ms, m2i = mean_tv,
 # saves .csv file
 write.csv(combinedresults3, "./data/public/combinedresults3.csv", row.names = FALSE)
 
+# metaSEM analyses ----
 # reads in csv files from above, just to confirm we can start with those files
 combinedresults0 <- read.csv("./data/public/combinedresults0.csv")
 combinedresults1 <- read.csv("./data/public/combinedresults1.csv")
@@ -174,43 +203,6 @@ summary( meta(y=yi, v=vi, data=combinedresults3))
 #Notes: Intercept1 is the grand mean effect size. 
 # for the 3 level meta, I? for level 2 indicates the percent of total variance explained by effects within sites, and I? for level 3 indicates the percent of total variance accounted for by differences between sites. 
 # Now that it's a simple meta, all of these meta-analytic stats (tau, q, I2) refer to variablity among all effect sizes (e.g., ignores that in 3 cases these are two nested within a particular university).
-
-# # forest plots for each
-# ### All forest plots now outdated in favor of metaviz.R
-# ### All forest plots now outdated in favor of metaviz.R
-# ### All forest plots now outdated in favor of metaviz.R
-# data <- combinedresults1
-# # same forst plot, but using rma so it plots the aggregate
-# dev.off()
-# png("./output/comb1.randomeffects.png", type='cairo')
-# par(mar=c(4,4,1,4)) #decreasing margins
-# forest(rma(yi= data$yi, vi=data$vi, slab=data$sitesource))
-# par(cex=1, font=2) #bold font
-# text(-3.3, 20.5, "Location",  pos=4) #adds location label using x, y coord
-# text(3.8, 20.5, "SMD [95% CI]", pos=2) #adds standardized mean diff label using x y coord
-# dev.off()
-# 
-# data <- combinedresults2
-# # same forst plot, but using rma so it plots the aggregate
-# dev.off()
-# png("./output/comb2.randomeffects.png", type='cairo')
-# par(mar=c(4,4,1,4)) #decreasing margins
-# forest(rma(yi= data$yi, vi=data$vi, slab=data$sitesource))
-# par(cex=1, font=2) #bold font
-# text(-5.1, 20.5, "Location",  pos=4) #adds location label using x, y coord
-# text(6.6, 20.5, "SMD [95% CI]", pos=2) #adds standardized mean diff label using x y coord
-# dev.off()
-# 
-# data <- combinedresults3
-# # same forst plot, but using rma so it plots the aggregate
-# dev.off()
-# png("./output/comb3.randomeffects.png", type='cairo')
-# par(mar=c(4,4,1,4)) #decreasing margins
-# forest(rma(yi= data$yi, vi=data$vi, slab=data$sitesource))
-# par(cex=1, font=2) #bold font
-# text(-6, 20.5, "Location",  pos=4) #adds location label using x, y coord
-# text(6.5, 20.5, "SMD [95% CI]", pos=2) #adds standardized mean diff label using x y coord
-# dev.off()
 
 # a covariate of study version (in-house or expert-designed) is added to create a mixed effects model.
 summary(mixed0 <- meta(y=yi, v=vi, x=expert, data=combinedresults0))
@@ -240,7 +232,7 @@ combinedresults3_aa <- filter(combinedresults3, expert == 1)
 summary(fixed0_ih <- meta(y=yi, v=vi, data=combinedresults0_ih, RE.constraints=0))
 summary(fixed1_ih <- meta(y=yi, v=vi, data=combinedresults1_ih, RE.constraints=0))
 summary(fixed2_ih <- meta(y=yi, v=vi, data=combinedresults2_ih, RE.constraints=0))
-summary(fixed3_ih <- meta(y=yi, v=vi, data=combinedresults3_ih, RE.constraints=0))
+#summary(fixed3_ih <- meta(y=yi, v=vi, data=combinedresults3_ih, RE.constraints=0)) # error, no data in cr3_ih
 
 summary(fixed0_aa <- meta(y=yi, v=vi, data=combinedresults0_aa, RE.constraints=0))
 summary(fixed1_aa <- meta(y=yi, v=vi, data=combinedresults1_aa, RE.constraints=0))
@@ -251,7 +243,7 @@ summary(fixed3_aa <- meta(y=yi, v=vi, data=combinedresults3_aa, RE.constraints=0
 summary(random0_ih <- meta(y=yi, v=vi, data=combinedresults0_ih))
 summary(random1_ih <- meta(y=yi, v=vi, data=combinedresults1_ih))
 summary(random2_ih <- meta(y=yi, v=vi, data=combinedresults2_ih))
-summary(random3_ih <- meta(y=yi, v=vi, data=combinedresults3_ih))
+#summary(random3_ih <- meta(y=yi, v=vi, data=combinedresults3_ih)) # error, no data
 
 summary(random0_aa <- meta(y=yi, v=vi, data=combinedresults0_aa))
 summary(random1_aa <- meta(y=yi, v=vi, data=combinedresults1_aa))
@@ -262,14 +254,14 @@ summary(random3_aa <- meta(y=yi, v=vi, data=combinedresults3_aa))
 anova(random0_ih, fixed0_ih)
 anova(random1_ih, fixed1_ih)
 anova(random2_ih, fixed2_ih)
-anova(random3_ih, fixed3_ih)
+#anova(random3_ih, fixed3_ih)
 
 anova(random0_aa, fixed0_aa)
 anova(random1_aa, fixed1_aa)
 anova(random2_aa, fixed2_aa)
 anova(random3_aa, fixed3_aa)
 
-# Repeating analyses of "expert" sites in the aggregate, ignoring site dependence.
+# Repeating analyses of "expert" sites in the aggregate, ignoring site dependence ----
 # This is a simple alternative and useful for most stringent exclusion criteria which drastically reduces overall N (exclusion set 3)
 # read in .rds data
 data <- readRDS("./data/public/merged_deidentified_subset.rds") # can also choose to use merged_deidentified_full
@@ -290,9 +282,7 @@ effsize::cohen.d(data$pro_minus_anti~data$ms_condition,pooled=TRUE,paired=FALSE,
 ###ANALYSIS 1: Exclusion set 1###
 # 1. Wrote something for both writing prompts
 # 2. Completed all six items evaluating the essay authors)
-data <- subset(data, ((data$msincomplete == 0 & !is.na(data$msincomplete)) | data$expert == 0 | data$source == "uwmadison_expert") & # P completed both prompts, or site is a non-expert site where this exclusion did not apply, or source is uwmadison_expert: that sample left the msincomplete variable NA instead of coding "0" or "1". However, they took detailed notes and reported that no responses were abnormal. In addition, at the other expert sites that coded this information, none reported a case where a participant left both responses blank. 
-                 !is.na(data$prous3) & !is.na(data$prous4) & !is.na(data$prous5) & # P provided all 3 ratings of pro-us essay
-                 !is.na(data$antius3) & !is.na(data$antius4) & !is.na(data$antius5)) # P provided all 3 ratings of anti-us essay
+data <- subset(data, pass_ER1 == T) 
 # t.test and descriptive statistics per condition from psych package
 t.test(data$pro_minus_anti~data$ms_condition)
 describeBy(data$pro_minus_anti, group = data$ms_condition)
@@ -304,9 +294,8 @@ effsize::cohen.d(data$pro_minus_anti~data$ms_condition,pooled=TRUE,paired=FALSE,
 # 1. Wrote something for both writing prompts
 # 2. Completed all six items evaluating the essay authors
 # 3. Identify as White (race == 1)
-data <- subset(data, data$race == 1 & !is.na(data$race))
 # 4. Born in USA (countryofbirth == 1)
-data <- subset(data, data$countryofbirth == 1 & !is.na(data$countryofbirth))
+data <- subset(data, pass_ER2 == T)
 # t.test and descriptive statistics per condition from psych package
 t.test(data$pro_minus_anti~data$ms_condition)
 describeBy(data$pro_minus_anti, group = data$ms_condition)
@@ -320,7 +309,7 @@ effsize::cohen.d(data$pro_minus_anti~data$ms_condition,pooled=TRUE,paired=FALSE,
 # 3. Identify as White
 # 4. Born in USA
 # 5. Score a 7 or higher on the American Identity item
-data <- subset(data, data$americanid >= 7 & !is.na(data$americanid))
+data <- subset(data, pass_ER3 == T)
 # t.test and descriptive statistics per condition from psych package
 t.test(data$pro_minus_anti~data$ms_condition)
 describeBy(data$pro_minus_anti, group = data$ms_condition)
@@ -366,29 +355,16 @@ merged$race <- as.numeric(as.character(merged$race))
 # Read data
 data <- merged
 # Applying exclusion criteria 0 and 1
-data <- subset(data, !is.na(data$pro_minus_anti))
-# 1. Wrote something for both writing prompts
-data <- subset(data, ((data$msincomplete == 0 & !is.na(data$msincomplete)) | data$expert == 0 | data$source == "uwmadison_expert") & # P completed both prompts, or site is a non-expert site where this exclusion did not apply, or source is uwmadison_expert: that sample left the msincomplete variable NA instead of coding "0" or "1". However, they took detailed notes and reported that no responses were abnormal. In addition, at the other expert sites that coded this information, none reported a case where a participant left both responses blank. 
-                 !is.na(data$prous3) & !is.na(data$prous4) & !is.na(data$prous5) & # P provided all 3 ratings of pro-us essay
-                 !is.na(data$antius3) & !is.na(data$antius4) & !is.na(data$antius5)) # P provided all 3 ratings of anti-us essay
+data <- subset(data, !is.na(pro_minus_anti) & pass_ER1 == T)
 
-length(which(data$gender== 1)) #number of women
-length(which(data$gender== 2)) #number of men
-length(which(data$gender== 3)) #other responses
-sd(data$age, na.rm=TRUE)
-mean(data$age, na.rm=TRUE)
-length(which(data$race == 1)) #num White
-length(which(data$race == 1))/nrow(data)*100 #percent White, using the length of the source variable (assigned to all sessions) for total N
-length(which(data$race == 2)) #num Black or African American 
-length(which(data$race == 2))/nrow(data)*100 #percent Black
-length(which(data$race == 3)) #num American Indian or Alaska Native
-length(which(data$race == 3))/nrow(data)*100 #percent American Indian/Alaska Native
-length(which(data$race == 4)) #num Asian
-length(which(data$race == 4))/nrow(data)*100 #percent Asian
-length(which(data$race == 5)) #num Native Hawaiian or Pacific Islander
-length(which(data$race == 5))/nrow(data)*100 #percent Native Hawaiian or Pacific Islander
-length(which(data$race == 6)) #num Other
-length(which(data$race == 6))/nrow(data)*100 #percent other
+# get counts per gender (1 = woman, 2 = men, 3 = something else)
+with(data, table(gender), useNA = 'always')
+# get counts per race (1 = white, 2 = black / AfrAm, 3 = Native American, 4 = Asian, 
+#                      5 = Native Hawaiian or Pacific Islander, 6 = something else)
+with(data, table(race), useNA = 'always')
+# create percentaes
+with(data, table(race), useNA = 'always') %>% 
+  prop.table() * 100
 
 # Focused analysis of sites with "expert" or "a lot of knowledge about TMT" leads
 # Still using exclusion set 1
@@ -400,7 +376,8 @@ length(which(data$race == 6))/nrow(data)*100 #percent other
 #Pace University (expert)
 #Virginia Commonwealth University, Richmond, VA
 # Note: not all of these exist in the subsetted dataset
-data <- subset(data, data$source=="uwmadison_inhouse" | data$source=="cnj" | data$source=="kansas_expert" | data$source=="kansas_inhouse" | data$source=="pace_expert" | data$source=="vcu")
+data <- subset(data, source %in% c("uwmadison_inhouse", "cnj", "kansas_expert",
+                                   "kansas_inhouse", "pace_expert", "vcu"))
 # Applying the same levels fix as earlier, only because it caused problems in 
 # cohen.d() below. May not be necessary anymore.
 data$ms_condition <- factor(data$ms_condition, levels = c("ms", "tv"))
@@ -415,12 +392,10 @@ effsize::cohen.d(data$pro_minus_anti~data$ms_condition,pooled=TRUE,paired=FALSE,
 # Read data
 data <- merged
 # Applying exclusion criteria 0 and 1
-data <- subset(data, !is.na(data$pro_minus_anti))
-# 1. Wrote something for both writing prompts
-# 2. Completed all six items evaluating the essay authors)
-data <- subset(data, ((data$msincomplete == 0 & !is.na(data$msincomplete)) | data$expert == 0 | data$source == "uwmadison_expert") & # P completed both prompts, or site is a non-expert site where this exclusion did not apply, or source is uwmadison_expert: that sample left the msincomplete variable NA instead of coding "0" or "1". However, they took detailed notes and reported that no responses were abnormal. In addition, at the other expert sites that coded this information, none reported a case where a participant left both responses blank. 
-                 !is.na(data$prous3) & !is.na(data$prous4) & !is.na(data$prous5) & # P provided all 3 ratings of pro-us essay
-                 !is.na(data$antius3) & !is.na(data$antius4) & !is.na(data$antius5)) # P provided all 3 ratings of anti-us essay
+data <- subset(data, !is.na(data$pro_minus_anti) & pass_ER1 == T)
+
+# TODO: Pace inhouse used a different (not 1-7 or 1-9) scale.
+#     Need to restrict these analyses to same scales.
 
 # create a data frame of only pro-us ratings for the alpha() function
 pro_df <- data.frame(data$prous3,data$prous4,data$prous5)
@@ -432,7 +407,7 @@ anti_df <- data.frame(data$antius3,data$antius4,data$antius5)
 psych::alpha(anti_df)
 omega(anti_df)
 
-###### Adding a clearer site label for tables
+###### Adding a clearer site label for tables ----
 
 # Read per-site results according to the three exclusions criteria levels
 combinedresults0 <- read.csv("./data/public/combinedresults0.csv")
@@ -440,97 +415,9 @@ combinedresults1 <- read.csv("./data/public/combinedresults1.csv")
 combinedresults2 <- read.csv("./data/public/combinedresults2.csv")
 combinedresults3 <- read.csv("./data/public/combinedresults3.csv")
 
-# Tidy up the sitesource variable into a descriptive label
-combinedresults0$sitesource_label[combinedresults0$sitesource == "ufl"] <- "University of Florida"
-combinedresults0$sitesource_label[combinedresults0$sitesource == "occid"] <- "Occidental College"
-combinedresults0$sitesource_label[combinedresults0$sitesource == "ashland"] <- "Ashland University"
-combinedresults0$sitesource_label[combinedresults0$sitesource == "ithaca"] <- "Ithaca College"
-combinedresults0$sitesource_label[combinedresults0$sitesource == "riverside"] <- "University of California, Riverside"
-combinedresults0$sitesource_label[combinedresults0$sitesource == "wesleyan_inhouse"] <- "Wesleyan University"
-combinedresults0$sitesource_label[combinedresults0$sitesource == "uwmadison_expert"] <- "University of Wisconsin"
-combinedresults0$sitesource_label[combinedresults0$sitesource == "uwmadison_inhouse"] <- "University of Wisconsin"
-combinedresults0$sitesource_label[combinedresults0$sitesource == "vcu"] <- "Virginia Commonwealth University"
-combinedresults0$sitesource_label[combinedresults0$sitesource == "sou_inhouse"] <- "Southern Oregon University"
-combinedresults0$sitesource_label[combinedresults0$sitesource == "plu"] <- "Pacific Lutheran University"
-combinedresults0$sitesource_label[combinedresults0$sitesource == "byui"] <- "Brigham Young University – Idaho"
-combinedresults0$sitesource_label[combinedresults0$sitesource == "azusa"] <- "Azusa Pacific University"
-combinedresults0$sitesource_label[combinedresults0$sitesource == "cnj"] <- "The College of New Jersey"
-combinedresults0$sitesource_label[combinedresults0$sitesource == "wpi"] <- "Worcester Polytechnic Institute"
-combinedresults0$sitesource_label[combinedresults0$sitesource == "illinois"] <- "University of Illinois"
-combinedresults0$sitesource_label[combinedresults0$sitesource == "kansas_expert"] <- "University of Kansas"
-combinedresults0$sitesource_label[combinedresults0$sitesource == "kansas_inhouse"] <- "University of Kansas"
-combinedresults0$sitesource_label[combinedresults0$sitesource == "upenn"] <- "University of Pennsylvania"
-combinedresults0$sitesource_label[combinedresults0$sitesource == "pace_inhouse"] <- "Pace University"
-combinedresults0$sitesource_label[combinedresults0$sitesource == "pace_expert"] <- "Pace University"
-
-combinedresults1$sitesource_label[combinedresults1$sitesource == "ufl"] <- "University of Florida"
-combinedresults1$sitesource_label[combinedresults1$sitesource == "occid"] <- "Occidental College"
-combinedresults1$sitesource_label[combinedresults1$sitesource == "ashland"] <- "Ashland University"
-combinedresults1$sitesource_label[combinedresults1$sitesource == "ithaca"] <- "Ithaca College"
-combinedresults1$sitesource_label[combinedresults1$sitesource == "riverside"] <- "University of California, Riverside"
-combinedresults1$sitesource_label[combinedresults1$sitesource == "wesleyan_inhouse"] <- "Wesleyan University"
-combinedresults1$sitesource_label[combinedresults1$sitesource == "uwmadison_expert"] <- "University of Wisconsin"
-combinedresults1$sitesource_label[combinedresults1$sitesource == "uwmadison_inhouse"] <- "University of Wisconsin"
-combinedresults1$sitesource_label[combinedresults1$sitesource == "vcu"] <- "Virginia Commonwealth University"
-combinedresults1$sitesource_label[combinedresults1$sitesource == "sou_inhouse"] <- "Southern Oregon University"
-combinedresults1$sitesource_label[combinedresults1$sitesource == "plu"] <- "Pacific Lutheran University"
-combinedresults1$sitesource_label[combinedresults1$sitesource == "byui"] <- "Brigham Young University – Idaho"
-combinedresults1$sitesource_label[combinedresults1$sitesource == "azusa"] <- "Azusa Pacific University"
-combinedresults1$sitesource_label[combinedresults1$sitesource == "cnj"] <- "The College of New Jersey"
-combinedresults1$sitesource_label[combinedresults1$sitesource == "wpi"] <- "Worcester Polytechnic Institute"
-combinedresults1$sitesource_label[combinedresults1$sitesource == "illinois"] <- "University of Illinois"
-combinedresults1$sitesource_label[combinedresults1$sitesource == "kansas_expert"] <- "University of Kansas"
-combinedresults1$sitesource_label[combinedresults1$sitesource == "kansas_inhouse"] <- "University of Kansas"
-combinedresults1$sitesource_label[combinedresults1$sitesource == "upenn"] <- "University of Pennsylvania"
-combinedresults1$sitesource_label[combinedresults1$sitesource == "pace_inhouse"] <- "Pace University"
-combinedresults1$sitesource_label[combinedresults1$sitesource == "pace_expert"] <- "Pace University"
-
-combinedresults2$sitesource_label[combinedresults2$sitesource == "ufl"] <- "University of Florida"
-combinedresults2$sitesource_label[combinedresults2$sitesource == "occid"] <- "Occidental College"
-combinedresults2$sitesource_label[combinedresults2$sitesource == "ashland"] <- "Ashland University"
-combinedresults2$sitesource_label[combinedresults2$sitesource == "ithaca"] <- "Ithaca College"
-combinedresults2$sitesource_label[combinedresults2$sitesource == "riverside"] <- "University of California, Riverside"
-combinedresults2$sitesource_label[combinedresults2$sitesource == "wesleyan_inhouse"] <- "Wesleyan University"
-combinedresults2$sitesource_label[combinedresults2$sitesource == "uwmadison_expert"] <- "University of Wisconsin"
-combinedresults2$sitesource_label[combinedresults2$sitesource == "uwmadison_inhouse"] <- "University of Wisconsin"
-combinedresults2$sitesource_label[combinedresults2$sitesource == "vcu"] <- "Virginia Commonwealth University"
-combinedresults2$sitesource_label[combinedresults2$sitesource == "sou_inhouse"] <- "Southern Oregon University"
-combinedresults2$sitesource_label[combinedresults2$sitesource == "plu"] <- "Pacific Lutheran University"
-combinedresults2$sitesource_label[combinedresults2$sitesource == "byui"] <- "Brigham Young University – Idaho"
-combinedresults2$sitesource_label[combinedresults2$sitesource == "azusa"] <- "Azusa Pacific University"
-combinedresults2$sitesource_label[combinedresults2$sitesource == "cnj"] <- "The College of New Jersey"
-combinedresults2$sitesource_label[combinedresults2$sitesource == "wpi"] <- "Worcester Polytechnic Institute"
-combinedresults2$sitesource_label[combinedresults2$sitesource == "illinois"] <- "University of Illinois"
-combinedresults2$sitesource_label[combinedresults2$sitesource == "kansas_expert"] <- "University of Kansas"
-combinedresults2$sitesource_label[combinedresults2$sitesource == "kansas_inhouse"] <- "University of Kansas"
-combinedresults2$sitesource_label[combinedresults2$sitesource == "upenn"] <- "University of Pennsylvania"
-combinedresults2$sitesource_label[combinedresults2$sitesource == "pace_inhouse"] <- "Pace University"
-combinedresults2$sitesource_label[combinedresults2$sitesource == "pace_expert"] <- "Pace University"
-
-combinedresults3$sitesource_label[combinedresults3$sitesource == "ufl"] <- "University of Florida"
-combinedresults3$sitesource_label[combinedresults3$sitesource == "occid"] <- "Occidental College"
-combinedresults3$sitesource_label[combinedresults3$sitesource == "ashland"] <- "Ashland University"
-combinedresults3$sitesource_label[combinedresults3$sitesource == "ithaca"] <- "Ithaca College"
-combinedresults3$sitesource_label[combinedresults3$sitesource == "riverside"] <- "University of California, Riverside"
-combinedresults3$sitesource_label[combinedresults3$sitesource == "wesleyan_inhouse"] <- "Wesleyan University"
-combinedresults3$sitesource_label[combinedresults3$sitesource == "uwmadison_expert"] <- "University of Wisconsin"
-combinedresults3$sitesource_label[combinedresults3$sitesource == "uwmadison_inhouse"] <- "University of Wisconsin"
-combinedresults3$sitesource_label[combinedresults3$sitesource == "vcu"] <- "Virginia Commonwealth University"
-combinedresults3$sitesource_label[combinedresults3$sitesource == "sou_inhouse"] <- "Southern Oregon University"
-combinedresults3$sitesource_label[combinedresults3$sitesource == "plu"] <- "Pacific Lutheran University"
-combinedresults3$sitesource_label[combinedresults3$sitesource == "byui"] <- "Brigham Young University – Idaho"
-combinedresults3$sitesource_label[combinedresults3$sitesource == "azusa"] <- "Azusa Pacific University"
-combinedresults3$sitesource_label[combinedresults3$sitesource == "cnj"] <- "The College of New Jersey"
-combinedresults3$sitesource_label[combinedresults3$sitesource == "wpi"] <- "Worcester Polytechnic Institute"
-combinedresults3$sitesource_label[combinedresults3$sitesource == "illinois"] <- "University of Illinois"
-combinedresults3$sitesource_label[combinedresults3$sitesource == "kansas_expert"] <- "University of Kansas"
-combinedresults3$sitesource_label[combinedresults3$sitesource == "kansas_inhouse"] <- "University of Kansas"
-combinedresults3$sitesource_label[combinedresults3$sitesource == "upenn"] <- "University of Pennsylvania"
-combinedresults3$sitesource_label[combinedresults3$sitesource == "pace_inhouse"] <- "Pace University"
-combinedresults3$sitesource_label[combinedresults3$sitesource == "pace_expert"] <- "Pace University"
-
 # overwrite .csv files
 write.csv(combinedresults0, "./data/public/combinedresults0.csv", row.names = FALSE)
 write.csv(combinedresults1, "./data/public/combinedresults1.csv", row.names = FALSE)
 write.csv(combinedresults2, "./data/public/combinedresults2.csv", row.names = FALSE)
 write.csv(combinedresults3, "./data/public/combinedresults3.csv", row.names = FALSE)
+

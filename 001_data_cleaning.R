@@ -509,6 +509,7 @@ pace_inhouse <- mutate(pace_inhouse,
                        # make msincomplete based on whether they did both prompts
                        msincomplete = test_msincomplete(MS1, MS2, control1, control2)
 )
+# TODO: zap row with NA participantnum and strange values of DV
 # For users having trouble with .csv: can uncomment below line and read processed .rds
 # pace_inhouse <- readRDS("./data/raw_site_data/pace_inhouse/TMT.rds")
 
