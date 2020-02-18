@@ -48,24 +48,10 @@ merged <- readRDS("./data/processed_data/merged_subset.rds")
 # Note that you will need to adjust this script where indicated if 
 # you're using the full dataset.
 
-# create statistics after filtering for cases that match index
-# location <- merged$location[data$source==sitesource][1] #saves first row from location variable
-# n_tv    <- length(data$pro_minus_anti[index & data$ms_condition == 'tv']) #n for tv condition
-# n_ms    <- length(data$pro_minus_anti[index & data$ms_condition == 'ms']) #n for ms condition
-# sd_tv   <-     sd(data$pro_minus_anti[index & data$ms_condition == 'tv']) #sd for tv participants at that site
-# sd_ms   <-     sd(data$pro_minus_anti[index & data$ms_condition == 'ms']) #sd for ms participants at that site
-# mean_tv <-   mean(data$pro_minus_anti[index & data$ms_condition == 'tv']) #mean for tv participants at that site
-# mean_ms <-   mean(data$pro_minus_anti[index & data$ms_condition == 'ms']) #mean for ms participants at that site
-# expert <- mean(merged$expert[data$source==sitesource]) #shortcut to indicate whether site is expert or not (0 = inhouse 1 = expert)
-# d_diff <- (mean_ms - mean_tv)/ sqrt((sd_ms^2+sd_tv^2)/2) #computes Cohen's D effect size
-# nhst <- t.test(data$pro_minus_anti~data$ms_condition, subset = index)
-# t <- nhst$statistic
-# df <- nhst$parameter
-# p.value <- nhst$p.value
-
 # Use dplyr::summarize to calculate summary stats per cell per site per exclusion rules
 analyse <- function(data) {
-  dat <- group_by(data, source, ms_condition) %>% 
+  # Make means, sds, and ns
+  sumstats <- group_by(data, source, ms_condition) %>% 
     summarize(n = n(),
               mean = mean(pro_minus_anti),
               sd = sd(pro_minus_anti),
@@ -76,13 +62,17 @@ analyse <- function(data) {
     pivot_wider(names_from = name,
                 values_from = value) %>% 
     # TODO: check about denominator for d given unequal cell sizes
-    mutate((mean_ms - mean_tv)/ sqrt((sd_ms^2+sd_tv^2)/2)) #computes Cohen's D effect size
-
-  #nhst <- t.test(data$pro_minus_anti~data$ms_condition)
-  # df <- nhst$parameter
-  # p.value <- nhst$p.value
-  # result <- data.frame(location, sitesource, expert, n_tv, mean_tv, sd_tv, n_ms, mean_ms, sd_ms, d_diff, t, df, p.value) #results to be reported
-  # return(result)
+    mutate(d_diff = (mean_ms - mean_tv)/ sqrt((sd_ms^2+sd_tv^2)/2)) #computes Cohen's D effect size
+  
+  # Make t, df, and pval
+  # NOTE: p-value is two-tailed
+  nhst <- group_by(data, source) %>% 
+    summarize(t  = t.test(pro_minus_anti ~ ms_condition)$statistic,
+              df = t.test(pro_minus_anti ~ ms_condition)$parameter,
+              p.value = t.test(pro_minus_anti ~ ms_condition)$p.value)
+  
+  left_join(sumstats, nhst, by = "source") %>% 
+    return()
 }
 
 combinedresults0 <- filter(merged, !is.na(pro_minus_anti)) %>% 
@@ -105,58 +95,7 @@ combinedresults3 <- filter(merged, !is.na(pro_minus_anti),
 # will give errors due to missing sources. You can safely ignore them,
 # it's simply that some lines are not running.
 
-###ANALYSIS 0: no exclusions###
-#above function is run for each site identifier
-riverside_results         <- analysis(merged, "e0", "riverside")
-azusa_results             <- analysis(merged, "e0", "azusa")
-cnj_results               <- analysis(merged, "e0", "cnj")
-illinois_results          <- analysis(merged, "e0", "illinois")
-ithaca_results            <- analysis(merged, "e0", "ithaca")
-kansas_inhouse_results    <- analysis(merged, "e0", "kansas_inhouse")
-occid_results             <- analysis(merged, "e0", "occid")
-pace_expert_results       <- analysis(merged, "e0", "pace_expert")
-sou_inhouse_results       <- analysis(merged, "e0", "sou_inhouse")
-ufl_results               <- analysis(merged, "e0", "ufl")
-upenn_results             <- analysis(merged, "e0", "upenn")
-uwmadison_expert_results  <- analysis(merged, "e0", "uwmadison_expert")
-uwmadison_inhouse_results <- analysis(merged, "e0", "uwmadison_inhouse")
-wesleyan_inhouse_results  <- analysis(merged, "e0", "wesleyan_inhouse")
-wpi_results               <- analysis(merged, "e0", "wpi")
-kansas_expert_results     <- analysis(merged, "e0", "kansas_expert")
-plu_results               <- analysis(merged, "e0", "plu")
-ashland_results           <- analysis(merged, "e0", "ashland")
-vcu_results               <- analysis(merged, "e0", "vcu")
-byui_results              <- analysis(merged, "e0", "byui")
-pace_inhouse_results      <- analysis(merged, "e0", "pace_inhouse")
-
-### Note: If you're using the full dataset (merged_full or merged_deidentified_full)
-# uncomment the commented samples below.
-
-#merges results from above into a single data frame
-combinedresults0 <- rbind(
-#  ashland_results,
-#  azusa_results,
-  cnj_results,
-  illinois_results,
-  ithaca_results,
-#  kansas_expert_results,
-  kansas_inhouse_results,
-  occid_results,
-  pace_expert_results,
-  plu_results,
-  riverside_results,
-#  sou_inhouse_results,
-  ufl_results,
-  upenn_results,
-  uwmadison_expert_results,
-  uwmadison_inhouse_results,
-  vcu_results,
-  wesleyan_inhouse_results,
-  wpi_results,
-  byui_results,
-  pace_inhouse_results
-)
-
+###ANALYSIS 0: no exclusions ----
 #Computing SE and sampling variance with metafor package.
 # yi (the standardized mean difference effect size) and vi (the sampling variance) to be used in meta-analysis.
 # n1i numeric number of participants in the intervention group
@@ -173,64 +112,9 @@ combinedresults0 <- escalc(n1i = n_ms, n2i = n_tv, m1i = mean_ms, m2i = mean_tv,
 #saves .csv file
 write.csv(combinedresults0, "./data/public/combinedresults0.csv", row.names = FALSE)
 
-###ANALYSIS 1: Exclusion set 1###
+###ANALYSIS 1: Exclusion set 1 ----
 #1. Wrote something for both writing prompts
 #2. Completed all six items evaluating the essay authors)
-
-### Note: If you're using the subsetted dataset, the below section
-# will give errors due to missing sources. You can safely ignore them,
-# it's simply that some lines are not running.
-
-#above function is run for each site identifier
-riverside_results         <- analysis(merged, "e1", "riverside")
-azusa_results             <- analysis(merged, "e1", "azusa")
-cnj_results               <- analysis(merged, "e1", "cnj")
-illinois_results          <- analysis(merged, "e1", "illinois")
-ithaca_results            <- analysis(merged, "e1", "ithaca")
-kansas_inhouse_results    <- analysis(merged, "e1", "kansas_inhouse")
-occid_results             <- analysis(merged, "e1", "occid")
-pace_expert_results       <- analysis(merged, "e1", "pace_expert")
-sou_inhouse_results       <- analysis(merged, "e1", "sou_inhouse")
-ufl_results               <- analysis(merged, "e1", "ufl")
-upenn_results             <- analysis(merged, "e1", "upenn")
-uwmadison_expert_results  <- analysis(merged, "e1", "uwmadison_expert")
-uwmadison_inhouse_results <- analysis(merged, "e1", "uwmadison_inhouse")
-wesleyan_inhouse_results  <- analysis(merged, "e1", "wesleyan_inhouse")
-wpi_results               <- analysis(merged, "e1", "wpi")
-kansas_expert_results     <- analysis(merged, "e1", "kansas_expert")
-plu_results               <- analysis(merged, "e1", "plu")
-ashland_results           <- analysis(merged, "e1", "ashland")
-vcu_results               <- analysis(merged, "e1", "vcu")
-byui_results              <- analysis(merged, "e1", "byui")
-pace_inhouse_results      <- analysis(merged, "e1", "pace_inhouse")
-
-### Note: If you're using the full dataset (merged_full or merged_deidentified_full)
-# uncomment the commented samples below.
-
-#merges results from above into a single data frame
-combinedresults1 <- rbind(
-#  ashland_results,
-#  azusa_results,
-  cnj_results,
-  illinois_results,
-  ithaca_results,
-#  kansas_expert_results,
-  kansas_inhouse_results,
-  occid_results,
-  pace_expert_results,
-  plu_results,
-  riverside_results,
-#  sou_inhouse_results,
-  ufl_results,
-  upenn_results,
-  uwmadison_expert_results,
-  uwmadison_inhouse_results,
-  vcu_results,
-  wesleyan_inhouse_results,
-  wpi_results,
-  byui_results,
-  pace_inhouse_results
-)
 
 # This uses the metafor package to compute yi (the standardized mean difference effect size) and vi (the sampling variance) to be used in meta-analysis.
 # Appends this to the data object.
@@ -241,71 +125,11 @@ combinedresults1 <- escalc(n1i = n_ms, n2i = n_tv, m1i = mean_ms, m2i = mean_tv,
 #saves .csv file
 write.csv(combinedresults1, "./data/public/combinedresults1.csv", row.names = FALSE)
 
-###ANALYSIS 2: Exclusion set 2###
+###ANALYSIS 2: Exclusion set 2 ----
 #1. Wrote something for both writing prompts
 #2. Completed all six items evaluating the essay authors
 #3. Identify as White (race == 1)
 #4. Born in USA (countryofbirth == 1)
-
-#in-house sites don't necessarily have the data necessary to implement these exclusions
-#Below, analysis1 (basic exclusions) is run for in-house, while analysis 2 is run for expert versions
-
-### Note: If you're using the subsetted dataset, the below section
-# will give errors due to missing sources. You can safely ignore them,
-# it's simply that some lines are not running.
-
-#expert sites
-riverside_results         <- analysis(merged, "e2", "riverside")
-cnj_results               <- analysis(merged, "e2", "cnj")
-occid_results             <- analysis(merged, "e2", "occid")
-pace_expert_results       <- analysis(merged, "e2", "pace_expert")
-uwmadison_expert_results  <- analysis(merged, "e2", "uwmadison_expert")
-kansas_expert_results     <- analysis(merged, "e2", "kansas_expert")
-ashland_results           <- analysis(merged, "e2", "ashland")
-vcu_results               <- analysis(merged, "e2", "vcu")
-byui_results              <- analysis(merged, "e2", "byui")
-
-#inhouse sites
-azusa_results             <- analysis(merged, "e1", "azusa")
-illinois_results          <- analysis(merged, "e1", "illinois")
-ithaca_results            <- analysis(merged, "e1", "ithaca")
-kansas_inhouse_results    <- analysis(merged, "e1", "kansas_inhouse")
-sou_inhouse_results       <- analysis(merged, "e1", "sou_inhouse")
-ufl_results               <- analysis(merged, "e1", "ufl")
-upenn_results             <- analysis(merged, "e1", "upenn")
-uwmadison_inhouse_results <- analysis(merged, "e1", "uwmadison_inhouse")
-wesleyan_inhouse_results  <- analysis(merged, "e1", "wesleyan_inhouse")
-wpi_results               <- analysis(merged, "e1", "wpi")
-plu_results               <- analysis(merged, "e1", "plu")
-pace_inhouse_results      <- analysis(merged, "e1", "pace_inhouse")
-
-### Note: If you're using the full dataset (merged_full or merged_deidentified_full)
-# uncomment the commented samples below.
-
-#merges results from above into a single data frame
-combinedresults2 <- rbind(
-#  ashland_results,
-#  azusa_results,
-  cnj_results,
-  illinois_results,
-  ithaca_results,
-#  kansas_expert_results,
-  kansas_inhouse_results,
-  occid_results,
-  pace_expert_results,
-  plu_results,
-  riverside_results,
-#  sou_inhouse_results,
-  ufl_results,
-  upenn_results,
-  uwmadison_expert_results,
-  uwmadison_inhouse_results,
-  vcu_results,
-  wesleyan_inhouse_results,
-  wpi_results,
-  byui_results,
-  pace_inhouse_results
-)
 
 # This uses the metafor package to compute yi (the standardized mean difference effect size) and vi (the sampling variance) to be used in meta-analysis.
 # Appends this to the data object.
@@ -316,72 +140,12 @@ combinedresults2 <- escalc(n1i = n_ms, n2i = n_tv, m1i = mean_ms, m2i = mean_tv,
 # saves .csv file
 write.csv(combinedresults2, "./data/public/combinedresults2.csv", row.names = FALSE)
 
-###ANALYSIS 3: Exclusion set 3###
+###ANALYSIS 3: Exclusion set 3----
 # 1. Wrote something for both writing prompts
 # 2. Completed all six items evaluating the essay authors
 # 3. Identify as White
 # 4. Born in USA
 # 5. Score a 7 or higher on the American Identity item
-
-# in-house sites don't necessarily have the data necessary to implement these exclusions
-# Below, analysis1 (basic exclusions) is run for in-house, while analysis 3 is run for expert versions
-
-### Note: If you're using the subsetted dataset, the below section
-# will give errors due to missing sources. You can safely ignore them,
-# it's simply that some lines are not running.
-
-# expert sites
-riverside_results         <- analysis(merged, "e3", "riverside")
-cnj_results               <- analysis(merged, "e3", "cnj")
-occid_results             <- analysis(merged, "e3", "occid")
-pace_expert_results       <- analysis(merged, "e3", "pace_expert")
-uwmadison_expert_results  <- analysis(merged, "e3", "uwmadison_expert")
-kansas_expert_results     <- analysis(merged, "e3", "kansas_expert")
-ashland_results           <- analysis(merged, "e3", "ashland")
-vcu_results               <- analysis(merged, "e3", "vcu")
-byui_results              <- analysis(merged, "e3", "byui")
-
-#inhouse sites
-azusa_results             <- analysis(merged, "e1", "azusa")
-illinois_results          <- analysis(merged, "e1", "illinois")
-ithaca_results            <- analysis(merged, "e1", "ithaca")
-kansas_inhouse_results    <- analysis(merged, "e1", "kansas_inhouse")
-sou_inhouse_results       <- analysis(merged, "e1", "sou_inhouse")
-ufl_results               <- analysis(merged, "e1", "ufl")
-upenn_results             <- analysis(merged, "e1", "upenn")
-uwmadison_inhouse_results <- analysis(merged, "e1", "uwmadison_inhouse")
-wesleyan_inhouse_results  <- analysis(merged, "e1", "wesleyan_inhouse")
-wpi_results               <- analysis(merged, "e1", "wpi")
-plu_results               <- analysis(merged, "e1", "plu")
-pace_inhouse_results      <- analysis(merged, "e1", "pace_inhouse")
-
-### Note: If you're using the full dataset (merged_full or merged_deidentified_full)
-# uncomment the commented samples below.
-
-# merges results from above into a single data frame
-combinedresults3 <- rbind(
-#  ashland_results,
-#  azusa_results,
-  cnj_results,
-  illinois_results,
-  ithaca_results,
-#  kansas_expert_results,
-  kansas_inhouse_results,
-  occid_results,
-  pace_expert_results,
-  plu_results,
-  riverside_results,
-#  sou_inhouse_results,
-  ufl_results,
-  upenn_results,
-  uwmadison_expert_results,
-  uwmadison_inhouse_results,
-  vcu_results,
-  wesleyan_inhouse_results,
-  wpi_results,
-  byui_results,
-  pace_inhouse_results
-)
 
 # This uses the metafor package to compute yi (the standardized mean difference effect size) and vi (the sampling variance) to be used in meta-analysis.
 # Appends this to the data object.

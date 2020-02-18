@@ -573,7 +573,6 @@ merged <- mutate_at(merged,
 merged <- subset(merged, !(is.na(merged$prous3)  & is.na(merged$prous4)  & is.na(merged$prous5)  & 
                              is.na(merged$antius3) & is.na(merged$antius4) & is.na(merged$antius5) & 
                              is.na(merged$ms_condition)))
-
 # If you skip these lines, you'll later find we have an issue with the # of levels
 # in data$ms_condition. This is a common problem where a "phantom" level with
 # zero measurements will appear in a factor. I'll demonstrate the problem and 
@@ -612,6 +611,9 @@ merged <- mutate(merged,
 merged$proauth_avg <- rowMeans(merged[, c('prous3','prous4','prous5')], na.rm = TRUE)
 merged$antiauth_avg <- rowMeans(merged[, c('antius3','antius4','antius5')], na.rm = TRUE)
 merged$pro_minus_anti <- merged$proauth_avg - merged$antiauth_avg # primary outcome variable, higher scores = greater preference for pro-US author
+# if proauth_avg is NA or antiauth_avg is NA, pro_minus_anti becomes NaN.
+#    converting that to NA instead
+merged$pro_minus_anti[is.nan(merged$pro_minus_anti)] <- NA
 
 # We're going to apply some exclusions in later steps due to re-examining the
 #    pre-reg. I'm saving the full dataset here for reference.
@@ -671,7 +673,7 @@ identifying_vars <- c("MS1", "MS2", "MS3", "MS4",
                       "raceomb")
 
 # Create deidentified dataset by dropping the following variables:
-merged_deidentified_full <- select(merged, -all_of(identifying_vars))
+merged_deidentified_full <- select(merged, -(identifying_vars))
 # even after this there are 427 columns
 
 # for good measure, let's drop all unique questions asked by sites 
@@ -749,7 +751,7 @@ write.csv(merged_subset, "./data/processed_data/merged_subset.csv",row.names=FAL
 saveRDS(merged_subset, "./data/processed_data/merged_subset.rds")
 
 # Create deidentified dataset by dropping the following variables
-merged_deidentified_subset <- select(merged_subset, -all_of(identifying_vars))
+merged_deidentified_subset <- select(merged_subset, -(identifying_vars))
 
 # for good measure, let's drop all unique questions asked by sites (hard to police exactly what was asked at each site)
 merged_deidentified_subset <- select(merged_deidentified_subset, 
