@@ -76,27 +76,27 @@ analyse <- function(data) {
   
   # make pretty names per site
   dat <- mutate(dat, 
-                case_when(source == "ufl" ~ "University of Florida",
-                          source == "occid" ~ "Occidental College",
-                          source == "ashland" ~ "Ashland University",
-                          source == "ithaca" ~ "Ithaca College",
-                          source == "riverside" ~ "University of California, Riverside",
-                          source == "wesleyan_inhouse" ~ "Wesleyan University",
-                          source == "uwmadison_expert" ~ "University of Wisconsin",
-                          source == "uwmadison_inhouse" ~ "University of Wisconsin",
-                          source == "vcu" ~ "Virginia Commonwealth University",
-                          source == "sou_inhouse" ~ "Southern Oregon University",
-                          source == "plu" ~ "Pacific Lutheran University",
-                          source == "byui" ~ "Brigham Young University – Idaho",
-                          source == "azusa" ~ "Azusa Pacific University",
-                          source == "cnj" ~ "The College of New Jersey",
-                          source == "wpi" ~ "Worcester Polytechnic Institute",
-                          source == "illinois" ~ "University of Illinois",
-                          source == "kansas_expert" ~ "University of Kansas",
-                          source == "kansas_inhouse" ~ "University of Kansas",
-                          source == "upenn" ~ "University of Pennsylvania",
-                          source == "pace_inhouse" ~ "Pace University",
-                          source == "pace_expert" ~ "Pace University")
+                sitesource_label = case_when(source == "ufl" ~ "University of Florida",
+                                             source == "occid" ~ "Occidental College",
+                                             source == "ashland" ~ "Ashland University",
+                                             source == "ithaca" ~ "Ithaca College",
+                                             source == "riverside" ~ "University of California, Riverside",
+                                             source == "wesleyan_inhouse" ~ "Wesleyan University",
+                                             source == "uwmadison_expert" ~ "University of Wisconsin",
+                                             source == "uwmadison_inhouse" ~ "University of Wisconsin",
+                                             source == "vcu" ~ "Virginia Commonwealth University",
+                                             source == "sou_inhouse" ~ "Southern Oregon University",
+                                             source == "plu" ~ "Pacific Lutheran University",
+                                             source == "byui" ~ "Brigham Young University - Idaho",
+                                             source == "azusa" ~ "Azusa Pacific University",
+                                             source == "cnj" ~ "The College of New Jersey",
+                                             source == "wpi" ~ "Worcester Polytechnic Institute",
+                                             source == "illinois" ~ "University of Illinois",
+                                             source == "kansas_expert" ~ "University of Kansas",
+                                             source == "kansas_inhouse" ~ "University of Kansas",
+                                             source == "upenn" ~ "University of Pennsylvania",
+                                             source == "pace_inhouse" ~ "Pace University",
+                                             source == "pace_expert" ~ "Pace University")
   )
   
   # return analysed dataset
@@ -107,17 +107,19 @@ combinedresults0 <- filter(merged, !is.na(pro_minus_anti)) %>%
   analyse()
 
 combinedresults1 <- filter(merged, !is.na(pro_minus_anti),
-                           pass_ER1 == T) %>% 
+                           pass_ER1 == T | expert == 0) %>% 
   analyse()
 
 combinedresults2 <- filter(merged, !is.na(pro_minus_anti),
-                           pass_ER2 == T) %>% 
+                           pass_ER2 == T | expert == 0) %>% 
   analyse()
 
 combinedresults3 <- filter(merged, !is.na(pro_minus_anti),
-                           pass_ER3 == T) %>% 
+                           pass_ER3 == T | expert == 0) %>% 
   analyse()
 
+
+# why am I losing so many sites in combinedresults2?
 
 ### Note: If you're using the subsetted dataset, the below section
 # will give errors due to missing sources. You can safely ignore them,
@@ -210,9 +212,12 @@ summary(mixed1 <- meta(y=yi, v=vi, x=expert, data=combinedresults1))
 summary(mixed2 <- meta(y=yi, v=vi, x=expert, data=combinedresults2))
 summary(mixed3 <- meta(y=yi, v=vi, x=expert, data=combinedresults3))
 
-# Notes: Intercept1 is still the grand mean estimate, Slope1_1 represents the difference between versions
+# Notes: Intercept1 is still the grand mean estimate, 
+#    Slope1_1 represents the difference between versions
 
-# Notes: In the old 3-level metasem, The R? for the version predictor will be reported for both level 2 and level 3, although in this case version is a level 2 predictor so the level 3 R? will always be zero. 
+# Notes: In the old 3-level metasem, 
+#    The R^2 for the version predictor will be reported for both level 2 and level 3, 
+#    although in this case version is a level 2 predictor so the level 3 R? will always be zero. 
 
 # Now, we're going to compare the random effects model to a fixed effects model separately for 
 # Author Advised vs In House sites. If this improves model fit for one but not the other, that suggests that model shows greater variability in effect sizes. There are likely better ways to do this.
@@ -232,7 +237,7 @@ combinedresults3_aa <- filter(combinedresults3, expert == 1)
 summary(fixed0_ih <- meta(y=yi, v=vi, data=combinedresults0_ih, RE.constraints=0))
 summary(fixed1_ih <- meta(y=yi, v=vi, data=combinedresults1_ih, RE.constraints=0))
 summary(fixed2_ih <- meta(y=yi, v=vi, data=combinedresults2_ih, RE.constraints=0))
-#summary(fixed3_ih <- meta(y=yi, v=vi, data=combinedresults3_ih, RE.constraints=0)) # error, no data in cr3_ih
+summary(fixed3_ih <- meta(y=yi, v=vi, data=combinedresults3_ih, RE.constraints=0)) 
 
 summary(fixed0_aa <- meta(y=yi, v=vi, data=combinedresults0_aa, RE.constraints=0))
 summary(fixed1_aa <- meta(y=yi, v=vi, data=combinedresults1_aa, RE.constraints=0))
@@ -243,18 +248,23 @@ summary(fixed3_aa <- meta(y=yi, v=vi, data=combinedresults3_aa, RE.constraints=0
 summary(random0_ih <- meta(y=yi, v=vi, data=combinedresults0_ih))
 summary(random1_ih <- meta(y=yi, v=vi, data=combinedresults1_ih))
 summary(random2_ih <- meta(y=yi, v=vi, data=combinedresults2_ih))
-#summary(random3_ih <- meta(y=yi, v=vi, data=combinedresults3_ih)) # error, no data
+summary(random3_ih <- meta(y=yi, v=vi, data=combinedresults3_ih)) # error, no data
 
 summary(random0_aa <- meta(y=yi, v=vi, data=combinedresults0_aa))
 summary(random1_aa <- meta(y=yi, v=vi, data=combinedresults1_aa))
-summary(random2_aa <- meta(y=yi, v=vi, data=combinedresults2_aa))
-summary(random3_aa <- meta(y=yi, v=vi, data=combinedresults3_aa))
+summary(random2_aa <- meta(y=yi, v=vi, data=combinedresults2_aa)) 
+# OpenMx status1 == 5
+# "5 means that the Hessian at the solution is not convex. 
+#    There is likely a better solution, but the optimizer is stuck
+#    in a region of confusing geometry (like a saddle point)."
+summary(random2_aa <- meta(y=yi, v=vi, data=combinedresults2_aa,
+                           RE.lbound = 1e-50))
+# I think the issue is that Tau2 is estimated as very small.
+#    Doesn't seem to affect the intercept when I play w/ RE.start and RE.lbound
+summary(random3_aa <- meta(y=yi, v=vi, data=combinedresults3_aa)) 
 
 # compare if there is a significant difference in model fit, chi square difference test
 anova(random0_ih, fixed0_ih)
-anova(random1_ih, fixed1_ih)
-anova(random2_ih, fixed2_ih)
-#anova(random3_ih, fixed3_ih)
 
 anova(random0_aa, fixed0_aa)
 anova(random1_aa, fixed1_aa)
@@ -355,7 +365,7 @@ merged$race <- as.numeric(as.character(merged$race))
 # Read data
 data <- merged
 # Applying exclusion criteria 0 and 1
-data <- subset(data, !is.na(pro_minus_anti) & pass_ER1 == T)
+data <- subset(data, !is.na(pro_minus_anti) & (pass_ER1 == T | expert == 0))
 
 # get counts per gender (1 = woman, 2 = men, 3 = something else)
 with(data, table(gender), useNA = 'always')
@@ -392,10 +402,7 @@ effsize::cohen.d(data$pro_minus_anti~data$ms_condition,pooled=TRUE,paired=FALSE,
 # Read data
 data <- merged
 # Applying exclusion criteria 0 and 1
-data <- subset(data, !is.na(data$pro_minus_anti) & pass_ER1 == T)
-
-# TODO: Pace inhouse used a different (not 1-7 or 1-9) scale.
-#     Need to restrict these analyses to same scales.
+data <- subset(data, !is.na(data$pro_minus_anti) & (pass_ER1 == T | expert == 0))
 
 # create a data frame of only pro-us ratings for the alpha() function
 pro_df <- data.frame(data$prous3,data$prous4,data$prous5)
@@ -406,18 +413,3 @@ omega(pro_df) # Omega may be more appropriate
 anti_df <- data.frame(data$antius3,data$antius4,data$antius5)
 psych::alpha(anti_df)
 omega(anti_df)
-
-###### Adding a clearer site label for tables ----
-
-# Read per-site results according to the three exclusions criteria levels
-combinedresults0 <- read.csv("./data/public/combinedresults0.csv")
-combinedresults1 <- read.csv("./data/public/combinedresults1.csv")
-combinedresults2 <- read.csv("./data/public/combinedresults2.csv")
-combinedresults3 <- read.csv("./data/public/combinedresults3.csv")
-
-# overwrite .csv files
-write.csv(combinedresults0, "./data/public/combinedresults0.csv", row.names = FALSE)
-write.csv(combinedresults1, "./data/public/combinedresults1.csv", row.names = FALSE)
-write.csv(combinedresults2, "./data/public/combinedresults2.csv", row.names = FALSE)
-write.csv(combinedresults3, "./data/public/combinedresults3.csv", row.names = FALSE)
-
