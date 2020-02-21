@@ -224,9 +224,6 @@ summary(mixed3 <- meta(y=yi, v=vi, x=expert, data=combinedresults3))
 
 # split Author Advised from In House results
 combinedresults0_ih <- filter(combinedresults0, expert == 0)
-combinedresults1_ih <- filter(combinedresults1, expert == 0)
-combinedresults2_ih <- filter(combinedresults2, expert == 0)
-combinedresults3_ih <- filter(combinedresults3, expert == 0)
 
 combinedresults0_aa <- filter(combinedresults0, expert == 1)
 combinedresults1_aa <- filter(combinedresults1, expert == 1)
@@ -235,9 +232,6 @@ combinedresults3_aa <- filter(combinedresults3, expert == 1)
 
 # constrain the variance across sites to zero (perform fixed effects model)
 summary(fixed0_ih <- meta(y=yi, v=vi, data=combinedresults0_ih, RE.constraints=0))
-summary(fixed1_ih <- meta(y=yi, v=vi, data=combinedresults1_ih, RE.constraints=0))
-summary(fixed2_ih <- meta(y=yi, v=vi, data=combinedresults2_ih, RE.constraints=0))
-summary(fixed3_ih <- meta(y=yi, v=vi, data=combinedresults3_ih, RE.constraints=0)) 
 
 summary(fixed0_aa <- meta(y=yi, v=vi, data=combinedresults0_aa, RE.constraints=0))
 summary(fixed1_aa <- meta(y=yi, v=vi, data=combinedresults1_aa, RE.constraints=0))
@@ -246,9 +240,6 @@ summary(fixed3_aa <- meta(y=yi, v=vi, data=combinedresults3_aa, RE.constraints=0
 
 # repeat random effects model for just this subset
 summary(random0_ih <- meta(y=yi, v=vi, data=combinedresults0_ih))
-summary(random1_ih <- meta(y=yi, v=vi, data=combinedresults1_ih))
-summary(random2_ih <- meta(y=yi, v=vi, data=combinedresults2_ih))
-summary(random3_ih <- meta(y=yi, v=vi, data=combinedresults3_ih)) # error, no data
 
 summary(random0_aa <- meta(y=yi, v=vi, data=combinedresults0_aa))
 summary(random1_aa <- meta(y=yi, v=vi, data=combinedresults1_aa))
