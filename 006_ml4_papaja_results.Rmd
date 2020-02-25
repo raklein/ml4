@@ -69,7 +69,7 @@ knitr::opts_chunk$set(cache.extra = knitr::rand_seed)
 
 # Primary data file with replication data aggregated across labs (deidentified is missing just a couple variables for this -- age and gender)
 # Note: This file is the merged data provided by sites, produced by 001_data_cleaning.R
-merged <- readRDS("./data/processed_data/merged.rds")
+merged <- readRDS("./data/processed_data/merged_subset.rds")
 # Alternatively, you can run it with the public data and get most results. The problem with RMarkdown is that the script
 # needs to run completely with no errors or it won't render. So, if you do this, you'll need to comment out any
 # sections that require sensitive data.

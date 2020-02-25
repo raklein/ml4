@@ -38,86 +38,87 @@ library(tidyverse)
 # Implementing pro-only first:
 
 #read in deidentified aggregate dataset
-merged <- readRDS("./data/public/merged_deidentified.rds")
+merged <- readRDS("./data/public/merged_deidentified_subset.rds")
 
-###ANALYSIS 0: no exclusions###
-
-#Function to generate required stats for meta-analysis. No exclusions.
-analysis_pro0 <- function(data, sitesource)
-{
-  location <- merged$location[data$source==sitesource][1] #saves first row from location variable
-  n_tv <- length(data$proauth_avg[!is.na(data$proauth_avg) & data$source==sitesource & data$ms_condition == 'tv']) #n for tv condition
-  n_ms <- length(data$proauth_avg[!is.na(data$proauth_avg) & data$source==sitesource & data$ms_condition == 'ms']) #n for ms condition
-  sd_tv <- sd(data$proauth_avg[data$source==sitesource & data$ms_condition == 'tv'], na.rm = TRUE) #sd for tv participants at that site
-  sd_ms <- sd(data$proauth_avg[data$source==sitesource & data$ms_condition == 'ms'], na.rm = TRUE) #sd for ms participants at that site
-  mean_tv <- mean(data$proauth_avg[data$source==sitesource & data$ms_condition == 'tv'], na.rm = TRUE) #mean for tv participants at that site
-  mean_ms <- mean(data$proauth_avg[data$source==sitesource & data$ms_condition == 'ms'], na.rm = TRUE) #mean for ms participants at that site
-  expert <- mean(merged$expert[data$source==sitesource]) #shortcut to indicate whether site is expert or not (0 = inhouse 1 = expert)
-  d_diff <- (mean_ms - mean_tv)/ sqrt((sd_ms^2+sd_tv^2)/2) #computes Cohen's D effect size
-  nhst <- t.test(data$proauth_avg~data$ms_condition, subset = data$source==sitesource)
-  t <- nhst$statistic
-  df <- nhst$parameter
-  p.value <- nhst$p.value
-  result <- data.frame(location, sitesource, expert, n_tv, mean_tv, sd_tv, n_ms, mean_ms, sd_ms, d_diff, t, df, p.value) #results to be reported
-  return(result)
+# Function for analyzing pro- and anti-ratings separately ----
+# Maybe this should be two functions...
+# Or maybe I just need to pivot_longer after this is run
+analyse_separately <- function(data) {
+  # Make means, sds, and ns
+  sumstats <- group_by(data, location, source, ms_condition) %>% 
+    summarize(n_pro = sum(!is.na(proauth_avg)),
+              mean_pro = mean(proauth_avg, na.rm = T),
+              sd_pro = sd(proauth_avg, na.rm = T),
+              n_anti = sum(!is.na(antiauth_avg)),
+              mean_anti = mean(antiauth_avg, na.rm = T),
+              sd_anti = sd(antiauth_avg, na.rm = T),
+              expert = first(expert)
+    ) %>% 
+    pivot_longer(cols = n_pro:sd_anti) %>% 
+    unite(name, name, ms_condition) %>% 
+    pivot_wider(names_from = name,
+                values_from = value) %>% 
+    # TODO: check about denominator for d given unequal cell sizes
+    mutate(d_diff_pro = (mean_pro_ms - mean_pro_tv) / sqrt((sd_pro_ms^2+sd_pro_tv^2)/2),
+           d_diff_anti= (mean_anti_ms - mean_anti_tv) / sqrt((sd_anti_ms^2+sd_anti_tv^2)/2)) #computes Cohen's D effect size
+  
+  # Make t, df, and pval
+  # NOTE: p-value is two-tailed
+  nhst <- group_by(data, source) %>% 
+    summarize(t_pro  = t.test(proauth_avg ~ ms_condition)$statistic,
+              df_pro = t.test(proauth_avg ~ ms_condition)$parameter,
+              p.value_pro = t.test(proauth_avg ~ ms_condition)$p.value,
+              t_anti  = t.test(antiauth_avg ~ ms_condition)$statistic,
+              df_anti = t.test(antiauth_avg ~ ms_condition)$parameter,
+              p.value_anti = t.test(antiauth_avg ~ ms_condition)$p.value)
+  
+  # combine stats
+  dat <- left_join(sumstats, nhst, by = "source")
+  
+  # make pretty names per site
+  dat <- mutate(dat, 
+                sitesource_label = case_when(source == "ufl" ~ "University of Florida",
+                                             source == "occid" ~ "Occidental College",
+                                             source == "ashland" ~ "Ashland University",
+                                             source == "ithaca" ~ "Ithaca College",
+                                             source == "riverside" ~ "University of California, Riverside",
+                                             source == "wesleyan_inhouse" ~ "Wesleyan University",
+                                             source == "uwmadison_expert" ~ "University of Wisconsin",
+                                             source == "uwmadison_inhouse" ~ "University of Wisconsin",
+                                             source == "vcu" ~ "Virginia Commonwealth University",
+                                             source == "sou_inhouse" ~ "Southern Oregon University",
+                                             source == "plu" ~ "Pacific Lutheran University",
+                                             source == "byui" ~ "Brigham Young University - Idaho",
+                                             source == "azusa" ~ "Azusa Pacific University",
+                                             source == "cnj" ~ "The College of New Jersey",
+                                             source == "wpi" ~ "Worcester Polytechnic Institute",
+                                             source == "illinois" ~ "University of Illinois",
+                                             source == "kansas_expert" ~ "University of Kansas",
+                                             source == "kansas_inhouse" ~ "University of Kansas",
+                                             source == "upenn" ~ "University of Pennsylvania",
+                                             source == "pace_inhouse" ~ "Pace University",
+                                             source == "pace_expert" ~ "Pace University")
+  )
+  
+  # return analysed dataset
+  return(dat)
 }
 
-#above function is run for each site identifier
-riverside_results <- analysis_pro0(merged, "riverside")
-azusa_results <- analysis_pro0(merged, "azusa")
-cnj_results <- analysis_pro0(merged, "cnj")
-illinois_results <- analysis_pro0(merged, "illinois")
-ithaca_results <- analysis_pro0(merged, "ithaca")
-kansas_inhouse_results <- analysis_pro0(merged, "kansas_inhouse")
-occid_results <- analysis_pro0(merged, "occid")
-pace_expert_results <- analysis_pro0(merged, "pace_expert")
-sou_inhouse_results <- analysis_pro0(merged, "sou_inhouse")
-ufl_results <- analysis_pro0(merged, "ufl")
-upenn_results <- analysis_pro0(merged, "upenn")
-uwmadison_expert_results <- analysis_pro0(merged, "uwmadison_expert")
-uwmadison_inhouse_results <- analysis_pro0(merged, "uwmadison_inhouse")
-wesleyan_inhouse_results <- analysis_pro0(merged, "wesleyan_inhouse")
-wpi_results <- analysis_pro0(merged, "wpi")
-kansas_expert_results <- analysis_pro0(merged, "kansas_expert")
-plu_results <- analysis_pro0(merged, "plu")
-ashland_results <- analysis_pro0(merged, "ashland")
-vcu_results <- analysis_pro0(merged, "vcu")
-byui_results <- analysis_pro0(merged, "byui")
-pace_inhouse_results <- analysis_pro0(merged, "pace_inhouse")
 
-#merges results from above into a single data frame
-combinedresults_pro0 <- rbind(
-  ashland_results,
-  azusa_results,
-  cnj_results,
-  illinois_results,
-  ithaca_results,
-  kansas_expert_results,
-  kansas_inhouse_results,
-  occid_results,
-  pace_expert_results,
-  plu_results,
-  riverside_results,
-  sou_inhouse_results,
-  ufl_results,
-  upenn_results,
-  uwmadison_expert_results,
-  uwmadison_inhouse_results,
-  vcu_results,
-  wesleyan_inhouse_results,
-  wpi_results,
-  byui_results,
-  pace_inhouse_results
-)
+###ANALYSIS 0: no exclusions###
+combinedresults_sep0 <- filter(merged, !is.na(pro_minus_anti)) %>% 
+  analyse_separately()
+combinedresults_sep1 <- filter(merged, !is.na(pro_minus_anti),
+                               pass_ER1 == T | expert == 0) %>% 
+  analyse_separately()
+combinedresults_sep2 <- filter(merged, !is.na(pro_minus_anti),
+                               pass_ER2 == T | expert == 0) %>% 
+  analyse_separately()
+combinedresults_sep3 <- filter(merged, !is.na(pro_minus_anti),
+                               pass_ER3 == T | expert == 0) %>%  
+  analyse_separately()
 
 #Computing SE and sampling variance with metafor package.
-# yi (the standardized mean difference effect size) and vi (the sampling variance) to be used in meta-analysis.
-# n1i numeric number of participants in the intervention group
-# m1i numeric mean number of days off work/school in the intervention group
-# sd1i numeric standard deviation of the number of days off work/school in the intervention group
-# n2i numeric number of participants in the control/comparison group
-# m2i numeric mean number of days off work/school in the control/comparison group
-# sd2i numeric standard deviation of the number of days off work/school in the control/comparison group
 #Appends yi and vi to the data object.
 combinedresults_pro0 <- escalc(n1i = n_ms, n2i = n_tv, m1i = mean_ms, m2i = mean_tv, 
                            sd1i = sd_ms, sd2i = sd_tv, data = combinedresults_pro0, measure = "SMD", 
@@ -129,75 +130,6 @@ write.csv(combinedresults_pro0, "./data/public/combinedresults_pro0.csv", row.na
 ###ANALYSIS 1: Exclusion set 1###
 #1. Wrote something for both writing prompts
 #2. Completed all six items evaluating the essay authors)
-
-#Function to generate required stats for meta-analysis.
-analysis_pro1 <- function(data, sitesource)
-{
-  location <- merged$location[data$source==sitesource][1] #saves first row from location variable
-  n_tv <- length(data$proauth_avg[!is.na(data$proauth_avg) & data$source==sitesource & data$ms_condition == 'tv' & (data$msincomplete == 0 | is.na(data$msincomplete)) & !is.na(data$prous3) & !is.na(data$prous4) & !is.na(data$prous5) & !is.na(data$antius3) & !is.na(data$antius4) & !is.na(data$antius5)]) #n for tv condition
-  n_ms <- length(data$proauth_avg[!is.na(data$proauth_avg) & data$source==sitesource & data$ms_condition == 'ms' & (data$msincomplete == 0 | is.na(data$msincomplete)) & !is.na(data$prous3) & !is.na(data$prous4) & !is.na(data$prous5) & !is.na(data$antius3) & !is.na(data$antius4) & !is.na(data$antius5)]) #n for ms condition
-  sd_tv <- sd(data$proauth_avg[data$source==sitesource & data$ms_condition == 'tv' & (data$msincomplete == 0 | is.na(data$msincomplete)) & !is.na(data$prous3) & !is.na(data$prous4) & !is.na(data$prous5) & !is.na(data$antius3) & !is.na(data$antius4) & !is.na(data$antius5)], na.rm = TRUE) #sd for tv participants at that site
-  sd_ms <- sd(data$proauth_avg[data$source==sitesource & data$ms_condition == 'ms' & (data$msincomplete == 0 | is.na(data$msincomplete)) & !is.na(data$prous3) & !is.na(data$prous4) & !is.na(data$prous5) & !is.na(data$antius3) & !is.na(data$antius4) & !is.na(data$antius5)], na.rm = TRUE) #sd for ms participants at that site
-  mean_tv <- mean(data$proauth_avg[data$source==sitesource & data$ms_condition == 'tv' & (data$msincomplete == 0 | is.na(data$msincomplete)) & !is.na(data$prous3) & !is.na(data$prous4) & !is.na(data$prous5) & !is.na(data$antius3) & !is.na(data$antius4) & !is.na(data$antius5)], na.rm = TRUE) #mean for tv participants at that site
-  mean_ms <- mean(data$proauth_avg[data$source==sitesource & data$ms_condition == 'ms' & (data$msincomplete == 0 | is.na(data$msincomplete)) & !is.na(data$prous3) & !is.na(data$prous4) & !is.na(data$prous5) & !is.na(data$antius3) & !is.na(data$antius4) & !is.na(data$antius5)], na.rm = TRUE) #mean for ms participants at that site
-  expert <- mean(merged$expert[data$source==sitesource]) #shortcut to indicate whether site is expert or not (0 = inhouse 1 = expert).
-  d_diff <- (mean_ms - mean_tv)/ sqrt((sd_ms^2+sd_tv^2)/2) #computes Cohen's D effect size
-  nhst <- t.test(data$proauth_avg~data$ms_condition, subset = data$source==sitesource & (data$msincomplete == 0 | is.na(data$msincomplete)) & (!is.na(data$prous3) & !is.na(data$prous4) & !is.na(data$prous5) & !is.na(data$antius3) & !is.na(data$antius4) & !is.na(data$antius5)))
-  t <- nhst$statistic
-  df <- nhst$parameter
-  p.value <- nhst$p.value
-  result <- data.frame(location, sitesource, expert, n_tv, mean_tv, sd_tv, n_ms, mean_ms, sd_ms, d_diff, t, df, p.value) #results to be reported
-  return(result)
-}
-
-#above function is run for each site identifier
-riverside_results <- analysis_pro1(merged, "riverside")
-azusa_results <- analysis_pro1(merged, "azusa")
-cnj_results <- analysis_pro1(merged, "cnj")
-illinois_results <- analysis_pro1(merged, "illinois")
-ithaca_results <- analysis_pro1(merged, "ithaca")
-kansas_inhouse_results <- analysis_pro1(merged, "kansas_inhouse")
-occid_results <- analysis_pro1(merged, "occid")
-pace_expert_results <- analysis_pro1(merged, "pace_expert")
-sou_inhouse_results <- analysis_pro1(merged, "sou_inhouse")
-ufl_results <- analysis_pro1(merged, "ufl")
-upenn_results <- analysis_pro1(merged, "upenn")
-uwmadison_expert_results <- analysis_pro1(merged, "uwmadison_expert")
-uwmadison_inhouse_results <- analysis_pro1(merged, "uwmadison_inhouse")
-wesleyan_inhouse_results <- analysis_pro1(merged, "wesleyan_inhouse")
-wpi_results <- analysis_pro1(merged, "wpi")
-kansas_expert_results <- analysis_pro1(merged, "kansas_expert")
-plu_results <- analysis_pro1(merged, "plu")
-ashland_results <- analysis_pro1(merged, "ashland")
-vcu_results <- analysis_pro1(merged, "vcu")
-byui_results <- analysis_pro1(merged, "byui")
-pace_inhouse_results <- analysis_pro1(merged, "pace_inhouse")
-
-#merges results from above into a single data frame
-combinedresults_pro1 <- rbind(
-  ashland_results,
-  azusa_results,
-  cnj_results,
-  illinois_results,
-  ithaca_results,
-  kansas_expert_results,
-  kansas_inhouse_results,
-  occid_results,
-  pace_expert_results,
-  plu_results,
-  riverside_results,
-  sou_inhouse_results,
-  ufl_results,
-  upenn_results,
-  uwmadison_expert_results,
-  uwmadison_inhouse_results,
-  vcu_results,
-  wesleyan_inhouse_results,
-  wpi_results,
-  byui_results,
-  pace_inhouse_results
-)
-
 # This uses the metafor package to compute yi (the standardized mean difference effect size) and vi (the sampling variance) to be used in meta-analysis.
 # Appends this to the data object.
 combinedresults_pro1 <- escalc(n1i = n_ms, n2i = n_tv, m1i = mean_ms, m2i = mean_tv, 
@@ -212,80 +144,6 @@ write.csv(combinedresults_pro1, "./data/public/combinedresults_pro1.csv", row.na
 #2. Completed all six items evaluating the essay authors
 #3. Identify as White (race == 1)
 #4. Born in USA (countryofbirth == 1)
-
-#Function to generate required stats for meta-analysis.
-analysis_pro2 <- function(data, sitesource)
-{
-  location <- merged$location[data$source==sitesource][1] #saves first row from location variable
-  n_tv <- length(data$proauth_avg[!is.na(data$proauth_avg) & data$source==sitesource & data$ms_condition == 'tv' & (data$msincomplete == 0 | is.na(data$msincomplete)) & !is.na(data$prous3) & !is.na(data$prous4) & !is.na(data$prous5) & !is.na(data$antius3) & !is.na(data$antius4) & !is.na(data$antius5) & data$race == 1 & data$countryofbirth == 1]) #n for tv condition
-  n_ms <- length(data$proauth_avg[!is.na(data$proauth_avg) & data$source==sitesource & data$ms_condition == 'ms' & (data$msincomplete == 0 | is.na(data$msincomplete)) & !is.na(data$prous3) & !is.na(data$prous4) & !is.na(data$prous5) & !is.na(data$antius3) & !is.na(data$antius4) & !is.na(data$antius5) & data$race == 1 & data$countryofbirth == 1]) #n for ms condition
-  sd_tv <- sd(data$proauth_avg[data$source==sitesource & data$ms_condition == 'tv' & (data$msincomplete == 0 | is.na(data$msincomplete)) & !is.na(data$prous3) & !is.na(data$prous4) & !is.na(data$prous5) & !is.na(data$antius3) & !is.na(data$antius4) & !is.na(data$antius5) & data$race == 1 & data$countryofbirth == 1], na.rm = TRUE) #sd for tv participants at that site
-  sd_ms <- sd(data$proauth_avg[data$source==sitesource & data$ms_condition == 'ms' & (data$msincomplete == 0 | is.na(data$msincomplete)) & !is.na(data$prous3) & !is.na(data$prous4) & !is.na(data$prous5) & !is.na(data$antius3) & !is.na(data$antius4) & !is.na(data$antius5) & data$race == 1 & data$countryofbirth == 1], na.rm = TRUE) #sd for ms participants at that site
-  mean_tv <- mean(data$proauth_avg[data$source==sitesource & data$ms_condition == 'tv' & (data$msincomplete == 0 | is.na(data$msincomplete)) & !is.na(data$prous3) & !is.na(data$prous4) & !is.na(data$prous5) & !is.na(data$antius3) & !is.na(data$antius4) & !is.na(data$antius5) & data$race == 1 & data$countryofbirth == 1], na.rm = TRUE) #mean for tv participants at that site
-  mean_ms <- mean(data$proauth_avg[data$source==sitesource & data$ms_condition == 'ms' & (data$msincomplete == 0 | is.na(data$msincomplete)) & !is.na(data$prous3) & !is.na(data$prous4) & !is.na(data$prous5) & !is.na(data$antius3) & !is.na(data$antius4) & !is.na(data$antius5) & data$race == 1 & data$countryofbirth == 1], na.rm = TRUE) #mean for ms participants at that site
-  expert <- mean(merged$expert[data$source==sitesource]) #shortcut to indicate whether site is expert or not (0 = inhouse 1 = expert)
-  d_diff <- (mean_ms - mean_tv)/ sqrt((sd_ms^2+sd_tv^2)/2) #computes Cohen's D effect size
-  nhst <- t.test(data$proauth_avg~data$ms_condition, subset = data$source==sitesource & (data$msincomplete == 0 | is.na(data$msincomplete)) & (!is.na(data$prous3) & !is.na(data$prous4) & !is.na(data$prous5) & !is.na(data$antius3) & !is.na(data$antius4) & !is.na(data$antius5) & data$race == 1 & data$countryofbirth == 1))
-  t <- nhst$statistic
-  df <- nhst$parameter
-  p.value <- nhst$p.value
-  result <- data.frame(location, sitesource, expert, n_tv, mean_tv, sd_tv, n_ms, mean_ms, sd_ms, d_diff, t, df, p.value) #results to be reported
-  return(result)
-}
-
-#in-house sites don't necessarily have the data necessary to implement these exclusions
-#Below, analysis1 (basic exclusions) is run for in-house, while analysis 2 is run for expert versions
-
-#expert sites
-riverside_results <- analysis_pro2(merged, "riverside")
-cnj_results <- analysis_pro2(merged, "cnj")
-occid_results <- analysis_pro2(merged, "occid")
-pace_expert_results <- analysis_pro2(merged, "pace_expert")
-uwmadison_expert_results <- analysis_pro2(merged, "uwmadison_expert")
-kansas_expert_results <- analysis_pro2(merged, "kansas_expert")
-ashland_results <- analysis_pro2(merged, "ashland")
-vcu_results <- analysis_pro2(merged, "vcu")
-byui_results <- analysis_pro2(merged, "byui")
-
-#inhouse sites
-azusa_results <- analysis_pro1(merged, "azusa")
-illinois_results <- analysis_pro1(merged, "illinois")
-ithaca_results <- analysis_pro1(merged, "ithaca")
-kansas_inhouse_results <- analysis_pro1(merged, "kansas_inhouse")
-sou_inhouse_results <- analysis_pro1(merged, "sou_inhouse")
-ufl_results <- analysis_pro1(merged, "ufl")
-upenn_results <- analysis_pro1(merged, "upenn")
-uwmadison_inhouse_results <- analysis_pro1(merged, "uwmadison_inhouse")
-wesleyan_inhouse_results <- analysis_pro1(merged, "wesleyan_inhouse")
-wpi_results <- analysis_pro1(merged, "wpi")
-plu_results <- analysis_pro1(merged, "plu")
-pace_inhouse_results <- analysis_pro1(merged, "pace_inhouse")
-
-#merges results from above into a single data frame
-combinedresults_pro2 <- rbind(
-  ashland_results,
-  azusa_results,
-  cnj_results,
-  illinois_results,
-  ithaca_results,
-  kansas_expert_results,
-  kansas_inhouse_results,
-  occid_results,
-  pace_expert_results,
-  plu_results,
-  riverside_results,
-  sou_inhouse_results,
-  ufl_results,
-  upenn_results,
-  uwmadison_expert_results,
-  uwmadison_inhouse_results,
-  vcu_results,
-  wesleyan_inhouse_results,
-  wpi_results,
-  byui_results,
-  pace_inhouse_results
-)
-
 # This uses the metafor package to compute yi (the standardized mean difference effect size) and vi (the sampling variance) to be used in meta-analysis.
 # Appends this to the data object.
 combinedresults_pro2 <- escalc(n1i = n_ms, n2i = n_tv, m1i = mean_ms, m2i = mean_tv, 
@@ -301,80 +159,6 @@ write.csv(combinedresults_pro2, "./data/public/combinedresults_pro2.csv", row.na
 # 3. Identify as White
 # 4. Born in USA
 # 5. Score a 7 or higher on the American Identity item
-
-# Function to generate required stats for meta-analysis.
-analysis_pro3 <- function(data, sitesource)
-{
-  location <- merged$location[data$source==sitesource][1] #saves first row from location variable
-  n_tv <- length(data$proauth_avg[!is.na(data$proauth_avg) & data$source==sitesource & data$ms_condition == 'tv' & (data$msincomplete == 0 | is.na(data$msincomplete)) & !is.na(data$prous3) & !is.na(data$prous4) & !is.na(data$prous5) & !is.na(data$antius3) & !is.na(data$antius4) & !is.na(data$antius5) & data$race == 1 & data$countryofbirth == 1 & data$americanid >= 7]) #n for tv condition
-  n_ms <- length(data$proauth_avg[!is.na(data$proauth_avg) & data$source==sitesource & data$ms_condition == 'ms' & (data$msincomplete == 0 | is.na(data$msincomplete)) & !is.na(data$prous3) & !is.na(data$prous4) & !is.na(data$prous5) & !is.na(data$antius3) & !is.na(data$antius4) & !is.na(data$antius5) & data$race == 1 & data$countryofbirth == 1 & data$americanid >= 7]) #n for ms condition
-  sd_tv <- sd(data$proauth_avg[data$source==sitesource & data$ms_condition == 'tv' & (data$msincomplete == 0 | is.na(data$msincomplete)) & !is.na(data$prous3) & !is.na(data$prous4) & !is.na(data$prous5) & !is.na(data$antius3) & !is.na(data$antius4) & !is.na(data$antius5) & data$race == 1 & data$countryofbirth == 1 & data$americanid >= 7], na.rm = TRUE) #sd for tv participants at that site
-  sd_ms <- sd(data$proauth_avg[data$source==sitesource & data$ms_condition == 'ms' & (data$msincomplete == 0 | is.na(data$msincomplete)) & !is.na(data$prous3) & !is.na(data$prous4) & !is.na(data$prous5) & !is.na(data$antius3) & !is.na(data$antius4) & !is.na(data$antius5) & data$race == 1 & data$countryofbirth == 1 & data$americanid >= 7], na.rm = TRUE) #sd for ms participants at that site
-  mean_tv <- mean(data$proauth_avg[data$source==sitesource & data$ms_condition == 'tv' & (data$msincomplete == 0 | is.na(data$msincomplete)) & !is.na(data$prous3) & !is.na(data$prous4) & !is.na(data$prous5) & !is.na(data$antius3) & !is.na(data$antius4) & !is.na(data$antius5) & data$race == 1 & data$countryofbirth == 1 & data$americanid >= 7], na.rm = TRUE) #mean for tv participants at that site
-  mean_ms <- mean(data$proauth_avg[data$source==sitesource & data$ms_condition == 'ms' & (data$msincomplete == 0 | is.na(data$msincomplete)) & !is.na(data$prous3) & !is.na(data$prous4) & !is.na(data$prous5) & !is.na(data$antius3) & !is.na(data$antius4) & !is.na(data$antius5) & data$race == 1 & data$countryofbirth == 1 & data$americanid >= 7], na.rm = TRUE) #mean for ms participants at that site
-  expert <- mean(merged$expert[data$source==sitesource]) #shortcut to indicate whether site is expert or not (0 = inhouse 1 = expert)
-  d_diff <- (mean_ms - mean_tv)/ sqrt((sd_ms^2+sd_tv^2)/2) #computes Cohen's D effect size
-  nhst <- t.test(data$proauth_avg~data$ms_condition, subset = data$source==sitesource & (data$msincomplete == 0 | is.na(data$msincomplete)) & (!is.na(data$prous3) & !is.na(data$prous4) & !is.na(data$prous5) & !is.na(data$antius3) & !is.na(data$antius4) & !is.na(data$antius5) & data$race == 1 & data$countryofbirth == 1 & data$americanid >= 7))
-  t <- nhst$statistic
-  df <- nhst$parameter
-  p.value <- nhst$p.value
-  result <- data.frame(location, sitesource, expert, n_tv, mean_tv, sd_tv, n_ms, mean_ms, sd_ms, d_diff, t, df, p.value) # results to be reported
-  return(result)
-}
-
-# in-house sites don't necessarily have the data necessary to implement these exclusions
-# Below, analysis1 (basic exclusions) is run for in-house, while analysis 3 is run for expert versions
-
-# expert sites
-riverside_results <- analysis_pro3(merged, "riverside")
-cnj_results <- analysis_pro3(merged, "cnj")
-occid_results <- analysis_pro3(merged, "occid")
-pace_expert_results <- analysis_pro3(merged, "pace_expert")
-uwmadison_expert_results <- analysis_pro3(merged, "uwmadison_expert")
-kansas_expert_results <- analysis_pro3(merged, "kansas_expert")
-ashland_results <- analysis_pro3(merged, "ashland")
-vcu_results <- analysis_pro3(merged, "vcu")
-byui_results <- analysis_pro3(merged, "byui")
-
-# inhouse sites
-azusa_results <- analysis_pro1(merged, "azusa")
-illinois_results <- analysis_pro1(merged, "illinois")
-ithaca_results <- analysis_pro1(merged, "ithaca")
-kansas_inhouse_results <- analysis_pro1(merged, "kansas_inhouse")
-sou_inhouse_results <- analysis_pro1(merged, "sou_inhouse")
-ufl_results <- analysis_pro1(merged, "ufl")
-upenn_results <- analysis_pro1(merged, "upenn")
-uwmadison_inhouse_results <- analysis_pro1(merged, "uwmadison_inhouse")
-wesleyan_inhouse_results <- analysis_pro1(merged, "wesleyan_inhouse")
-wpi_results <- analysis_pro1(merged, "wpi")
-plu_results <- analysis_pro1(merged, "plu")
-pace_inhouse_results <- analysis_pro1(merged, "pace_inhouse")
-
-# merges results from above into a single data frame
-combinedresults_pro3 <- rbind(
-  ashland_results,
-  azusa_results,
-  cnj_results,
-  illinois_results,
-  ithaca_results,
-  kansas_expert_results,
-  kansas_inhouse_results,
-  occid_results,
-  pace_expert_results,
-  plu_results,
-  riverside_results,
-  sou_inhouse_results,
-  ufl_results,
-  upenn_results,
-  uwmadison_expert_results,
-  uwmadison_inhouse_results,
-  vcu_results,
-  wesleyan_inhouse_results,
-  wpi_results,
-  byui_results,
-  pace_inhouse_results
-)
-
 # This uses the metafor package to compute yi (the standardized mean difference effect size) and vi (the sampling variance) to be used in meta-analysis.
 # Appends this to the data object.
 combinedresults_pro3 <- escalc(n1i = n_ms, n2i = n_tv, m1i = mean_ms, m2i = mean_tv, 
@@ -571,90 +355,13 @@ effsize::cohen.d(data$proauth_avg~data$ms_condition,pooled=TRUE,paired=FALSE,
 
 
 ################################################################################
-################################################################################
-################################################################################
 # Analyzing anti- ratings now
 ################################################################################
-################################################################################
-################################################################################
-
-
-
-
-
 
 #read in deidentified aggregate dataset
 merged <- readRDS("./data/public/merged_deidentified.rds")
 
 ###ANALYSIS 0: no exclusions###
-
-#Function to generate required stats for meta-analysis. No exclusions.
-analysis_anti0 <- function(data, sitesource)
-{
-  location <- merged$location[data$source==sitesource][1] #saves first row from location variable
-  n_tv <- length(data$antiauth_avg[!is.na(data$antiauth_avg) & data$source==sitesource & data$ms_condition == 'tv']) #n for tv condition
-  n_ms <- length(data$antiauth_avg[!is.na(data$antiauth_avg) & data$source==sitesource & data$ms_condition == 'ms']) #n for ms condition
-  sd_tv <- sd(data$antiauth_avg[data$source==sitesource & data$ms_condition == 'tv'], na.rm = TRUE) #sd for tv participants at that site
-  sd_ms <- sd(data$antiauth_avg[data$source==sitesource & data$ms_condition == 'ms'], na.rm = TRUE) #sd for ms participants at that site
-  mean_tv <- mean(data$antiauth_avg[data$source==sitesource & data$ms_condition == 'tv'], na.rm = TRUE) #mean for tv participants at that site
-  mean_ms <- mean(data$antiauth_avg[data$source==sitesource & data$ms_condition == 'ms'], na.rm = TRUE) #mean for ms participants at that site
-  expert <- mean(merged$expert[data$source==sitesource]) #shortcut to indicate whether site is expert or not (0 = inhouse 1 = expert)
-  d_diff <- (mean_ms - mean_tv)/ sqrt((sd_ms^2+sd_tv^2)/2) #computes Cohen's D effect size
-  nhst <- t.test(data$antiauth_avg~data$ms_condition, subset = data$source==sitesource)
-  t <- nhst$statistic
-  df <- nhst$parameter
-  p.value <- nhst$p.value
-  result <- data.frame(location, sitesource, expert, n_tv, mean_tv, sd_tv, n_ms, mean_ms, sd_ms, d_diff, t, df, p.value) #results to be reported
-  return(result)
-}
-
-#above function is run for each site identifier
-riverside_results <- analysis_anti0(merged, "riverside")
-azusa_results <- analysis_anti0(merged, "azusa")
-cnj_results <- analysis_anti0(merged, "cnj")
-illinois_results <- analysis_anti0(merged, "illinois")
-ithaca_results <- analysis_anti0(merged, "ithaca")
-kansas_inhouse_results <- analysis_anti0(merged, "kansas_inhouse")
-occid_results <- analysis_anti0(merged, "occid")
-pace_expert_results <- analysis_anti0(merged, "pace_expert")
-sou_inhouse_results <- analysis_anti0(merged, "sou_inhouse")
-ufl_results <- analysis_anti0(merged, "ufl")
-upenn_results <- analysis_anti0(merged, "upenn")
-uwmadison_expert_results <- analysis_anti0(merged, "uwmadison_expert")
-uwmadison_inhouse_results <- analysis_anti0(merged, "uwmadison_inhouse")
-wesleyan_inhouse_results <- analysis_anti0(merged, "wesleyan_inhouse")
-wpi_results <- analysis_anti0(merged, "wpi")
-kansas_expert_results <- analysis_anti0(merged, "kansas_expert")
-plu_results <- analysis_anti0(merged, "plu")
-ashland_results <- analysis_anti0(merged, "ashland")
-vcu_results <- analysis_anti0(merged, "vcu")
-byui_results <- analysis_anti0(merged, "byui")
-pace_inhouse_results <- analysis_anti0(merged, "pace_inhouse")
-
-#merges results from above into a single data frame
-combinedresults_anti0 <- rbind(
-  ashland_results,
-  azusa_results,
-  cnj_results,
-  illinois_results,
-  ithaca_results,
-  kansas_expert_results,
-  kansas_inhouse_results,
-  occid_results,
-  pace_expert_results,
-  plu_results,
-  riverside_results,
-  sou_inhouse_results,
-  ufl_results,
-  upenn_results,
-  uwmadison_expert_results,
-  uwmadison_inhouse_results,
-  vcu_results,
-  wesleyan_inhouse_results,
-  wpi_results,
-  byui_results,
-  pace_inhouse_results
-)
 
 #Computing SE and sampling variance with metafor package.
 # yi (the standardized mean difference effect size) and vi (the sampling variance) to be used in meta-analysis.
@@ -676,74 +383,6 @@ write.csv(combinedresults_anti0, "./data/public/combinedresults_anti0.csv", row.
 #1. Wrote something for both writing prompts
 #2. Completed all six items evaluating the essay authors)
 
-#Function to generate required stats for meta-analysis.
-analysis_anti1 <- function(data, sitesource)
-{
-  location <- merged$location[data$source==sitesource][1] #saves first row from location variable
-  n_tv <- length(data$antiauth_avg[!is.na(data$antiauth_avg) & data$source==sitesource & data$ms_condition == 'tv' & (data$msincomplete == 0 | is.na(data$msincomplete)) & !is.na(data$prous3) & !is.na(data$prous4) & !is.na(data$prous5) & !is.na(data$antius3) & !is.na(data$antius4) & !is.na(data$antius5)]) #n for tv condition
-  n_ms <- length(data$antiauth_avg[!is.na(data$antiauth_avg) & data$source==sitesource & data$ms_condition == 'ms' & (data$msincomplete == 0 | is.na(data$msincomplete)) & !is.na(data$prous3) & !is.na(data$prous4) & !is.na(data$prous5) & !is.na(data$antius3) & !is.na(data$antius4) & !is.na(data$antius5)]) #n for ms condition
-  sd_tv <- sd(data$antiauth_avg[data$source==sitesource & data$ms_condition == 'tv' & (data$msincomplete == 0 | is.na(data$msincomplete)) & !is.na(data$prous3) & !is.na(data$prous4) & !is.na(data$prous5) & !is.na(data$antius3) & !is.na(data$antius4) & !is.na(data$antius5)], na.rm = TRUE) #sd for tv participants at that site
-  sd_ms <- sd(data$antiauth_avg[data$source==sitesource & data$ms_condition == 'ms' & (data$msincomplete == 0 | is.na(data$msincomplete)) & !is.na(data$prous3) & !is.na(data$prous4) & !is.na(data$prous5) & !is.na(data$antius3) & !is.na(data$antius4) & !is.na(data$antius5)], na.rm = TRUE) #sd for ms participants at that site
-  mean_tv <- mean(data$antiauth_avg[data$source==sitesource & data$ms_condition == 'tv' & (data$msincomplete == 0 | is.na(data$msincomplete)) & !is.na(data$prous3) & !is.na(data$prous4) & !is.na(data$prous5) & !is.na(data$antius3) & !is.na(data$antius4) & !is.na(data$antius5)], na.rm = TRUE) #mean for tv participants at that site
-  mean_ms <- mean(data$antiauth_avg[data$source==sitesource & data$ms_condition == 'ms' & (data$msincomplete == 0 | is.na(data$msincomplete)) & !is.na(data$prous3) & !is.na(data$prous4) & !is.na(data$prous5) & !is.na(data$antius3) & !is.na(data$antius4) & !is.na(data$antius5)], na.rm = TRUE) #mean for ms participants at that site
-  expert <- mean(merged$expert[data$source==sitesource]) #shortcut to indicate whether site is expert or not (0 = inhouse 1 = expert).
-  d_diff <- (mean_ms - mean_tv)/ sqrt((sd_ms^2+sd_tv^2)/2) #computes Cohen's D effect size
-  nhst <- t.test(data$antiauth_avg~data$ms_condition, subset = data$source==sitesource & (data$msincomplete == 0 | is.na(data$msincomplete)) & (!is.na(data$prous3) & !is.na(data$prous4) & !is.na(data$prous5) & !is.na(data$antius3) & !is.na(data$antius4) & !is.na(data$antius5)))
-  t <- nhst$statistic
-  df <- nhst$parameter
-  p.value <- nhst$p.value
-  result <- data.frame(location, sitesource, expert, n_tv, mean_tv, sd_tv, n_ms, mean_ms, sd_ms, d_diff, t, df, p.value) #results to be reported
-  return(result)
-}
-
-#above function is run for each site identifier
-riverside_results <- analysis_anti1(merged, "riverside")
-azusa_results <- analysis_anti1(merged, "azusa")
-cnj_results <- analysis_anti1(merged, "cnj")
-illinois_results <- analysis_anti1(merged, "illinois")
-ithaca_results <- analysis_anti1(merged, "ithaca")
-kansas_inhouse_results <- analysis_anti1(merged, "kansas_inhouse")
-occid_results <- analysis_anti1(merged, "occid")
-pace_expert_results <- analysis_anti1(merged, "pace_expert")
-sou_inhouse_results <- analysis_anti1(merged, "sou_inhouse")
-ufl_results <- analysis_anti1(merged, "ufl")
-upenn_results <- analysis_anti1(merged, "upenn")
-uwmadison_expert_results <- analysis_anti1(merged, "uwmadison_expert")
-uwmadison_inhouse_results <- analysis_anti1(merged, "uwmadison_inhouse")
-wesleyan_inhouse_results <- analysis_anti1(merged, "wesleyan_inhouse")
-wpi_results <- analysis_anti1(merged, "wpi")
-kansas_expert_results <- analysis_anti1(merged, "kansas_expert")
-plu_results <- analysis_anti1(merged, "plu")
-ashland_results <- analysis_anti1(merged, "ashland")
-vcu_results <- analysis_anti1(merged, "vcu")
-byui_results <- analysis_anti1(merged, "byui")
-pace_inhouse_results <- analysis_anti1(merged, "pace_inhouse")
-
-#merges results from above into a single data frame
-combinedresults_anti1 <- rbind(
-  ashland_results,
-  azusa_results,
-  cnj_results,
-  illinois_results,
-  ithaca_results,
-  kansas_expert_results,
-  kansas_inhouse_results,
-  occid_results,
-  pace_expert_results,
-  plu_results,
-  riverside_results,
-  sou_inhouse_results,
-  ufl_results,
-  upenn_results,
-  uwmadison_expert_results,
-  uwmadison_inhouse_results,
-  vcu_results,
-  wesleyan_inhouse_results,
-  wpi_results,
-  byui_results,
-  pace_inhouse_results
-)
-
 # This uses the metafor package to compute yi (the standardized mean difference effect size) and vi (the sampling variance) to be used in meta-analysis.
 # Appends this to the data object.
 combinedresults_anti1 <- escalc(n1i = n_ms, n2i = n_tv, m1i = mean_ms, m2i = mean_tv, 
@@ -758,79 +397,6 @@ write.csv(combinedresults_anti1, "./data/public/combinedresults_anti1.csv", row.
 #2. Completed all six items evaluating the essay authors
 #3. Identify as White (race == 1)
 #4. Born in USA (countryofbirth == 1)
-
-#Function to generate required stats for meta-analysis.
-analysis_anti2 <- function(data, sitesource)
-{
-  location <- merged$location[data$source==sitesource][1] #saves first row from location variable
-  n_tv <- length(data$antiauth_avg[!is.na(data$antiauth_avg) & data$source==sitesource & data$ms_condition == 'tv' & (data$msincomplete == 0 | is.na(data$msincomplete)) & !is.na(data$prous3) & !is.na(data$prous4) & !is.na(data$prous5) & !is.na(data$antius3) & !is.na(data$antius4) & !is.na(data$antius5) & data$race == 1 & data$countryofbirth == 1]) #n for tv condition
-  n_ms <- length(data$antiauth_avg[!is.na(data$antiauth_avg) & data$source==sitesource & data$ms_condition == 'ms' & (data$msincomplete == 0 | is.na(data$msincomplete)) & !is.na(data$prous3) & !is.na(data$prous4) & !is.na(data$prous5) & !is.na(data$antius3) & !is.na(data$antius4) & !is.na(data$antius5) & data$race == 1 & data$countryofbirth == 1]) #n for ms condition
-  sd_tv <- sd(data$antiauth_avg[data$source==sitesource & data$ms_condition == 'tv' & (data$msincomplete == 0 | is.na(data$msincomplete)) & !is.na(data$prous3) & !is.na(data$prous4) & !is.na(data$prous5) & !is.na(data$antius3) & !is.na(data$antius4) & !is.na(data$antius5) & data$race == 1 & data$countryofbirth == 1], na.rm = TRUE) #sd for tv participants at that site
-  sd_ms <- sd(data$antiauth_avg[data$source==sitesource & data$ms_condition == 'ms' & (data$msincomplete == 0 | is.na(data$msincomplete)) & !is.na(data$prous3) & !is.na(data$prous4) & !is.na(data$prous5) & !is.na(data$antius3) & !is.na(data$antius4) & !is.na(data$antius5) & data$race == 1 & data$countryofbirth == 1], na.rm = TRUE) #sd for ms participants at that site
-  mean_tv <- mean(data$antiauth_avg[data$source==sitesource & data$ms_condition == 'tv' & (data$msincomplete == 0 | is.na(data$msincomplete)) & !is.na(data$prous3) & !is.na(data$prous4) & !is.na(data$prous5) & !is.na(data$antius3) & !is.na(data$antius4) & !is.na(data$antius5) & data$race == 1 & data$countryofbirth == 1], na.rm = TRUE) #mean for tv participants at that site
-  mean_ms <- mean(data$antiauth_avg[data$source==sitesource & data$ms_condition == 'ms' & (data$msincomplete == 0 | is.na(data$msincomplete)) & !is.na(data$prous3) & !is.na(data$prous4) & !is.na(data$prous5) & !is.na(data$antius3) & !is.na(data$antius4) & !is.na(data$antius5) & data$race == 1 & data$countryofbirth == 1], na.rm = TRUE) #mean for ms participants at that site
-  expert <- mean(merged$expert[data$source==sitesource]) #shortcut to indicate whether site is expert or not (0 = inhouse 1 = expert)
-  d_diff <- (mean_ms - mean_tv)/ sqrt((sd_ms^2+sd_tv^2)/2) #computes Cohen's D effect size
-  nhst <- t.test(data$antiauth_avg~data$ms_condition, subset = data$source==sitesource & (data$msincomplete == 0 | is.na(data$msincomplete)) & (!is.na(data$prous3) & !is.na(data$prous4) & !is.na(data$prous5) & !is.na(data$antius3) & !is.na(data$antius4) & !is.na(data$antius5) & data$race == 1 & data$countryofbirth == 1))
-  t <- nhst$statistic
-  df <- nhst$parameter
-  p.value <- nhst$p.value
-  result <- data.frame(location, sitesource, expert, n_tv, mean_tv, sd_tv, n_ms, mean_ms, sd_ms, d_diff, t, df, p.value) #results to be reported
-  return(result)
-}
-
-#in-house sites don't necessarily have the data necessary to implement these exclusions
-#Below, analysis1 (basic exclusions) is run for in-house, while analysis 2 is run for expert versions
-
-#expert sites
-riverside_results <- analysis_anti2(merged, "riverside")
-cnj_results <- analysis_anti2(merged, "cnj")
-occid_results <- analysis_anti2(merged, "occid")
-pace_expert_results <- analysis_anti2(merged, "pace_expert")
-uwmadison_expert_results <- analysis_anti2(merged, "uwmadison_expert")
-kansas_expert_results <- analysis_anti2(merged, "kansas_expert")
-ashland_results <- analysis_anti2(merged, "ashland")
-vcu_results <- analysis_anti2(merged, "vcu")
-byui_results <- analysis_anti2(merged, "byui")
-
-#inhouse sites
-azusa_results <- analysis_anti1(merged, "azusa")
-illinois_results <- analysis_anti1(merged, "illinois")
-ithaca_results <- analysis_anti1(merged, "ithaca")
-kansas_inhouse_results <- analysis_anti1(merged, "kansas_inhouse")
-sou_inhouse_results <- analysis_anti1(merged, "sou_inhouse")
-ufl_results <- analysis_anti1(merged, "ufl")
-upenn_results <- analysis_anti1(merged, "upenn")
-uwmadison_inhouse_results <- analysis_anti1(merged, "uwmadison_inhouse")
-wesleyan_inhouse_results <- analysis_anti1(merged, "wesleyan_inhouse")
-wpi_results <- analysis_anti1(merged, "wpi")
-plu_results <- analysis_anti1(merged, "plu")
-pace_inhouse_results <- analysis_anti1(merged, "pace_inhouse")
-
-#merges results from above into a single data frame
-combinedresults_anti2 <- rbind(
-  ashland_results,
-  azusa_results,
-  cnj_results,
-  illinois_results,
-  ithaca_results,
-  kansas_expert_results,
-  kansas_inhouse_results,
-  occid_results,
-  pace_expert_results,
-  plu_results,
-  riverside_results,
-  sou_inhouse_results,
-  ufl_results,
-  upenn_results,
-  uwmadison_expert_results,
-  uwmadison_inhouse_results,
-  vcu_results,
-  wesleyan_inhouse_results,
-  wpi_results,
-  byui_results,
-  pace_inhouse_results
-)
 
 # This uses the metafor package to compute yi (the standardized mean difference effect size) and vi (the sampling variance) to be used in meta-analysis.
 # Appends this to the data object.
@@ -847,79 +413,6 @@ write.csv(combinedresults_anti2, "./data/public/combinedresults_anti2.csv", row.
 # 3. Identify as White
 # 4. Born in USA
 # 5. Score a 7 or higher on the American Identity item
-
-# Function to generate required stats for meta-analysis.
-analysis_anti3 <- function(data, sitesource)
-{
-  location <- merged$location[data$source==sitesource][1] #saves first row from location variable
-  n_tv <- length(data$antiauth_avg[!is.na(data$antiauth_avg) & data$source==sitesource & data$ms_condition == 'tv' & (data$msincomplete == 0 | is.na(data$msincomplete)) & !is.na(data$prous3) & !is.na(data$prous4) & !is.na(data$prous5) & !is.na(data$antius3) & !is.na(data$antius4) & !is.na(data$antius5) & data$race == 1 & data$countryofbirth == 1 & data$americanid >= 7]) #n for tv condition
-  n_ms <- length(data$antiauth_avg[!is.na(data$antiauth_avg) & data$source==sitesource & data$ms_condition == 'ms' & (data$msincomplete == 0 | is.na(data$msincomplete)) & !is.na(data$prous3) & !is.na(data$prous4) & !is.na(data$prous5) & !is.na(data$antius3) & !is.na(data$antius4) & !is.na(data$antius5) & data$race == 1 & data$countryofbirth == 1 & data$americanid >= 7]) #n for ms condition
-  sd_tv <- sd(data$antiauth_avg[data$source==sitesource & data$ms_condition == 'tv' & (data$msincomplete == 0 | is.na(data$msincomplete)) & !is.na(data$prous3) & !is.na(data$prous4) & !is.na(data$prous5) & !is.na(data$antius3) & !is.na(data$antius4) & !is.na(data$antius5) & data$race == 1 & data$countryofbirth == 1 & data$americanid >= 7], na.rm = TRUE) #sd for tv participants at that site
-  sd_ms <- sd(data$antiauth_avg[data$source==sitesource & data$ms_condition == 'ms' & (data$msincomplete == 0 | is.na(data$msincomplete)) & !is.na(data$prous3) & !is.na(data$prous4) & !is.na(data$prous5) & !is.na(data$antius3) & !is.na(data$antius4) & !is.na(data$antius5) & data$race == 1 & data$countryofbirth == 1 & data$americanid >= 7], na.rm = TRUE) #sd for ms participants at that site
-  mean_tv <- mean(data$antiauth_avg[data$source==sitesource & data$ms_condition == 'tv' & (data$msincomplete == 0 | is.na(data$msincomplete)) & !is.na(data$prous3) & !is.na(data$prous4) & !is.na(data$prous5) & !is.na(data$antius3) & !is.na(data$antius4) & !is.na(data$antius5) & data$race == 1 & data$countryofbirth == 1 & data$americanid >= 7], na.rm = TRUE) #mean for tv participants at that site
-  mean_ms <- mean(data$antiauth_avg[data$source==sitesource & data$ms_condition == 'ms' & (data$msincomplete == 0 | is.na(data$msincomplete)) & !is.na(data$prous3) & !is.na(data$prous4) & !is.na(data$prous5) & !is.na(data$antius3) & !is.na(data$antius4) & !is.na(data$antius5) & data$race == 1 & data$countryofbirth == 1 & data$americanid >= 7], na.rm = TRUE) #mean for ms participants at that site
-  expert <- mean(merged$expert[data$source==sitesource]) #shortcut to indicate whether site is expert or not (0 = inhouse 1 = expert)
-  d_diff <- (mean_ms - mean_tv)/ sqrt((sd_ms^2+sd_tv^2)/2) #computes Cohen's D effect size
-  nhst <- t.test(data$antiauth_avg~data$ms_condition, subset = data$source==sitesource & (data$msincomplete == 0 | is.na(data$msincomplete)) & (!is.na(data$prous3) & !is.na(data$prous4) & !is.na(data$prous5) & !is.na(data$antius3) & !is.na(data$antius4) & !is.na(data$antius5) & data$race == 1 & data$countryofbirth == 1 & data$americanid >= 7))
-  t <- nhst$statistic
-  df <- nhst$parameter
-  p.value <- nhst$p.value
-  result <- data.frame(location, sitesource, expert, n_tv, mean_tv, sd_tv, n_ms, mean_ms, sd_ms, d_diff, t, df, p.value) # results to be reported
-  return(result)
-}
-
-# in-house sites don't necessarily have the data necessary to implement these exclusions
-# Below, analysis1 (basic exclusions) is run for in-house, while analysis 3 is run for expert versions
-
-# expert sites
-riverside_results <- analysis_anti3(merged, "riverside")
-cnj_results <- analysis_anti3(merged, "cnj")
-occid_results <- analysis_anti3(merged, "occid")
-pace_expert_results <- analysis_anti3(merged, "pace_expert")
-uwmadison_expert_results <- analysis_anti3(merged, "uwmadison_expert")
-kansas_expert_results <- analysis_anti3(merged, "kansas_expert")
-ashland_results <- analysis_anti3(merged, "ashland")
-vcu_results <- analysis_anti3(merged, "vcu")
-byui_results <- analysis_anti3(merged, "byui")
-
-# inhouse sites
-azusa_results <- analysis_anti1(merged, "azusa")
-illinois_results <- analysis_anti1(merged, "illinois")
-ithaca_results <- analysis_anti1(merged, "ithaca")
-kansas_inhouse_results <- analysis_anti1(merged, "kansas_inhouse")
-sou_inhouse_results <- analysis_anti1(merged, "sou_inhouse")
-ufl_results <- analysis_anti1(merged, "ufl")
-upenn_results <- analysis_anti1(merged, "upenn")
-uwmadison_inhouse_results <- analysis_anti1(merged, "uwmadison_inhouse")
-wesleyan_inhouse_results <- analysis_anti1(merged, "wesleyan_inhouse")
-wpi_results <- analysis_anti1(merged, "wpi")
-plu_results <- analysis_anti1(merged, "plu")
-pace_inhouse_results <- analysis_anti1(merged, "pace_inhouse")
-
-# merges results from above into a single data frame
-combinedresults_anti3 <- rbind(
-  ashland_results,
-  azusa_results,
-  cnj_results,
-  illinois_results,
-  ithaca_results,
-  kansas_expert_results,
-  kansas_inhouse_results,
-  occid_results,
-  pace_expert_results,
-  plu_results,
-  riverside_results,
-  sou_inhouse_results,
-  ufl_results,
-  upenn_results,
-  uwmadison_expert_results,
-  uwmadison_inhouse_results,
-  vcu_results,
-  wesleyan_inhouse_results,
-  wpi_results,
-  byui_results,
-  pace_inhouse_results
-)
 
 # This uses the metafor package to compute yi (the standardized mean difference effect size) and vi (the sampling variance) to be used in meta-analysis.
 # Appends this to the data object.

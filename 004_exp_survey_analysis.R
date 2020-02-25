@@ -57,6 +57,12 @@ exp_knowl_alittle_pct <- (sum(exp_surv$How.much.knowledge.did.you.have.about.Ter
 exp_knowl_none_pct <- (sum(exp_surv$How.much.knowledge.did.you.have.about.Terror.Management.Theory..prior.to.joining.this.project. == "None (never heard of TMT until this project)")/nrow(exp_surv))*100
 exp_knowl_na_pct <- (sum(exp_surv$How.much.knowledge.did.you.have.about.Terror.Management.Theory..prior.to.joining.this.project. == "")/nrow(exp_surv))*100
 
+# A simpler way:
+# with(exp_surv,
+#      table(How.much.knowledge.did.you.have.about.Terror.Management.Theory..prior.to.joining.this.project.,
+#            useNA = 'ifany'))
+
+
 # Experimenter "rooting for success/failure" data are messy, so I'll code them here
 # Manually recoding some responses, providing coding here for verifiability
 # Copy over all responses
