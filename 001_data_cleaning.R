@@ -590,7 +590,14 @@ merged <- mutate(merged,
                  # Exclusion rule 1:
                  #1. Wrote something for both writing prompts
                  #2. Completed all six items evaluating the essay authors)
-                 pass_ER1 = (msincomplete == 0 & !is.na(msincomplete)) & # completed both prompts
+                 pass_ER1 = (msincomplete == 0 & !is.na(msincomplete)) | source == "uwmadison_expert" &
+                   # and wrote something for the MS prompts OR source is uwmadison_expert.
+                   # NOTE: uwmadison_expert left the msincomplete variable NA instead of coding "0" or "1". We noticed this 
+                   # late, and can't be 100% certain whether they did the coding. However, they took
+                   # detailed notes and reported that no responses were abnormal. In addition,
+                   # at the other expert sites, none reported a case where a participant left both responses
+                   # blank. So, it seems a safe assumption that all or nearly all of these participants
+                   # did in fact complete the ms prompts.
                    !is.na(prous3) & !is.na(prous4) & !is.na(prous5) &  # P provided all 3 ratings of pro-us essay
                    !is.na(antius3) & !is.na(antius4) & !is.na(antius5),# P provided all 3 ratings of anti-us
                  # Exclusion rule 2:
