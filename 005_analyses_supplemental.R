@@ -32,17 +32,12 @@ library(tidyverse)
 #
 ################################################################################
 
-# I'm re-using the primary analysis script and just editing it. Admittedly, this
-# is not the most efficient code, but it should work.
-
-# Implementing pro-only first:
+# This is adapted from 002_ml4analysis.R
 
 #read in deidentified aggregate dataset
 merged <- readRDS("./data/public/merged_deidentified_subset.rds")
 
 # Function for analyzing pro- and anti-ratings separately ----
-# Maybe this should be two functions...
-# Or maybe I just need to pivot_longer after this is run
 analyse_separately <- function(data) {
   # Make means, sds, and ns
   sumstats <- group_by(data, location, source, ms_condition) %>% 
@@ -145,6 +140,8 @@ write.csv(combinedresults_pro1, "./data/public/combinedresults_pro1.csv", row.na
 write.csv(combinedresults_pro2, "./data/public/combinedresults_pro2.csv", row.names = FALSE)
 write.csv(combinedresults_pro3, "./data/public/combinedresults_pro3.csv", row.names = FALSE)
 
+
+# analyze pro-author ratings ----
 # reads in csv files from above, just to confirm we can start with those files
 combinedresults_pro0 <- read.csv("./data/public/combinedresults_pro0.csv")
 combinedresults_pro1 <- read.csv("./data/public/combinedresults_pro1.csv")
@@ -163,7 +160,7 @@ summary( meta3(y=yi, v=vi, cluster=location, data=combinedresults_pro3))
 # note the openMX status, sometimes indicates a potential problem
 summary( mixed_pro0 <- meta3(y=yi, v=vi, cluster=location, x=expert, data=combinedresults_pro0))
 summary( mixed_pro1 <- meta3(y=yi, v=vi, cluster=location, x=expert, data=combinedresults_pro1))
-summary( mixed_pro2 <- meta3(y=yi, v=vi, cluster=location, x=expert, data=combinedresults_pro2)) # potential hit: slope = .245, p = .011
+summary( mixed_pro2 <- meta3(y=yi, v=vi, cluster=location, x=expert, data=combinedresults_pro2))
 summary( mixed_pro3 <- meta3(y=yi, v=vi, cluster=location, x=expert, data=combinedresults_pro3))
 # Notes: The R? for the version predictor will be reported for both level 2 and level 3, although in this case version is a level 2 predictor so the level 3 R? will always be zero. 
 
@@ -197,9 +194,7 @@ effsize::cohen.d(data$proauth_avg~data$ms_condition,pooled=TRUE,paired=FALSE,
 
 ###ANALYSIS 1: Exclusion set 1###
 # 1. Wrote something for both writing prompts
-data <- subset(data, (data$msincomplete == 0 | is.na(data$msincomplete)))
-# 2. Completed all six items evaluating the essay authors)
-data <- subset(data, (!is.na(data$prous3) & !is.na(data$prous4) & !is.na(data$prous5) & !is.na(data$antius3) & !is.na(data$antius4) & !is.na(data$antius5)))
+data <- filter(data, pass_ER1 == T)
 # t.test and descriptive statistics per condition from psych package
 t.test(data$proauth_avg~data$ms_condition)
 describeBy(data$proauth_avg, group = data$ms_condition)
@@ -208,12 +203,7 @@ effsize::cohen.d(data$proauth_avg~data$ms_condition,pooled=TRUE,paired=FALSE,
                  conf.level=0.95)
 
 ###ANALYSIS 2: Exclusion set 2###
-# 1. Wrote something for both writing prompts
-# 2. Completed all six items evaluating the essay authors
-# 3. Identify as White (race == 1)
-data <- subset(data, data$race == 1)
-# 4. Born in USA (countryofbirth == 1)
-data <- subset(data, data$countryofbirth == 1)
+data <- filter(data, pass_ER2 == T)
 # t.test and descriptive statistics per condition from psych package
 t.test(data$proauth_avg~data$ms_condition)
 describeBy(data$proauth_avg, group = data$ms_condition)
@@ -222,12 +212,7 @@ effsize::cohen.d(data$proauth_avg~data$ms_condition,pooled=TRUE,paired=FALSE,
                  conf.level=0.95) #this is incorrectly indicating a negative value, I'm not sure why but it should be positive from the group means
 
 ###ANALYSIS 3: Exclusion set 3###
-# 1. Wrote something for both writing prompts
-# 2. Completed all six items evaluating the essay authors
-# 3. Identify as White
-# 4. Born in USA
-# 5. Score a 7 or higher on the American Identity item
-data <- subset(data, data$americanid >= 7)
+data <- filter(data, pass_ER3 == T)
 # t.test and descriptive statistics per condition from psych package
 t.test(data$proauth_avg~data$ms_condition)
 describeBy(data$proauth_avg, group = data$ms_condition)
@@ -246,7 +231,7 @@ summary( meta(y = yi, v = vi, data = data))
 # Focused analysis of sites with "expert" or "a lot of knowledge about TMT" leads
 # Still using exclusion set 1
 # Read data, applying exclusion criteria 1
-data <- filter(merged, passER1 == T)
+data <- filter(merged, pass_ER1 == T)
 # Selecting only the below sites:
 #University of Wisconsin, Madison, WI (in-house)
 #The College of New Jersey
@@ -254,7 +239,8 @@ data <- filter(merged, passER1 == T)
 #University of Kansas (in-house)
 #Pace University (expert)
 #Virginia Commonwealth University, Richmond, VA
-data <- subset(data, data$source=="uwmadison_inhouse" | data$source=="cnj" | data$source=="kansas_expert" | data$source=="kansas_inhouse" | data$source=="pace_expert" | data$source=="vcu")
+data <- subset(data, data$source %in% c("uwmadison_inhouse", "cnj", "kansas_expert", "kansas_inhouse",
+                                        "pace_expert", "vcu"))
 # Applying the same levels fix as earlier, only because it caused problems in 
 # cohen.d() below. May not be necessary anymore.
 data$ms_condition <- factor(data$ms_condition, levels = c("ms", "tv"))
@@ -264,8 +250,6 @@ describeBy(data$proauth_avg, group = data$ms_condition)
 effsize::cohen.d(data$proauth_avg~data$ms_condition,pooled=TRUE,paired=FALSE,
                  na.rm=TRUE, hedges.correction=TRUE,
                  conf.level=0.95) #this was previously incorrectly indicating a positive value? Had to manually reverse for dissertation but seems fine now
-
-
 
 ################################################################################
 # Analyzing anti- ratings now
@@ -361,7 +345,7 @@ summary( meta(y = yi, v = vi, data = data))
 # Focused analysis of sites with "expert" or "a lot of knowledge about TMT" leads
 # Still using exclusion set 1
 # Read data, applying exclusion criteria 1
-data <- filter(merged, passER1 == T)
+data <- filter(merged, pass_ER1 == T)
 # Selecting only the below sites:
 #University of Wisconsin, Madison, WI (in-house)
 #The College of New Jersey
@@ -369,7 +353,8 @@ data <- filter(merged, passER1 == T)
 #University of Kansas (in-house)
 #Pace University (expert)
 #Virginia Commonwealth University, Richmond, VA
-data <- subset(data, data$source=="uwmadison_inhouse" | data$source=="cnj" | data$source=="kansas_expert" | data$source=="kansas_inhouse" | data$source=="pace_expert" | data$source=="vcu")
+data <- subset(data, data$source %in% c("uwmadison_inhouse", "cnj", "kansas_expert", "kansas_inhouse",
+                                        "pace_expert", "vcu"))
 # Applying the same levels fix as earlier, only because it caused problems in 
 # cohen.d() below. May not be necessary anymore.
 data$ms_condition <- factor(data$ms_condition, levels = c("ms", "tv"))
@@ -381,7 +366,7 @@ effsize::cohen.d(data$antiauth_avg~data$ms_condition,pooled=TRUE,paired=FALSE,
                  conf.level=0.95) #this was previously incorrectly indicating a positive value? Had to manually reverse for dissertation but seems fine now
 
 
-#### Analyzing how much participants liked the pro and anti authors
+## Analyzing how much participants liked the pro and anti authors ----
 # Read in data to start from scratch
 merged <- readRDS("./data/public/merged_deidentified_subset.rds")
 
@@ -468,7 +453,7 @@ combinedresults3 <- read.csv("./data/public/combinedresults3.csv")
 # Filtering out kansas_expert and byui sites
 # saving these results to a .txt file with sink()
 sink("./output/supplement_nokansas_nobyui.txt")
-summary( meta(y=yi, v=vi, data=filter(combinedresults1, sitesource != "kansas_expert" & sitesource != "byui")))
-summary( meta(y=yi, v=vi, data=filter(combinedresults2, sitesource != "kansas_expert" & sitesource != "byui")))
-summary( meta(y=yi, v=vi, data=filter(combinedresults3, sitesource != "kansas_expert" & sitesource != "byui")))
+summary( meta(y=yi, v=vi, data=filter(combinedresults1, source != "kansas_expert" & source != "byui")))
+summary( meta(y=yi, v=vi, data=filter(combinedresults2, source != "kansas_expert" & source != "byui")))
+summary( meta(y=yi, v=vi, data=filter(combinedresults3, source != "kansas_expert" & source != "byui")))
 sink()

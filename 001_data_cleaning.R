@@ -132,8 +132,9 @@ uwmadison_expert$location <- "uwmadison"
 # recoding gender
 uwmadison_expert$gender[uwmadison_expert$gender=="F"] <- 1
 uwmadison_expert$gender[uwmadison_expert$gender=="M"] <- 2
-# TODO: Waiting to hear from UWMadison group whether there were/weren't incomplete MS responses
-# uwmadison_expert$msincomplete <- 0
+# We decided to treat UWMadison expert as having all participants pass the msincomplete check
+# Rather than impute 0s here, this is handled via exception when creating pass_ER1.
+# See commit log 03dc9ccf for details
 # Note: One R user was having issues with some .csv files.
 # If that happens, you can uncomment the below line to simply read in the pre-processed .rds file.
 # uwmadison_expert <- readRDS("./data/raw_site_data/UWmadison expert/uwmadison_expert.rds")
@@ -339,7 +340,6 @@ uwmadison_inhouse <- mutate(uwmadison_inhouse,
                                                      # all other cases fall through to NA
                                                      T ~ NA_character_),
                             # did they fully complete prompts 1 and 2?
-                            # TODO: decide whether to test all four prompts
                             msincomplete = test_msincomplete(MS1, MS2,
                                                              control1, control2)
                             )
@@ -481,6 +481,7 @@ pace_inhouse$location <- "pace"
 # change column names to match template
 # author A is always anti-us and author P is always pro-us
 pace_inhouse <- rename(pace_inhouse,
+                       participantnum = Respondent.ID,
                        prous4 = How.much.do.you.like.Author.P.,                      
                        prous3 = How.intelligent.is.Author.P.,                        
                        prous5 = How.knowledgeable.about.America.is.Author.P.,        
@@ -496,7 +497,25 @@ pace_inhouse <- rename(pace_inhouse,
                        MS1 = Please.briefly.describe.the.emotions.that.the.thought.of.your.own.death.arouses.in.you.,
                        MS2 = Jot.down..as.specifically.as.you.can..what.you.think.will.happen.to.you.physically.as.you.die.and.once.you.are.physically.dead.,
                        control1 = Please.briefly.describe.the.emotions.that.the.thought.of.watching.television.arouses.in.you.,
-                       control2 = Jot.down..as.specifically.as.you.can..what.you.think.happens.to.you.as.you.watch.television..and.once.you.have.physically.watched.television.
+                       control2 = Jot.down..as.specifically.as.you.can..what.you.think.happens.to.you.as.you.watch.television..and.once.you.have.physically.watched.television.,
+                       countryofbirth = In.what.country.were.you.born.,
+                       race = What.is.your.race.ethnicity.)
+# process race and countryofbirth variables
+pace_inhouse <- mutate(pace_inhouse,
+                       countrytext = countryofbirth,
+                       countryofbirth = ifelse(tolower(countryofbirth) %in% 
+                                                 c("united states ", "united states", "america",
+                                                   "us", "usa", "america ", "united states of america",
+                                                   "united states of america "), 1, 0),
+                       race = tolower(race),
+                       racetext = race,
+                       race = case_when(race %in% c("white", "white ", "caucasian", "caucasian ", "causian") ~ 1,
+                                        race %in% c("black", "african american/ black", "african american") ~ 2,
+                                        race %in% c("asian", "asian american", "asia", "asian ", "japanese") ~ 4,
+                                        race == "" ~ NA_real_,
+                                        # otherwise, 6. 
+                                        # TODO: could code some more specifics yet
+                                        T ~ 6)
                        )
 # create condition & msincomplete variables
 pace_inhouse <- mutate(pace_inhouse,
@@ -509,7 +528,6 @@ pace_inhouse <- mutate(pace_inhouse,
                        # make msincomplete based on whether they did both prompts
                        msincomplete = test_msincomplete(MS1, MS2, control1, control2)
 )
-# TODO: zap row with NA participantnum and strange values of DV
 # For users having trouble with .csv: can uncomment below line and read processed .rds
 # pace_inhouse <- readRDS("./data/raw_site_data/pace_inhouse/TMT.rds")
 
@@ -588,16 +606,16 @@ merged <- filter(merged, ms_condition == "ms" | ms_condition == "tv")
 # compute exclusion rules
 merged <- mutate(merged, 
                  # Exclusion rule 1:
-                 #1. Wrote something for both writing prompts
-                 #2. Completed all six items evaluating the essay authors)
-                 pass_ER1 = (msincomplete == 0 & !is.na(msincomplete)) | source == "uwmadison_expert" &
-                   # and wrote something for the MS prompts OR source is uwmadison_expert.
-                   # NOTE: uwmadison_expert left the msincomplete variable NA instead of coding "0" or "1". We noticed this 
-                   # late, and can't be 100% certain whether they did the coding. However, they took
-                   # detailed notes and reported that no responses were abnormal. In addition,
-                   # at the other expert sites, none reported a case where a participant left both responses
-                   # blank. So, it seems a safe assumption that all or nearly all of these participants
-                   # did in fact complete the ms prompts.
+                 # 1. Wrote something for both writing prompts OR source is uwmadison_expert.
+                 # NOTE: uwmadison_expert left the msincomplete variable NA instead of coding "0" or "1". 
+                 # We noticed this late, and can't be 100% certain whether they did the coding. 
+                 # However, they took detailed notes and reported that no responses were abnormal. 
+                 # In addition, at the other expert sites, none reported a case where a participant 
+                 # left both responses blank. So, it seems a safe assumption that all or nearly all 
+                 # of these participants did in fact complete the ms prompts.
+                 pass_ER1 = (msincomplete == 0 & !is.na(msincomplete)) | 
+                   source == "uwmadison_expert" &
+                   #2. Completed all six items evaluating the essay authors)
                    !is.na(prous3) & !is.na(prous4) & !is.na(prous5) &  # P provided all 3 ratings of pro-us essay
                    !is.na(antius3) & !is.na(antius4) & !is.na(antius5),# P provided all 3 ratings of anti-us
                  # Exclusion rule 2:
@@ -660,7 +678,6 @@ identifying_vars <- c("MS1", "MS2", "MS3", "MS4",
                       "IP.Address",
                       # dropping what may be ID numbers of some kind
                       "WBL_ID",
-                      "Respondent.ID",
                       "Collector.ID",
                       # dropping potentially triangulating data
                       "age",
