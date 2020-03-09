@@ -118,9 +118,6 @@ combinedresults3 <- filter(merged, !is.na(pro_minus_anti),
                            pass_ER3 == T | expert == 0) %>% 
   analyse()
 
-
-# why am I losing so many sites in combinedresults2?
-
 ### Note: If you're using the subsetted dataset, the below section
 # will give errors due to missing sources. You can safely ignore them,
 # it's simply that some lines are not running.
