@@ -55,6 +55,7 @@ firstup <- function(x) {
   substr(x, 1, 1) <- toupper(substr(x, 1, 1))
   x
 }
+formatCC <- function(x) formatC(x, big.mark = ",") 
 ```
 
 ```{r analysis-preferences}
@@ -85,6 +86,8 @@ exp_surv <- readRDS("./data/raw_site_data/experimenter survey/exp_surv.rds")
 # The 'merged' df includes all data provided by sites
 # I'm going to retain it in case we need to refer to it later, and then
 # apply the study-wide exclusion criteria noted below.
+# TODO: Note that questions of age & gender were idiosyncratic across sites!
+#   Thus some sites omitted from calculation of percentages
 
 merged_original <- merged
 
@@ -96,9 +99,7 @@ merged$race <- as.numeric(as.character(merged$race))
 
 # Applying exclusion criteria 1
 # 1. Wrote something for both writing prompts
-merged <- subset(merged, (merged$msincomplete == 0 | is.na(merged$msincomplete)))
-# 2. Completed all six items evaluating the essay authors)
-merged <- subset(merged, (!is.na(merged$prous3) & !is.na(merged$prous4) & !is.na(merged$prous5) & !is.na(merged$antius3) & !is.na(merged$antius4) & !is.na(merged$antius5)))
+merged <- filter(merged, pass_ER1 == T | expert == 0)
 
 n_woman <- length(which(merged$gender== 1)) #number of women
 n_man <- length(which(merged$gender== 2)) #number of men
@@ -124,9 +125,12 @@ n_other_pct <- length(which(merged$race == 6))/nrow(merged)*100 #percent other
 
 ```
 
+# Work in progress
+Power calculations in this document are not calculated on the fly and appear very off.
+
 ## Participants
 
-A total of `r length(unique(merged_original$source))` labs participated and provided a total sample of `r formatC(nrow(merged_original), big.mark = ",")` participants. In accordance with the pre-registration (https://osf.io/4xx6w), we immediately excluded from all analyses participants who either failed to complete all 6 ratings of the essay authors, or who failed to complete both writing prompts within the mortality salience or control conditions (e.g., the between-subjects manipulation). The latter exclusion criteria applied only to participants from Author Advised sites, because the necessary data was not always available for In House sites. Thus, the usable sample included `r formatC(nrow(merged), big.mark = ",")` participants (see Table 1 for a summary of sites). `r formatC(n_woman, big.mark = ",")` participants (`r n_woman_pct`%) reported being female and `r formatC(n_man, big.mark = ",")` participants (`r n_man_pct`%) reported being male; the remaining participants did not respond to the item, were asked about gender in a non-standard way, or chose a different response. The mean age was `r mean(merged$age, na.rm=TRUE)` years (*SD* = `r sd(merged$age, na.rm=TRUE)`). Participant reported race was `r n_white` (`r n_white_pct`%) White, `r n_asian` (`r n_asian_pct`%) Asian, `r n_black` (`r n_black_pct`%) Black or African American, `r n_aian` (`r n_aian_pct`%) American Indian or Alaska Native, `r n_haw` (`r n_haw_pct`%) Native Hawaiian or Pacific Islander, `r n_other` (`r n_other_pct`%) Other. The remaining participants did not report their race, or responses were not easily recoded to match these categories.
+A total of `r length(unique(merged_original$source))` labs participated and provided a total sample of `r formatC(nrow(merged_original), big.mark = ",")` participants. In accordance with the pre-registration (https://osf.io/4xx6w), we immediately excluded from all analyses participants who either failed to complete all 6 ratings of the essay authors, or who failed to complete both writing prompts within the mortality salience or control conditions (e.g., the between-subjects manipulation). The latter exclusion criteria applied only to participants from Author Advised sites, because the necessary data was not always available for In House sites. Thus, the usable sample included `r formatCC(nrow(merged))` participants (see Table 1 for a summary of sites). `r formatCC(n_woman)` participants (`r n_woman_pct`%) reported being female and `r formatCC(n_man)` participants (`r n_man_pct`%) reported being male; the remaining participants did not respond to the item, were asked about gender in a non-standard way, or chose a different response. The mean age was `r mean(merged$age, na.rm=TRUE)` years (*SD* = `r sd(merged$age, na.rm=TRUE)`). Participant reported race was `r n_white` (`r n_white_pct`%) White, `r n_asian` (`r n_asian_pct`%) Asian, `r n_black` (`r n_black_pct`%) Black or African American, `r n_aian` (`r n_aian_pct`%) American Indian or Alaska Native, `r n_haw` (`r n_haw_pct`%) Native Hawaiian or Pacific Islander, `r n_other` (`r n_other_pct`%) Other. The remaining participants did not report their race, or responses were not easily recoded to match these categories.
 
 
 ```{r analysis-alpha-exclusions, include = FALSE}
@@ -137,11 +141,11 @@ alpha_pro <- psych::alpha(select(merged, prous3, prous4, prous5))
 # 'merged_original' is all data, no exclusions
 # 'merged' is basic exclusions (exclusion set 1 below). Implemented in the participants code chunk at the beginning.
 # 'merged_excl_2' further excludes participants as per exclusion set 2 (below)
-merged_excl_2 <- subset(merged, (merged$race == 1 & merged$countryofbirth == 1) | merged$expert == 0)
+merged_excl_2 <- subset(merged, pass_ER2 == T)
 
 # 'merged_excl_3' further excludes participants as per exclusion set 3 (below)
 
-merged_excl_3 <- subset(merged_excl_2, merged_excl_2$americanid >= 7 | merged_excl_2$expert == 0)
+merged_excl_3 <- subset(merged_excl_2, pass_ER3 == T)
 ```
 
 ## Analysis Plan

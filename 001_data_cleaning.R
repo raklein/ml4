@@ -616,8 +616,8 @@ merged <- mutate(merged,
                  pass_ER1 = (msincomplete == 0 & !is.na(msincomplete)) | 
                    source == "uwmadison_expert" &
                    #2. Completed all six items evaluating the essay authors)
-                   !is.na(prous3) & !is.na(prous4) & !is.na(prous5) &  # P provided all 3 ratings of pro-us essay
-                   !is.na(antius3) & !is.na(antius4) & !is.na(antius5),# P provided all 3 ratings of anti-us
+                   (!is.na(prous3) & !is.na(prous4) & !is.na(prous5) &  # P provided all 3 ratings of pro-us essay
+                      !is.na(antius3) & !is.na(antius4) & !is.na(antius5)),# P provided all 3 ratings of anti-us
                  # Exclusion rule 2:
                  # as above, plus
                  #3. Identify as White (race == 1)

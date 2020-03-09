@@ -150,6 +150,7 @@ combinedresults_pro3 <- read.csv("./data/public/combinedresults_pro3.csv")
 
 # analyses repeated for each set of exclusion critera
 # three-level random-effects meta-analysis in MetaSEM
+# TODO: drop cluster=location due to OpenMX status = 5
 summary( meta3(y=yi, v=vi, cluster=location, data=combinedresults_pro0))
 summary( meta3(y=yi, v=vi, cluster=location, data=combinedresults_pro1))
 summary( meta3(y=yi, v=vi, cluster=location, data=combinedresults_pro2))

@@ -69,7 +69,8 @@ knitr::opts_chunk$set(cache.extra = knitr::rand_seed)
 
 # Primary data file with replication data aggregated across labs (deidentified is missing just a couple variables for this -- age and gender)
 # Note: This file is the merged data provided by sites, produced by 001_data_cleaning.R
-merged <- readRDS("./data/processed_data/merged.rds")
+merged <- readRDS("./data/processed_data/merged_full.rds")
+# TODO: merged_full or merged_subset?
 # Alternatively, you can run it with the public data and get most results. The problem with RMarkdown is that the script
 # needs to run completely with no errors or it won't render. So, if you do this, you'll need to comment out any
 # sections that require sensitive data.
@@ -94,10 +95,7 @@ merged$gender <- as.numeric(as.character(merged$gender))
 merged$race <- as.numeric(as.character(merged$race))
 
 # Applying exclusion criteria 1
-# 1. Wrote something for both writing prompts
-merged <- subset(merged, (merged$msincomplete == 0 | is.na(merged$msincomplete)))
-# 2. Completed all six items evaluating the essay authors)
-merged <- subset(merged, (!is.na(merged$prous3) & !is.na(merged$prous4) & !is.na(merged$prous5) & !is.na(merged$antius3) & !is.na(merged$antius4) & !is.na(merged$antius5)))
+merged <- filter(merged, pass_ER1 == T)
 
 n_woman <- length(which(merged$gender== 1)) #number of women
 n_man <- length(which(merged$gender== 2)) #number of men

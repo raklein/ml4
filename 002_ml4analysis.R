@@ -386,7 +386,7 @@ effsize::cohen.d(data$pro_minus_anti~data$ms_condition,pooled=TRUE,paired=FALSE,
                  na.rm=TRUE, hedges.correction=TRUE,
                  conf.level=0.95) #this was previously incorrectly indicating a positive value? Had to manually reverse for dissertation but seems fine now
 
-# Computing alpha for the essay author ratings, basic exclusions
+# Computing alpha for the essay author ratings, basic exclusions ----
 # Read data
 data <- merged
 # Applying exclusion criteria 0 and 1
@@ -401,3 +401,28 @@ omega(pro_df) # Omega may be more appropriate
 anti_df <- data.frame(data$antius3,data$antius4,data$antius5)
 psych::alpha(anti_df)
 omega(anti_df)
+
+# generating demographics cross-tabs ----
+# TODO: This section is a WIP
+
+# Currently, demographics seem to be calculated for group after application of ER1 to expert sites
+#    (non-expert sites just get a pass on this, I guess)
+merged <- readRDS("./data/processed_data/merged_subset.rds")
+demos <- filter(merged, !is.na(pro_minus_anti),
+                pass_ER1 == T | expert == 0)
+
+# is there a category for multiracial? 6? something else?
+
+demos_race <- demos %>% 
+  select(race) %>% 
+  mutate(race = as.numeric(as.character(race))) %>% # coerce to numeric categories
+  group_by(race) %>% 
+  summarize(n = n()) %>% 
+  mutate(pct = round(n / sum(n)* 100, 2))
+
+demos_gender <- demos %>% 
+  select(gender) %>% 
+  mutate(gender = as.numeric(as.character(gender))) %>% # coerce to numeric categories
+  group_by(gender) %>% 
+  summarize(n = n()) %>% 
+  mutate(pct = round(n / sum(n)* 100, 2))
