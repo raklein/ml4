@@ -55,6 +55,8 @@ firstup <- function(x) {
   substr(x, 1, 1) <- toupper(substr(x, 1, 1))
   x
 }
+
+# for calling formatC with desired arguments
 formatCC <- function(x) formatC(x, big.mark = ",") 
 ```
 
@@ -79,6 +81,7 @@ merged <- readRDS("./data/processed_data/merged_subset.rds")
 # Read in data from experimenter survey (Google Form - private due to sensitive info)
 exp_surv <- readRDS("./data/raw_site_data/experimenter survey/exp_surv.rds")
 
+
 ```
 
 ```{r analysis-participants, include = FALSE}
@@ -94,43 +97,45 @@ merged_original <- merged
 # Aggregate participants characteristics
 # Converting to numeric
 merged$age <- as.numeric(as.character(merged$age))
-merged$gender <- as.numeric(as.character(merged$gender))
-merged$race <- as.numeric(as.character(merged$race))
 
 # Applying exclusion criteria 1
-# 1. Wrote something for both writing prompts
-merged <- filter(merged, pass_ER1 == T | expert == 0)
+# has the primary DV, (wrote something for both writing prompts OR in-house attempt)
+merged <- filter(merged, !is.na(pro_minus_anti), pass_ER1 == T | expert == 0)
 
-n_woman <- length(which(merged$gender== 1)) #number of women
-n_man <- length(which(merged$gender== 2)) #number of men
-n_other <- length(which(merged$gender== 3)) #other responses
+# fetch demographics and extract values
+#   gender
+demos_gender <- read_csv("./data/processed_data/demos_gender.csv")
+n_woman     <- filter(demos_gender, gender == 1) %>% select(n)    %>% as.numeric
+n_woman_pct <- filter(demos_gender, gender == 1) %>% select(pct)  %>% as.numeric
+n_man       <- filter(demos_gender, gender == 2) %>% select(n)    %>% as.numeric
+n_man_pct   <- filter(demos_gender, gender == 2) %>% select(pct)  %>% as.numeric
 
-n_woman_pct <- length(which(merged$gender== 1))/nrow(merged)*100 #pct women
-n_man_pct <- length(which(merged$gender== 2))/nrow(merged)*100 #pct men
-n_other_pct <- length(which(merged$gender== 3))/nrow(merged)*100 #pct other/blank
+#   race
+demos_race <- read_csv("./data/processed_data/demos_race.csv")
+n_white     <- filter(demos_race, race == 1) %>% select(n)    %>% as.numeric
+n_white_pct <- filter(demos_race, race == 1) %>% select(pct)  %>% as.numeric
+n_black     <- filter(demos_race, race == 2) %>% select(n)    %>% as.numeric
+n_black_pct <- filter(demos_race, race == 2) %>% select(pct)  %>% as.numeric
+n_aian      <- filter(demos_race, race == 3) %>% select(n)    %>% as.numeric
+n_aian_pct  <- filter(demos_race, race == 3) %>% select(pct)  %>% as.numeric
+n_asian     <- filter(demos_race, race == 4) %>% select(n)    %>% as.numeric
+n_asian_pct <- filter(demos_race, race == 4) %>% select(pct)  %>% as.numeric
+n_haw       <- filter(demos_race, race == 5) %>% select(n)    %>% as.numeric
+n_haw_pct   <- filter(demos_race, race == 5) %>% select(pct)  %>% as.numeric
+n_other     <- filter(demos_race, race == 6) %>% select(n)    %>% as.numeric
+n_other_pct <- filter(demos_race, race == 6) %>% select(pct)  %>% as.numeric
 
-n_white <- length(which(merged$race == 1)) #num White
-n_white_pct <- length(which(merged$race == 1))/nrow(merged)*100 #percent White, using the length of the source variable (assigned to all sessions) for total N
-n_black <- length(which(merged$race == 2)) #num Black or African American 
-n_black_pct <- length(which(merged$race == 2))/nrow(merged)*100 #percent Black
-n_aian <- length(which(merged$race == 3)) #num American Indian or Alaska Native
-n_aian_pct <- length(which(merged$race == 3))/nrow(merged)*100 #percent American Indian/Alaska Native
-n_asian <- length(which(merged$race == 4)) #num Asian
-n_asian_pct <- length(which(merged$race == 4))/nrow(merged)*100 #percent Asian
-n_haw <- length(which(merged$race == 5)) #num Native Hawaiian or Pacific Islander
-n_haw_pct <- length(which(merged$race == 5))/nrow(merged)*100 #percent Native Hawaiian or Pacific Islander
-n_other <- length(which(merged$race == 6)) #num Other
-n_other_pct <- length(which(merged$race == 6))/nrow(merged)*100 #percent other
-
-
+# load results of experimenter survey
+source("004_exp_survey_analysis.R")
 ```
 
 # Work in progress
-Power calculations in this document are not calculated on the fly and appear very off.
+Results from the researcher survey are not yet filtered for the subset of sources that collected > 60 participants. Several experimenter survey responses come from the same site.
+Power calculations in this document are not calculated on the fly and can be inaccurate. Where previously there was a just significant effect among author-advised studies (g = .20, p = .04, one-tailed, Chatard et al. 2020), that appears to have been wiped out by the re-addition of UWMadison-expert. 
 
 ## Participants
 
-A total of `r length(unique(merged_original$source))` labs participated and provided a total sample of `r formatC(nrow(merged_original), big.mark = ",")` participants. In accordance with the pre-registration (https://osf.io/4xx6w), we immediately excluded from all analyses participants who either failed to complete all 6 ratings of the essay authors, or who failed to complete both writing prompts within the mortality salience or control conditions (e.g., the between-subjects manipulation). The latter exclusion criteria applied only to participants from Author Advised sites, because the necessary data was not always available for In House sites. Thus, the usable sample included `r formatCC(nrow(merged))` participants (see Table 1 for a summary of sites). `r formatCC(n_woman)` participants (`r n_woman_pct`%) reported being female and `r formatCC(n_man)` participants (`r n_man_pct`%) reported being male; the remaining participants did not respond to the item, were asked about gender in a non-standard way, or chose a different response. The mean age was `r mean(merged$age, na.rm=TRUE)` years (*SD* = `r sd(merged$age, na.rm=TRUE)`). Participant reported race was `r n_white` (`r n_white_pct`%) White, `r n_asian` (`r n_asian_pct`%) Asian, `r n_black` (`r n_black_pct`%) Black or African American, `r n_aian` (`r n_aian_pct`%) American Indian or Alaska Native, `r n_haw` (`r n_haw_pct`%) Native Hawaiian or Pacific Islander, `r n_other` (`r n_other_pct`%) Other. The remaining participants did not report their race, or responses were not easily recoded to match these categories.
+A total of `r length(unique(merged_original$source))` labs participated and provided a total sample of `r formatCC(nrow(merged_original))` participants. In accordance with the pre-registration (https://osf.io/4xx6w), we immediately excluded from all analyses participants who either failed to complete all 6 ratings of the essay authors, or who failed to complete both writing prompts within the mortality salience or control conditions (e.g., the between-subjects manipulation). The latter exclusion criteria applied only to participants from Author Advised sites, because the necessary data was not always available for In House sites. Thus, the usable sample included `r formatCC(nrow(merged))` participants (see Table 1 for a summary of sites). `r formatCC(n_woman)` participants (`r n_woman_pct`%) reported being female and `r formatCC(n_man)` participants (`r n_man_pct`%) reported being male; the remaining participants did not respond to the item, were asked about gender in a non-standard way, or chose a different response. The mean age was `r mean(merged$age, na.rm=TRUE)` years (*SD* = `r sd(merged$age, na.rm=TRUE)`). Participant reported race was `r n_white` (`r n_white_pct`%) White, `r n_asian` (`r n_asian_pct`%) Asian, `r n_black` (`r n_black_pct`%) Black or African American, `r n_aian` (`r n_aian_pct`%) American Indian or Alaska Native, `r n_haw` (`r n_haw_pct`%) Native Hawaiian or Pacific Islander, `r n_other` (`r n_other_pct`%) Other. The remaining participants did not report their race, or responses were not easily recoded to match these categories.
 
 
 ```{r analysis-alpha-exclusions, include = FALSE}
@@ -141,11 +146,11 @@ alpha_pro <- psych::alpha(select(merged, prous3, prous4, prous5))
 # 'merged_original' is all data, no exclusions
 # 'merged' is basic exclusions (exclusion set 1 below). Implemented in the participants code chunk at the beginning.
 # 'merged_excl_2' further excludes participants as per exclusion set 2 (below)
-merged_excl_2 <- subset(merged, pass_ER2 == T)
+merged_excl_2 <- subset(merged, pass_ER2 == T | expert == 0)
 
 # 'merged_excl_3' further excludes participants as per exclusion set 3 (below)
 
-merged_excl_3 <- subset(merged_excl_2, pass_ER3 == T)
+merged_excl_3 <- subset(merged_excl_2, pass_ER3 == T | expert == 0)
 ```
 
 ## Analysis Plan
@@ -155,71 +160,22 @@ We then analyzed these individual results meta-analytically to get an aggregate 
 
 Original authors were not entirely in agreement about what exclusions should be implemented. So, we repeated our analyses under different exclusion criteria suggested by original authors:
 
-*Exclusion Set 1:* Include all participants who completed the materials (e.g., wrote something for both writing prompts, and completed all six items evaluating the essay authors). Reduces the usable N from `r formatC(nrow(merged_original), big.mark = ",")` to `r formatC(nrow(merged), big.mark = ",")` participants. This sample size gives us 95% power to detect a condition effect of *d* = .15 in an independent samples *t*-test.  
+*Exclusion Set 1:* Include all participants who completed the materials (e.g., wrote something for both writing prompts, and completed all six items evaluating the essay authors). Reduces the usable N from `r formatCC(nrow(merged_original))` to `r formatCC(nrow(merged))` participants. This sample size gives us 95% power to detect a condition effect of *d* = .15 in an independent samples *t*-test.  
 
-*Exclusion Set 2:* All prior exclusions, and further exclude participants who did not identify as White or who indicated they were born outside the United States. Reduces *N* to `r formatC(nrow(merged_excl_2), big.mark = ",")`. This sample size gives us 95% power to detect a condition effect of *d* = .16.  
+*Exclusion Set 2:* All prior exclusions, and further exclude participants who did not identify as White or who indicated they were born outside the United States. Reduces *N* to `r formatC(nrow(merged_excl_2))`. This sample size gives us 95% power to detect a condition effect of *d* = .16.  
 
-*Exclusion Set 3:* All prior exclusions, and further exclude participants who responded lower than 7 on the American Identity item ("How important to you is your identity as an American?" 1 - not at all important; 9 - extremely important). Further reduces the usable *N* to `r formatC(nrow(merged_excl_3), big.mark = ",")` participants. This sample size gives us 95% power to detect a condition effect of *d* = .18.  
+*Exclusion Set 3:* All prior exclusions, and further exclude participants who responded lower than 7 on the American Identity item ("How important to you is your identity as an American?" 1 - not at all important; 9 - extremely important). Further reduces the usable *N* to `r formatCC(nrow(merged_excl_3))` participants. This sample size gives us 95% power to detect a condition effect of *d* = .18.  
 
 Exclusion Sets 2 and 3 were specifically recommended by original authors and these criteria were used to analyze the data from Author Advised labs. However, the data required to make these exclusions were often not collected at In House replication sites because they made independent decisions about design and demographic measures for potential exclusion, and these measures were not in the original article. Thus, for all analyses only Exclusion Set 1 was used for In House participants. All data handling, exclusions, and computation of results within sites followed our pre-registered (prior to data collection) analysis plan on the OSF (https://osf.io/4xx6w).
 
 # Results
 
-```{r analysis-researchers, include = FALSE}
-
-# Experimenter knowledge code is messy, so I'm computing it here and retrieving
-# objects in paragraph below.
-
-exp_knowl_expert <- sum(exp_surv$How.much.knowledge.did.you.have.about.Terror.Management.Theory..prior.to.joining.this.project. == "Expert (highly knowledgeable, know the published literature and more)")
-exp_knowl_alot <- sum(exp_surv$How.much.knowledge.did.you.have.about.Terror.Management.Theory..prior.to.joining.this.project. == "A lot (know theory in-depth, read many papers)")
-exp_knowl_some <- sum(exp_surv$How.much.knowledge.did.you.have.about.Terror.Management.Theory..prior.to.joining.this.project. == "Some (familiar with, read a few papers)")
-exp_knowl_alittle <- sum(exp_surv$How.much.knowledge.did.you.have.about.Terror.Management.Theory..prior.to.joining.this.project. == "A little (know about TMT, but not in-depth)")
-exp_knowl_none <- sum(exp_surv$How.much.knowledge.did.you.have.about.Terror.Management.Theory..prior.to.joining.this.project. == "None (never heard of TMT until this project)")
-exp_knowl_na <- sum(exp_surv$How.much.knowledge.did.you.have.about.Terror.Management.Theory..prior.to.joining.this.project. == "")
-
-exp_knowl_expert_pct <- (sum(exp_surv$How.much.knowledge.did.you.have.about.Terror.Management.Theory..prior.to.joining.this.project. == "Expert (highly knowledgeable, know the published literature and more)")/nrow(exp_surv))*100
-exp_knowl_alot_pct <- (sum(exp_surv$How.much.knowledge.did.you.have.about.Terror.Management.Theory..prior.to.joining.this.project. == "A lot (know theory in-depth, read many papers)")/nrow(exp_surv))*100
-exp_knowl_some_pct <- (sum(exp_surv$How.much.knowledge.did.you.have.about.Terror.Management.Theory..prior.to.joining.this.project. == "Some (familiar with, read a few papers)")/nrow(exp_surv))*100
-exp_knowl_alittle_pct <- (sum(exp_surv$How.much.knowledge.did.you.have.about.Terror.Management.Theory..prior.to.joining.this.project. == "A little (know about TMT, but not in-depth)")/nrow(exp_surv))*100
-exp_knowl_none_pct <- (sum(exp_surv$How.much.knowledge.did.you.have.about.Terror.Management.Theory..prior.to.joining.this.project. == "None (never heard of TMT until this project)")/nrow(exp_surv))*100
-exp_knowl_na_pct <- (sum(exp_surv$How.much.knowledge.did.you.have.about.Terror.Management.Theory..prior.to.joining.this.project. == "")/nrow(exp_surv))*100
-
-# Experimenter "rooting for/against" data are messy, so I'll code them here then call the result below
-# Manually recoding some responses, providing coding here for verifiability
-# Copy over all responses
-exp_surv$rooting_coded <- exp_surv$Overall..are.you.rooting.for.the.cumulative.results.of.this.project.to.provide.evidence.for.or.against.TMT.
-exp_surv$rooting_coded[exp_surv$Overall..are.you.rooting.for.the.cumulative.results.of.this.project.to.provide.evidence.for.or.against.TMT. == "Happy either way.  Though for simple fear of our field imploding I root for replication!"] <- "Neither"
-exp_surv$rooting_coded[exp_surv$Overall..are.you.rooting.for.the.cumulative.results.of.this.project.to.provide.evidence.for.or.against.TMT. == "I'm rooting finding the true state of the world"] <- "Neither"
-exp_surv$rooting_coded[exp_surv$Overall..are.you.rooting.for.the.cumulative.results.of.this.project.to.provide.evidence.for.or.against.TMT. == "I am ambivalent. "] <- "Neither"
-exp_surv$rooting_coded[exp_surv$Overall..are.you.rooting.for.the.cumulative.results.of.this.project.to.provide.evidence.for.or.against.TMT. == "No dog in that race (ie no preference at all)"] <- "Neither"
-exp_surv$rooting_coded[exp_surv$Overall..are.you.rooting.for.the.cumulative.results.of.this.project.to.provide.evidence.for.or.against.TMT. == "No opinion"] <- "Neither"
-exp_surv$rooting_coded[exp_surv$Overall..are.you.rooting.for.the.cumulative.results.of.this.project.to.provide.evidence.for.or.against.TMT. == "No preference! "] <- "Neither"
-exp_surv$rooting_coded[exp_surv$Overall..are.you.rooting.for.the.cumulative.results.of.this.project.to.provide.evidence.for.or.against.TMT. == "no real view, though very interested to see if my site finds it less than others as we are not very \"pro-America\""] <- "Neither"
-exp_surv$rooting_coded[exp_surv$Overall..are.you.rooting.for.the.cumulative.results.of.this.project.to.provide.evidence.for.or.against.TMT. == "I don't care"] <- "Neither"
-
-# Counts rooting for, against, and neither
-exp_rooting_for <- sum(exp_surv$rooting_coded == "For TMT")
-exp_rooting_against <- sum(exp_surv$rooting_coded == "Against TMT")
-exp_rooting_neither <- sum(exp_surv$rooting_coded == "Neither")
-exp_rooting_na <-sum(exp_surv$rooting_coded == "")
-
-# percentages
-exp_rooting_for_pct <- (sum(exp_surv$rooting_coded == "For TMT")/nrow(exp_surv))*100
-exp_rooting_against_pct <- (sum(exp_surv$rooting_coded == "Against TMT")/nrow(exp_surv))*100
-exp_rooting_neither_pct <- (sum(exp_surv$rooting_coded == "Neither")/nrow(exp_surv))*100
-exp_rooting_na_pct <- (sum(exp_surv$rooting_coded == "")/nrow(exp_surv))*100
-
-mean_success_estimate_excl <- filter(exp_surv, Did.you.analyze.data..or.otherwise.learn.results..from.your.site.before.filling.out.this.survey. == "No") %>% 
-  summarize(mean = mean(In.your.opinion..how.likely.is.it.that.overall.this.project..Many.Labs.4..will.successfully.replicate.Terror.Management.Theory...please.enter.a...between.0.and.100., na.rm = TRUE))
-
-```
-
 ## Researcher Expectations and Characteristics
-A total of `r nrow(exp_surv)` researchers from `r length(unique(exp_surv$Site))` participating sites completed an experimenter survey about their motivations and expertise. This survey was administered during data collection, and although no researcher had access to overall project-wide results, ~⅓ of the researchers reported looking at or analyzing their own site’s data prior to completing the survey. Psychology research experience ranged from `r min(exp_surv$How.many.years.of.experience.do.you.have.in.psychological.research.)` to `r max(exp_surv$How.many.years.of.experience.do.you.have.in.psychological.research.)` years (*M* = `r mean(exp_surv$How.many.years.of.experience.do.you.have.in.psychological.research.)`, *SD* = `r sd(exp_surv$How.many.years.of.experience.do.you.have.in.psychological.research.)`). `r firstup(numbers2words(exp_knowl_expert))` (`r round(exp_knowl_expert_pct)`%) researcher indicated they were an expert in TMT, `r numbers2words(exp_knowl_alot)` (`r round(exp_knowl_alot_pct)`%) indicated they had “a lot” of TMT knowledge, `r numbers2words(exp_knowl_some)` (`r round(exp_knowl_some_pct)`%) indicated “some” knowledge, `r numbers2words(exp_knowl_alittle)` (`r round(exp_knowl_alittle_pct)`%) indicated little knowledge, `r numbers2words(exp_knowl_none)` (`r round(exp_knowl_none_pct)`%) indicated zero knowledge, and `r numbers2words(exp_knowl_na)` (`r round(exp_knowl_na_pct)`%) did not respond to the question. 
+A total of `r nrow(exp_surv)` researchers from `r length(unique(exp_surv$Site))` participating sites completed an experimenter survey about their motivations and expertise. This survey was administered during data collection, and although no researcher had access to overall project-wide results, ~⅓ of the researchers reported looking at or analyzing their own site’s data prior to completing the survey. Psychology research experience ranged from `r min(exp_surv$years_exp)` to `r max(exp_surv$years_exp)` years (*M* = `r mean(exp_surv$years_exp)`, *SD* = `r sd(exp_surv$years_exp)`). `r firstup(numbers2words(exp_knowl_expert))` (`r round(exp_knowl_expert_pct)`%) researcher indicated they were an expert in TMT, `r numbers2words(exp_knowl_alot)` (`r round(exp_knowl_alot_pct)`%) indicated they had “a lot” of TMT knowledge, `r numbers2words(exp_knowl_some)` (`r round(exp_knowl_some_pct)`%) indicated “some” knowledge, `r numbers2words(exp_knowl_alittle)` (`r round(exp_knowl_alittle_pct)`%) indicated little knowledge, `r numbers2words(exp_knowl_none)` (`r round(exp_knowl_none_pct)`%) indicated zero knowledge, and `r numbers2words(exp_knowl_na)` (`r round(exp_knowl_na_pct)`%) did not respond to the question. 
 
-When asked what outcome they wanted to happen, `r exp_rooting_for` (`r round(exp_rooting_for_pct)`%) indicated that they hoped for the project to successfully replicate the TMT effect, `r numbers2words(exp_rooting_neither)` (`r round(exp_rooting_neither_pct)`%) indicated no preference, and `r numbers2words(exp_rooting_against)` (`r round(exp_rooting_against_pct)`%) hoped the project would result in a failure to replicate, with `r numbers2words(exp_rooting_na)` (`r round(exp_rooting_na_pct)`%) researchers leaving the question blank. On average, the teams estimated a `r round(mean(exp_surv$In.your.opinion..how.likely.is.it.that.overall.this.project..Many.Labs.4..will.successfully.replicate.Terror.Management.Theory...please.enter.a...between.0.and.100., na.rm = TRUE))`% chance of successful replication with a wide range of estimates from `r min(exp_surv$In.your.opinion..how.likely.is.it.that.overall.this.project..Many.Labs.4..will.successfully.replicate.Terror.Management.Theory...please.enter.a...between.0.and.100., na.rm = TRUE)`% to `r max(exp_surv$In.your.opinion..how.likely.is.it.that.overall.this.project..Many.Labs.4..will.successfully.replicate.Terror.Management.Theory...please.enter.a...between.0.and.100., na.rm = TRUE)`% (*SD* = `r sd(exp_surv$In.your.opinion..how.likely.is.it.that.overall.this.project..Many.Labs.4..will.successfully.replicate.Terror.Management.Theory...please.enter.a...between.0.and.100., na.rm = TRUE)`).[^3]
+When asked what outcome they wanted to happen, `r tab.rooting["For TMT"]` (`r round(tab.rooting_pct["For TMT"])`%) indicated that they hoped for the project to successfully replicate the TMT effect, `r numbers2words(tab.rooting["Neither"])` (`r round(tab.rooting_pct["Neither"])`%) indicated no preference, and `r numbers2words(tab.rooting["Against TMT"])` (`r round(tab.rooting_pct["Against TMT"])`%) hoped the project would result in a failure to replicate, with `r numbers2words(tab.rooting[4])` (`r round(tab.rooting_pct[4])`%) researchers leaving the question blank. On average, the teams estimated a `r round(mean(exp_surv$rep_likely, na.rm = TRUE))`% chance of successful replication with a wide range of estimates from `r min(exp_surv$rep_likely, na.rm = TRUE)`% to `r max(exp_surv$rep_likely, na.rm = TRUE)`% (*SD* = `r sd(exp_surv$rep_likely, na.rm = TRUE)`).[^3]
 
-[^3]: Including only sites that had not looked at any data, researchers estimated a `r round(mean_success_estimate_excl[[1]])`% chance of successful replication.
+[^3]: Including only sites that had not looked at any data, researchers estimated a `r round(mean(exp_surv$rep_likely[exp_surv$analyzed == "No"], na.rm = T))`% chance of successful replication.
 
 ```{r analysis-replication-meta, include = FALSE}
 
@@ -232,10 +188,14 @@ When asked what outcome they wanted to happen, `r exp_rooting_for` (`r round(exp
 # Here I'll read in those files, but if you're error checking you'll also
 # want to review the code in 002_ml4analysis.R that generates them
 
-combinedresults0 <- read.csv("./data/public/combinedresults0.csv")
-combinedresults1 <- read.csv("./data/public/combinedresults1.csv")
-combinedresults2 <- read.csv("./data/public/combinedresults2.csv")
-combinedresults3 <- read.csv("./data/public/combinedresults3.csv")
+combinedresults0 <- read.csv("./data/public/combinedresults0.csv") %>% 
+  mutate(expert.ctr = ifelse(expert, 1, -1))
+combinedresults1 <- read.csv("./data/public/combinedresults1.csv") %>% 
+  mutate(expert.ctr = ifelse(expert, 1, -1))
+combinedresults2 <- read.csv("./data/public/combinedresults2.csv") %>% 
+  mutate(expert.ctr = ifelse(expert, 1, -1))
+combinedresults3 <- read.csv("./data/public/combinedresults3.csv") %>% 
+  mutate(expert.ctr = ifelse(expert, 1, -1))
 
 # analyses repeated for each set of exclusion critera
 # This was originally a three-level random-effects meta-analysis in MetaSEM
@@ -246,9 +206,9 @@ random_effects_2 <- summary( meta(y=yi, v=vi, data=combinedresults2))
 random_effects_3 <- summary( meta(y=yi, v=vi, data=combinedresults3))
 
 # a covariate of study version (in-house or expert-designed) is added to create a mixed effects model.
-mixed_effects_1 <- summary(mixed1 <- meta(y=yi, v=vi, x=expert, data=combinedresults1))
-mixed_effects_2 <- summary(mixed2 <- meta(y=yi, v=vi, x=expert, data=combinedresults2))
-mixed_effects_3 <- summary(mixed3 <- meta(y=yi, v=vi, x=expert, data=combinedresults3))
+mixed_effects_1 <- summary(mixed1 <- meta(y=yi, v=vi, x=expert.ctr, data=combinedresults1))
+mixed_effects_2 <- summary(mixed2 <- meta(y=yi, v=vi, x=expert.ctr, data=combinedresults2))
+mixed_effects_3 <- summary(mixed3 <- meta(y=yi, v=vi, x=expert.ctr, data=combinedresults3))
 
 # Notes: Intercept1 is still the grand mean estimate, Slope1_1 represents the difference between versions
 
@@ -294,7 +254,7 @@ Our pre-registered analytic plan specifies the use of a three-level meta-analysi
 ## Research Question 1: Meta-analytic results across all labs (random effects meta-analysis). 
 The most basic question is whether we observed the predicted effect of mortality salience on preference for pro- vs anti- American essay authors. To assess this we conducted a random-effects meta-analysis. This analysis produces the grand mean effect size across all sites and versions. Regardless of which exclusion criteria were used, we did not observe the predicted effect and the confidence interval was quite narrow: Exclusion Set 1: *Hedges’ g* = `r random_effects_1$coefficients$Estimate[1]`, 95% CI = [`r random_effects_1$coefficients$lbound[1]`, `r random_effects_1$coefficients$ubound[1]`], *SE* = `r random_effects_1$coefficients$Std.Error[1]`, *Z* = `r random_effects_1$coefficients$"z value"[1]`, *p* = `r random_effects_1$coefficients$"Pr(>|z|)"[1]`. Exclusion Set 2: *Hedges’ g* = `r random_effects_2$coefficients$Estimate[1]`, 95% CI = [`r random_effects_2$coefficients$lbound[1]`, `r random_effects_2$coefficients$ubound[1]`], *SE* = `r random_effects_2$coefficients$Std.Error[1]`, *Z* = `r random_effects_2$coefficients$"z value"[1]`, *p* = `r random_effects_2$coefficients$"Pr(>|z|)"[1]`. Exclusion Set 3: *Hedges’ g* = `r random_effects_3$coefficients$Estimate[1]`, 95% CI = [`r random_effects_3$coefficients$lbound[1]`, `r random_effects_3$coefficients$ubound[1]`], *SE* = `r random_effects_3$coefficients$Std.Error[1]`, *Z* = `r random_effects_3$coefficients$"z value"[1]`, *p* = `r random_effects_3$coefficients$"Pr(>|z|)"[1]`. Forest plots showing the effects for individual sites and the aggregate are available in Figure 1 for Exclusion Set 1 (see https://osf.io/8ccnw/ for the other two Exclusion Sets).
 
-There may have been a mortality salience effect at some sites and not others, so we next examined how much variation was observed among effect sizes (e.g., heterogeneity). For Exclusion Sets 1 and 3, this sort of variation did not exceed variation expected by chance (e.g., sampling variance): Exclusion Set 1: *Q*(`r random_effects_1$Q.stat$Q.df`) = `r random_effects_1$Q.stat$Q`, *p* = `r random_effects_1$Q.stat$pval`; Exclusion Set 3: *Q*(`r random_effects_3$Q.stat$Q.df`) = `r random_effects_3$Q.stat$Q`, *p* = `r random_effects_3$Q.stat$pval`. The amount of variation between sites did exceed chance for Exclusion Set 2, *Q*(`r random_effects_2$Q.stat$Q.df`) = `r random_effects_2$Q.stat$Q`, *p* = `r random_effects_2$Q.stat$pval`, however it was small in magnitude, Tau^2^ = `r random_effects_2$coefficients["Tau2_1_1", "Estimate"]`. 
+There may have been a mortality salience effect at some sites and not others, so we next examined how much variation was observed among effect sizes (e.g., heterogeneity). For Exclusion Sets 1 and 3, this sort of variation did not exceed variation expected by chance (e.g., sampling variance): Exclusion Set 1: *Q*(`r random_effects_1$Q.stat$Q.df`) = `r random_effects_1$Q.stat$Q`, *p* = `r random_effects_1$Q.stat$pval`; Exclusion Set 2, *Q*(`r random_effects_2$Q.stat$Q.df`) = `r random_effects_2$Q.stat$Q`, *p* = `r random_effects_2$Q.stat$pval`; Exclusion Set 3: *Q*(`r random_effects_3$Q.stat$Q.df`) = `r random_effects_3$Q.stat$Q`, *p* = `r random_effects_3$Q.stat$pval`. 
 
 In sum, we observed little evidence for an overall effect of mortality salience in these replications. And, overall results suggest that there was minimal or no heterogeneity in effect sizes across sites. This lack of variation suggests that it is unlikely we will observe an effect of Author Advised versus In House protocols or other moderators such as differences in samples or TMT knowledge. Even so, the plausible moderation by Author Advised/In House protocol is examined in the following section. 
 
@@ -303,9 +263,9 @@ A covariate of protocol type (In House vs Author Advised) was added to the rando
 
 This analysis again produces an overall grand mean effect size, and those were again near zero and relatively precisely estimated across all three Exclusion Sets: Exclusion Set 1: *Hedges’ g* = `r mixed_effects_1$coefficients$Estimate[1]`, 95% CI = [`r mixed_effects_1$coefficients$lbound[1]`, `r mixed_effects_1$coefficients$ubound[1]`], *SE* = `r mixed_effects_1$coefficients$Std.Error[1]`, *Z* = `r mixed_effects_1$coefficients$"z value"[1]`, *p* = `r mixed_effects_1$coefficients$"Pr(>|z|)"[1]`. Exclusion Set 2: *Hedges’ g* = `r mixed_effects_2$coefficients$Estimate[1]`, 95% CI = [`r mixed_effects_2$coefficients$lbound[1]`, `r mixed_effects_2$coefficients$ubound[1]`], *SE* = `r mixed_effects_2$coefficients$Std.Error[1]`, *Z* = `r mixed_effects_2$coefficients$"z value"[1]`, *p* = `r mixed_effects_2$coefficients$"Pr(>|z|)"[1]`. Exclusion Set 3: *Hedges’ g* = `r mixed_effects_3$coefficients$Estimate[1]`, 95% CI = [`r mixed_effects_3$coefficients$lbound[1]`, `r mixed_effects_3$coefficients$ubound[1]`], *SE* = `r mixed_effects_3$coefficients$Std.Error[1]`, *Z* = `r mixed_effects_3$coefficients$"z value"[1]`, *p* = `r mixed_effects_3$coefficients$"Pr(>|z|)"[1]`.
 
-Variation among effect sizes also followed the previously observed pattern. Weak heterogeneity for Exclusion Set 2, *Q*(`r mixed_effects_2$Q.stat$Q.df`) = `r mixed_effects_2$Q.stat$Q`, *p* = `r mixed_effects_2$Q.stat$pval`, Tau^2^ = `r mixed_effects_2$coefficients["Tau2_1_1", "Estimate"]`; while variation did not meet the statistical significance threshold for Exclusion Set 1 *Q*(`r mixed_effects_1$Q.stat$Q.df`) = `r mixed_effects_1$Q.stat$Q`, *p* = `r mixed_effects_1$Q.stat$pval`; or Exclusion Set 3: *Q*(`r mixed_effects_3$Q.stat$Q.df`) = `r mixed_effects_3$Q.stat$Q`, *p* = `r mixed_effects_3$Q.stat$pval`.
+Again, significant heterogeneity was not observed: Exclusion Set 1 *Q*(`r mixed_effects_1$Q.stat$Q.df`) = `r mixed_effects_1$Q.stat$Q`, *p* = `r mixed_effects_1$Q.stat$pval`; Exclusion Set 2, *Q*(`r mixed_effects_2$Q.stat$Q.df`) = `r mixed_effects_2$Q.stat$Q`, *p* = `r mixed_effects_2$Q.stat$pval`; Exclusion Set 3, *Q*(`r mixed_effects_3$Q.stat$Q.df`) = `r mixed_effects_3$Q.stat$Q`, *p* = `r mixed_effects_3$Q.stat$pval`.
 
-Critically, protocol version did not significantly predict replication effect size regardless of which exclusion criteria were used. Exclusion Set 1: *b* = `r mixed_effects_1$coefficients["Slope1_1", "Estimate"]`, *Z* = `r mixed_effects_1$coefficients["Slope1_1", "z value"]`, *p* = `r mixed_effects_1$coefficients["Slope1_1", "Pr(>|z|)"]`; Exclusion Set 2: *b* = `r mixed_effects_2$coefficients["Slope1_1", "Estimate"]`, *Z* = `r mixed_effects_2$coefficients["Slope1_1", "z value"]`, *p* = `r mixed_effects_2$coefficients["Slope1_1", "Pr(>|z|)"]`; Exclusion Set 3: *b* = `r mixed_effects_3$coefficients["Slope1_1", "Estimate"]`, *Z* = `r mixed_effects_3$coefficients["Slope1_1", "z value"]`, *p* = `r mixed_effects_3$coefficients["Slope1_1", "Pr(>|z|)"]`. The Author Advised version did not produce larger effect sizes when compared with the In House versions.
+Critically, protocol version did not significantly predict replication effect size regardless of which exclusion criteria were used. Exclusion Set 1: *b* = `r mixed_effects_1$coefficients["Slope1_1", "Estimate"]`, *Z* = `r mixed_effects_1$coefficients["Slope1_1", "z value"]`, *p* = `r mixed_effects_1$coefficients["Slope1_1", "Pr(>|z|)"]`; Exclusion Set 2: *b* = `r mixed_effects_2$coefficients["Slope1_1", "Estimate"]`, *Z* = `r mixed_effects_2$coefficients["Slope1_1", "z value"]`, *p* = `r mixed_effects_2$coefficients["Slope1_1", "Pr(>|z|)"]`; Exclusion Set 3: *b* = `r mixed_effects_3$coefficients["Slope1_1", "Estimate"]`, *Z* = `r mixed_effects_3$coefficients["Slope1_1", "z value"]`, *p* = `r mixed_effects_3$coefficients["Slope1_1", "Pr(>|z|)"]`. The Author Advised version did not produce significantly larger effect sizes when compared with the In House versions.
 
 ## Research Question 3: Effect of Standardization
 Finally, we examined whether In House protocols displayed greater variability in effect size than Author Advised protocols. We outlined this hypothesis in our pre-registration, but the methods for testing it are exploratory.  

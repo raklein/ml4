@@ -408,6 +408,7 @@ omega(anti_df)
 # Currently, demographics seem to be calculated for group after application of ER1 to expert sites
 #    (non-expert sites just get a pass on this, I guess)
 merged <- readRDS("./data/processed_data/merged_subset.rds")
+# demographics are to be calculated after exclusion rule 1
 demos <- filter(merged, !is.na(pro_minus_anti),
                 pass_ER1 == T | expert == 0)
 
@@ -426,3 +427,7 @@ demos_gender <- demos %>%
   group_by(gender) %>% 
   summarize(n = n()) %>% 
   mutate(pct = round(n / sum(n)* 100, 2))
+
+# save to file
+write_csv(demos_race, "./data/processed_data/demos_race.csv")
+write_csv(demos_gender, "./data/processed_data/demos_gender.csv")
