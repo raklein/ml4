@@ -255,9 +255,9 @@ summary(fixed3_aa <- meta(y=yi, v=vi, data=combinedresults3_aa, RE.constraints=0
 # repeat random effects model for just this subset
 summary(random1_ih <- meta(y=yi, v=vi, data=combinedresults1_ih))
 
-summary(random1_aa <- meta(y=yi, v=vi, data=combinedresults1_aa))
-summary(random2_aa <- meta(y=yi, v=vi, data=combinedresults2_aa))
-summary(random3_aa <- meta(y=yi, v=vi, data=combinedresults3_aa))
+random_effects_aa_1 <- summary(random1_aa <- meta(y=yi, v=vi, data=combinedresults1_aa))
+random_effects_aa_2 <- summary(random2_aa <- meta(y=yi, v=vi, data=combinedresults2_aa))
+random_effects_aa_3 <- summary(random3_aa <- meta(y=yi, v=vi, data=combinedresults3_aa))
 
 # compare if there is a significant difference in model fit, chi square difference test
 fit_comparison_1_ih <- anova(random1_ih, fixed1_ih)
@@ -331,6 +331,11 @@ knowl_effsize <- effsize::cohen.d(data_knowledgeable$pro_minus_anti~data_knowled
 ```
 
 ## Follow-Up Exploratory Analyses
+**Results for expert-only protocols.** To provide a test of the replicability and average effect size of TMT under ideal circumstances, one could focus only on the effect size within author-advised protocols. Effect sizes are descriptively larger among these sites but still not statistically significant. [NOTE: THESE ARE TWO-TAILED P-VALUES AND 95% CIs. I'M NOT SURE IF METASEM CAN EASILY PROVIDE 90% CIS AND ONE-TAILED TESTS.]
+Exclusion rule 1: `r report_meta(random_effects_aa_1, "Intercept1")`;
+Exclusion rule 2: `r report_meta(random_effects_aa_2, "Intercept1")`;
+Exclusion rule 3: `r report_meta(random_effects_aa_3, "Intercept1")`.
+
 **Results for TMT-knowledgeable sites.** One principal investigator reported being an expert in TMT, while five others indicated having “a lot” of knowledge about TMT. One might expect that these locations would have greater success at replicating the mortality salience effect. Aggregating across these sites, and using only the first exclusion rule, these sites did not elicit a larger difference between the mortality salience group (*M* = `r as.numeric(knowl_desc$ms["mean"])`, *SD* = `r as.numeric(knowl_desc$ms["sd"])`) and the control group (*M* = `r as.numeric(knowl_desc$tv["mean"])`, *SD* = `r as.numeric(knowl_desc$tv["sd"])`), *t*(`r knowl_ttest$parameter`) = `r knowl_ttest$statistic`, *p* = `r knowl_ttest$p.value`, *Hedges’ g* = `r knowl_effsize$estimate`, 95% CI = [`r knowl_effsize$conf.int["lower"]`, `r knowl_effsize$conf.int["upper"]`].[^6] 
 
 [^6]: One site, UW Madison In House, used a 7-point scale. This has been rescaled to a 9-point scale for this analysis to approximately compare it with the others.
