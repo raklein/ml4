@@ -32,6 +32,36 @@ library(effsize)
 source("./sources/race_text_to_num.R") # for converting text responses to numeric codes for race
 source("./sources/test_msincomplete.R") # for generating msincomplete based on text response to prompt
 
+usa_synonyms <- function(countryofbirth) {
+  ifelse(tolower(countryofbirth) %in% 
+           c("united states ", "united states", "america",
+             "us", "usa", "america ", "united states of america",
+             "united states of america ", "the united states of america.",
+             "u.s", "u.s.a", "united state"), 1, 2) 
+  }
+
+code_race <- function(racetext) {
+  case_when(grepl("white|caucasian|italian|causian|russian", racetext, ignore.case = T)             
+              ~ "1",
+            #grepl("caucasian", racetext) ~ 1,
+            grepl("african|black|afro", racetext, ignore.case = T)               
+              ~ "2",
+            grepl("asia|chinese|japanese|thai", racetext, ignore.case = T) 
+              ~ "4",
+            grepl("mix", racetext, ignore.case = T) 
+              ~ "6",
+            is.na(racetext) | grepl("latin.|hispanic", racetext, ignore.case = T) 
+              ~ NA_character_, # "latinx/hispanic" is not a race category
+            T
+              ~ as.character(racetext)
+  )
+}
+# test vector for code_race()
+# coderacetest <- c("white", "white/caucasian", "caucasian", "black", "african-american",
+#   "thai", "chinese", "asian/japanese", "afro-caribbean")
+# table(coderacetest, code_race(coderacetest))
+
+
 # Save information about package versions to a file, may help others 
 # reproduce results.
 # writeLines(capture.output(sessionInfo()), "./output/sessionInfo_data_cleaning.txt")
@@ -132,9 +162,11 @@ uwmadison_expert$location <- "uwmadison"
 # recoding gender
 uwmadison_expert$gender[uwmadison_expert$gender=="F"] <- 1
 uwmadison_expert$gender[uwmadison_expert$gender=="M"] <- 2
+
 # We decided to treat UWMadison expert as having all participants pass the msincomplete check
 # Rather than impute 0s here, this is handled via exception when creating pass_ER1.
 # See commit log 03dc9ccf for details
+
 # Note: One R user was having issues with some .csv files.
 # If that happens, you can uncomment the below line to simply read in the pre-processed .rds file.
 # uwmadison_expert <- readRDS("./data/raw_site_data/UWmadison expert/uwmadison_expert.rds")
@@ -203,6 +235,14 @@ ithaca$expert <- 0
 ithaca$source <- "ithaca"
 # add location, usually identical to source
 ithaca$location <- "ithaca"
+
+# recover race data
+# QSF has race as set of tick-boxes
+table(ithaca$race) # looks like they already recoded it before submission
+table(ithaca$ethnicity)
+
+table(wpi$birthcountry) #i'm guessing 187 is USA...
+
 # Note: One R user was having issues with some .csv files.
 # If that happens, you can uncomment the below line to simply read in the pre-processed .rds file.
 # ithaca <- readRDS("./data/raw_site_data/ithaca inhouse/ithaca.rds")
@@ -220,9 +260,18 @@ names(wpi)[names(wpi) == 'race'] <- 'race.wpi'
 # politicalid.wpi may be coded differently from template
 names(wpi)[names(wpi) == 'politicalid'] <- 'politicalid.wpi'
 # change some variable names to match template
-names(wpi)[names(wpi) == 'countryofbirth (187 = US)'] <- 'countryofbirth'
+names(wpi)[names(wpi) == 'countryofbirth..187...US.'] <- 'countryofbirth'
 # remove redundant ms_condition.1 column
 wpi$ms_condition.1 <- NULL
+
+# recode race?
+table(wpi$race.wpi) 
+table(wpi$ethnicity)
+table(wpi$countryofbirth)
+# looks like it was already recoded
+
+
+
 # Note: One R user was having issues with some .csv files.
 # If that happens, you can uncomment the below line to simply read in the pre-processed .rds file.
 # wpi <- readRDS("./data/raw_site_data/wpi inhouse/wpi.rds")
@@ -274,6 +323,25 @@ illinois$source <- "illinois"
 illinois$location <- "illinois"
 names(illinois)[names(illinois) == 'dv.order'] <- 'dv_order'
 names(illinois)[names(illinois) == 'msincomplete..1...incomplete..0...complete.'] <- 'msincomplete'
+# rename some awkward columns
+illinois$ethnicity.illinois <- illinois$ethnicity..1...White.Caucasian..2...Middle.Eastern..3...Asian.Pacific.Islander..4...African.American.Black..5...Hispanic.Latino..6...Indigenous.Aboriginal..7...Would.Rather.Not.Say..8...Other
+# recode race and ethnicity
+illinois <- mutate(illinois,
+                   race = case_when(ethnicity.illinois == "1" ~ "1", # white
+                                    ethnicity.illinois == "2" ~ "6", # middle east
+                                    ethnicity.illinois == "3" ~ "4", # asian / pac island
+                                    ethnicity.illinois == "4" ~ "2", # black / afr-am
+                                    ethnicity.illinois == "5" ~ NA_character_,  # hispanic / latino
+                                    ethnicity.illinois == "6" ~ "3", # native american
+                                    T                    ~ "6"  # multiracial as category 6
+                                    ),
+                   ethnicity = case_when(ethnicity.illinois == "5" ~ "2", #hispanic / latino
+                                         T                    ~ "1"))
+# TODO: code country of birth
+illinois$countrytext <- illinois$countryofbirth
+illinois$countryofbirth <- usa_synonyms(illinois$countrytext)
+with(illinois, table(countryofbirth, countrytext))
+
 # Note: One R user was having issues with some .csv files.
 # If that happens, you can uncomment the below line to simply read in the pre-processed .rds file.
 # illinois <- readRDS("./data/raw_site_data/universityillinois inhouse/illinois.rds")
@@ -291,6 +359,24 @@ upenn$location <- "upenn"
 upenn$msincomplete <- with(upenn,
                            test_msincomplete(SubtleOwnDeath1, SubtleOwnDeath2,
                                            Television1, Television2))
+
+# are race and countryofbirth already recoded?
+with(upenn, table(race, countryofbirth, useNA = 'always'))
+# I guess Wharton is doing a good job recruiting Latino/Black/Native-American students?
+# recode upenn race and ethnicity
+upenn <- mutate(upenn,
+                race.upenn = race,
+                race = case_when(race.upenn == 1 ~ NA_character_, #don't know "race" of latino
+                                 race.upenn == 2 ~ 2, # Black/AfrAm
+                                 race.upenn == 3 ~ 1, # White
+                                 race.upenn == 4 ~ 3, # Native American
+                                 race.upenn == 5 ~ 4, # Asian / Pacific Islander
+                                 race.upenn == 6 ~ 6, # MidEast goes to "other"
+                                 race.upenn == 7 ~ 6  # "other" goes to "other"
+                                 ),
+                ethnicity = ifelse(race.upenn == 1, 2, 1)) # hispanic/latino ethnicity 
+# political ideology is just 1: left, 2: right, 3: other
+
 # Note: One R user was having issues with some .csv files.
 # If that happens, you can uncomment the below line to simply read in the pre-processed .rds file.
 # upenn <- readRDS("./data/raw_site_data/upenn inhouse/upenn.rds")
@@ -328,7 +414,8 @@ uwmadison_inhouse <- rename(uwmadison_inhouse,
                             control1 = X.Please.briefly.describe.the.emotions.that.the.thought.of.watching.television.arouses.in.you.,
                             control2 = Jot.down..as.specifically.as.you.can..what.you.think.happens.to.you.as.you.watch.television.and.o...,
                             control3 = The.one.thing.I.fear.most.about.television.is.,
-                            control4 = My.scariest.thoughts.about.television.are.
+                            control4 = My.scariest.thoughts.about.television.are.,
+                            ethnicity = What.is.your.ethnicity.
                             )
 # no condition variable exists, so creating one based on whether they responded to the tv or ms prompt
 uwmadison_inhouse <- mutate(uwmadison_inhouse,
@@ -343,6 +430,16 @@ uwmadison_inhouse <- mutate(uwmadison_inhouse,
                             msincomplete = test_msincomplete(MS1, MS2,
                                                              control1, control2)
                             )
+
+# recode race from What.is.your.race., minding difference in category labels
+uwmadison_inhouse <- mutate(
+  race = case_when(What.is.your.race. == "1" ~ 2,
+                   What.is.your.race. == "2" ~ 1,
+                   What.is.your.race. == "3" ~ 3,
+                   What.is.your.race. == "5" ~ 6),
+  
+)
+
 # Note: One R user was having issues with some .csv files.
 # If that happens, you can uncomment the below line to simply read in the pre-processed .rds file.
 # uwmadison_inhouse <- readRDS("./data/raw_site_data/UWmadison inhouse/uwmadison_inhouse.rds")
@@ -356,6 +453,20 @@ kansas_inhouse$expert <- 0
 kansas_inhouse$source <- "kansas_inhouse"
 # add location, usually identical to source
 kansas_inhouse$location <- "kansas"
+
+# recode race from open text
+kansas_inhouse <- mutate(kansas_inhouse,
+                         racetext = tolower(race),
+                         race = code_race(racetext),
+                         ethnicity = case_when(grepl("hispanic", racetext) ~ 2,
+                                               grepl("latin.", racetext)   ~ 2,
+                                               T                           ~ 1)
+)
+
+# check my work
+with(kansas_inhouse, table(racetext, race))
+with(kansas_inhouse, table(racetext, ethnicity))
+
 # Note: One R user was having issues with some .csv files.
 # If that happens, you can uncomment the below line to simply read in the pre-processed .rds file.
 # kansas_inhouse <- readRDS("./data/raw_site_data/kansas inhouse/kansas_inhouse.rds")
@@ -369,6 +480,9 @@ pace_expert$expert <- 1
 pace_expert$source <- "pace_expert"
 # add location, usually identical to source
 pace_expert$location <- "pace"
+
+
+
 # Note: One R user was having issues with some .csv files.
 # If that happens, you can uncomment the below line to simply read in the pre-processed .rds file.
 # pace_expert <- readRDS("./data/raw_site_data/pace expert/pace_expert.rds")
@@ -383,6 +497,11 @@ wesleyan_inhouse$expert <- 0
 wesleyan_inhouse$source <- "wesleyan_inhouse"
 # add location, usually identical to source
 wesleyan_inhouse$location <- "wesleyan"
+
+# it looks like race and ethnicity were already recoded from text
+with(wesleyan_inhouse, table(race))
+with(wesleyan_inhouse, table(ethnicity))
+
 # Note: One R user was having issues with some .csv files.
 # If that happens, you can uncomment the below line to simply read in the pre-processed .rds file.
 # wesleyan_inhouse <- readRDS("./data/raw_site_data/wesleyan inhouse/wesleyan_inhouse.rds")
@@ -394,6 +513,18 @@ sou_inhouse$expert <- 0
 # add site identifier
 sou_inhouse$source <- "sou_inhouse"
 sou_inhouse$location <- "sou"
+
+# race and ethnicity data seems to have been recoded already
+with(sou_inhouse, table(race))
+with(sou_inhouse, table(ethnicity))
+
+# turn "prefer not to answer" to NA
+sou_inhouse <- mutate(sou_inhouse,
+                      ethnicity = case_when(ethnicity == 3 ~ NA_real_,
+                                            T              ~ ethnicity))
+
+
+
 # Note: One R user was having issues with some .csv files.
 # If that happens, you can uncomment the below line to simply read in the pre-processed .rds file.
 # sou_inhouse <- readRDS("./data/raw_site_data/sou inhouse/sou_inhouse.rds")
@@ -428,6 +559,19 @@ plu$expert <- 0
 # add site identifier
 plu$source <- "plu"
 plu$location <- "plu"
+
+# recode race data
+# not sure what to do with multiracial, putting it into category 6 I guess
+plu <- mutate(plu,
+              racemulti = race,
+              race = case_when(grepl(",", racemulti) ~ "6", #multiracial to category 6
+                               racemulti == ""       ~ NA_character_,
+                               T                     ~ racemulti)
+              )
+              
+# I think the other categories are already correct
+table(plu$race, useNA = 'always')
+
 # Note: One R user was having issues with some .csv files.
 # If that happens, you can uncomment the below line to simply read in the pre-processed .rds file.
 # plu <- readRDS("./data/raw_site_data/plu/plu.rds")
@@ -503,19 +647,10 @@ pace_inhouse <- rename(pace_inhouse,
 # process race and countryofbirth variables
 pace_inhouse <- mutate(pace_inhouse,
                        countrytext = countryofbirth,
-                       countryofbirth = ifelse(tolower(countryofbirth) %in% 
-                                                 c("united states ", "united states", "america",
-                                                   "us", "usa", "america ", "united states of america",
-                                                   "united states of america "), 1, 0),
+                       countryofbirth = usa_synonyms(countrytext),
                        race = tolower(race),
                        racetext = race,
-                       race = case_when(race %in% c("white", "white ", "caucasian", "caucasian ", "causian") ~ 1,
-                                        race %in% c("black", "african american/ black", "african american") ~ 2,
-                                        race %in% c("asian", "asian american", "asia", "asian ", "japanese") ~ 4,
-                                        race == "" ~ NA_real_,
-                                        # otherwise, 6. 
-                                        # TODO: could code some more specifics yet
-                                        T ~ 6)
+                       race = code_race(racetext)
                        )
 # create condition & msincomplete variables
 pace_inhouse <- mutate(pace_inhouse,
@@ -528,6 +663,11 @@ pace_inhouse <- mutate(pace_inhouse,
                        # make msincomplete based on whether they did both prompts
                        msincomplete = test_msincomplete(MS1, MS2, control1, control2)
 )
+
+# check the recoding on race
+with(pace_inhouse, table(racetext, race, useNA = 'always'))
+
+
 # For users having trouble with .csv: can uncomment below line and read processed .rds
 # pace_inhouse <- readRDS("./data/raw_site_data/pace_inhouse/TMT.rds")
 
