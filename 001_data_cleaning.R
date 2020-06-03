@@ -544,6 +544,9 @@ for (i in 1:length(allsitedata)) {
   allsitedata[[i]] <- data.frame(lapply(allsitedata[[i]], as.character), stringsAsFactors=FALSE)
 }
 
+# convert template columns to character for easier merging
+template <- data.frame(lapply(template, as.character), stringsAsFactors=FALSE)
+
 # merge data frames vertically
 merged <- bind_rows(template, allsitedata)
 
@@ -772,3 +775,4 @@ merged_deidentified_subset <- select(merged_deidentified_subset,
 write.csv(merged_deidentified_subset, "./data/public/merged_deidentified_subset.csv",row.names=FALSE)
 # save deidentified .rds for r users, has some advantages so I recommend loading this file
 saveRDS(merged_deidentified_subset, "./data/public/merged_deidentified_subset.rds")
+
