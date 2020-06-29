@@ -337,10 +337,10 @@ illinois <- mutate(illinois,
                                     ),
                    ethnicity = case_when(ethnicity.illinois == "5" ~ "2", #hispanic / latino
                                          T                    ~ "1"))
-# TODO: code country of birth
+# code country of birth
 illinois$countrytext <- illinois$countryofbirth
 illinois$countryofbirth <- usa_synonyms(illinois$countrytext)
-with(illinois, table(countryofbirth, countrytext))
+with(illinois, table(countrytext, countryofbirth))
 
 # Note: One R user was having issues with some .csv files.
 # If that happens, you can uncomment the below line to simply read in the pre-processed .rds file.
@@ -713,14 +713,17 @@ merged <- mutate_at(merged,
                     .funs = as.numeric)
 
 # convert in-house open text for race to numeric code
-merged$race <- race_text_to_num(merged$race)
+merged$race_backup <- race_text_to_num(merged$race)
+# save all race & ethnicity data to a column, then replace non-codes with NA
+merged$race <- ifelse(merged$race_backup %in% c("1", "2", "3", "4", "5", "6"), 
+                      merged$race_backup, 
+                      NA)
 
 # some of these were treated as numeric, I believe they are factor
-# TODO: check number of factor levels
 # TODO: handle text-response data for hispanic ethnicity
 merged <- mutate_at(merged, 
                     .vars = vars(ms_condition, msincomplete, 
-                                 countryofbirth,ethnicity, race), 
+                                 countryofbirth, ethnicity, race), 
                     .funs = as.factor)
 
 # We appear to have some entirely NA rows, except meta data. To address this I'm
