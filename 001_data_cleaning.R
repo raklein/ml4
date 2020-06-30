@@ -367,12 +367,12 @@ with(upenn, table(race, countryofbirth, useNA = 'always'))
 upenn <- mutate(upenn,
                 race.upenn = race,
                 race = case_when(race.upenn == 1 ~ NA_character_, #don't know "race" of latino
-                                 race.upenn == 2 ~ 2, # Black/AfrAm
-                                 race.upenn == 3 ~ 1, # White
-                                 race.upenn == 4 ~ 3, # Native American
-                                 race.upenn == 5 ~ 4, # Asian / Pacific Islander
-                                 race.upenn == 6 ~ 6, # MidEast goes to "other"
-                                 race.upenn == 7 ~ 6  # "other" goes to "other"
+                                 race.upenn == 2 ~ "2", # Black/AfrAm
+                                 race.upenn == 3 ~ "1", # White
+                                 race.upenn == 4 ~ "3", # Native American
+                                 race.upenn == 5 ~ "4", # Asian / Pacific Islander
+                                 race.upenn == 6 ~ "6", # MidEast goes to "other"
+                                 race.upenn == 7 ~ "6"  # "other" goes to "other"
                                  ),
                 ethnicity = ifelse(race.upenn == 1, 2, 1)) # hispanic/latino ethnicity 
 # political ideology is just 1: left, 2: right, 3: other
@@ -432,12 +432,13 @@ uwmadison_inhouse <- mutate(uwmadison_inhouse,
                             )
 
 # recode race from What.is.your.race., minding difference in category labels
-uwmadison_inhouse <- mutate(
-  race = case_when(What.is.your.race. == "1" ~ 2,
-                   What.is.your.race. == "2" ~ 1,
-                   What.is.your.race. == "3" ~ 3,
-                   What.is.your.race. == "5" ~ 6),
-  
+uwmadison_inhouse <- mutate(uwmadison_inhouse,
+                            race = case_when(What.is.your.race. == "1" ~ 2,
+                                             What.is.your.race. == "2" ~ 1,
+                                             What.is.your.race. == "3" ~ 3,
+                                             What.is.your.race. == "5" ~ 6,
+                                             T                         ~ NA_real_),
+                            
 )
 
 # Note: One R user was having issues with some .csv files.
@@ -520,8 +521,9 @@ with(sou_inhouse, table(ethnicity))
 
 # turn "prefer not to answer" to NA
 sou_inhouse <- mutate(sou_inhouse,
-                      ethnicity = case_when(ethnicity == 3 ~ NA_real_,
-                                            T              ~ ethnicity))
+                      ethnicity = case_when(ethnicity == 3 ~ NA_integer_,
+                                            T              ~ ethnicity)
+                      )
 
 
 
@@ -718,9 +720,12 @@ merged$race_backup <- race_text_to_num(merged$race)
 merged$race <- ifelse(merged$race_backup %in% c("1", "2", "3", "4", "5", "6"), 
                       merged$race_backup, 
                       NA)
+merged$ethnicity <- ifelse(merged$ethnicity %in% c(1, 2),
+                           merged$ethnicity,
+                           NA)
+
 
 # some of these were treated as numeric, I believe they are factor
-# TODO: handle text-response data for hispanic ethnicity
 merged <- mutate_at(merged, 
                     .vars = vars(ms_condition, msincomplete, 
                                  countryofbirth, ethnicity, race), 
@@ -776,7 +781,7 @@ merged <- mutate(merged,
 )
 # compute primary indexes (mean of pro-US author ratings minus mean of anti-US author ratings)
 # Before we start dropping variables, let's mark which rows pass certain exclusion rules
-# TODO: Consider/justify use of na.rm here.
+# FIXME: What does the prereg say about respondents skipping one of the six critical items?
 merged$proauth_avg <- rowMeans(merged[, c('prous3','prous4','prous5')], na.rm = TRUE)
 merged$antiauth_avg <- rowMeans(merged[, c('antius3','antius4','antius5')], na.rm = TRUE)
 merged$pro_minus_anti <- merged$proauth_avg - merged$antiauth_avg # primary outcome variable, higher scores = greater preference for pro-US author
@@ -832,7 +837,6 @@ identifying_vars <- c("MS1", "MS2", "MS3", "MS4",
                       "politicalid.wpi",
                       "politicalview..1.Republican..2...Democrat..3...Independent..4...Other..5...No.Preference.",
                       "politicalparty..1...Republican..2...Democrat..3...Libertarian..4...Green..5...Constitution..6...Independent..7...I.don.t.identify.with.a.political.party..8...Other.",
-                      "countryofbirth..187...US.",
                       "birthcountry",
                       "raceombmulti",
                       "In.what.country.were.you.born.",
@@ -893,23 +897,36 @@ merged_over60 <- left_join(merged, source_ns, by = "source") %>%
 
 # ithaca
 merged_subset <- merged_over60 %>% 
-  filter(source != "ithaca" | (source == "ithaca" & as.numeric(participantnum) > 97 & !is.na(participantnum))) 
+  filter(source != "ithaca" | 
+           (source == "ithaca" & as.numeric(participantnum) > 97 & !is.na(participantnum))
+         ) 
 # 97 was last participant run at ithaca before feb 15, 2017
+# Error message is due to character participantnums like "A6"
+#    They seem to be retained just fine tho because the first half of the OR evaluates to TRUE
+
 
 # plu
 merged_subset <- merged_subset %>% 
-  filter(source != "plu" | (source == "plu" & as.numeric(participantnum) > 187 & !is.na(participantnum))) 
+  filter(source != "plu" | 
+           (source == "plu" & as.numeric(participantnum) > 187 & !is.na(participantnum))
+         ) 
 # 187 was last participant run at plu before feb 15, 2017
 
 # ufl
 merged_subset <- merged_subset %>% 
-  filter(source != "ufl" | (source == "ufl" & as.numeric(X._session_id) > 9453807 & !is.na(X._session_id))) 
+  filter(source != "ufl" | 
+           (source == "ufl" & as.numeric(X._session_id) > 9453807 & !is.na(X._session_id))
+         ) 
 # 9453807 was last session number before feb 15, 2017
 
 # wesleyan_inhouse
 merged_subset <- merged_subset %>% 
-  filter(source != "wesleyan_inhouse" | (source == "wesleyan_inhouse" & as.numeric(participantnum) > 80 & !is.na(participantnum))) 
+  filter(source != "wesleyan_inhouse" | 
+           (source == "wesleyan_inhouse" & as.numeric(participantnum) > 80 & !is.na(participantnum))
+         ) 
 # 80 was last participant at wesleyan_inhouse before feb 15, 2017
+
+#FIXME: looks like we went from 2123 to 1578, a loss of 545 participants ran prematurely?
 
 #now need to deidentify
 
@@ -932,3 +949,4 @@ merged_deidentified_subset <- select(merged_deidentified_subset,
 write.csv(merged_deidentified_subset, "./data/public/merged_deidentified_subset.csv",row.names=FALSE)
 # save deidentified .rds for r users, has some advantages so I recommend loading this file
 saveRDS(merged_deidentified_subset, "./data/public/merged_deidentified_subset.rds")
+
