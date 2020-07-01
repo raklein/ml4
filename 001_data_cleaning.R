@@ -241,8 +241,6 @@ ithaca$location <- "ithaca"
 table(ithaca$race) # looks like they already recoded it before submission
 table(ithaca$ethnicity)
 
-table(wpi$birthcountry) #i'm guessing 187 is USA...
-
 # Note: One R user was having issues with some .csv files.
 # If that happens, you can uncomment the below line to simply read in the pre-processed .rds file.
 # ithaca <- readRDS("./data/raw_site_data/ithaca inhouse/ithaca.rds")
@@ -267,6 +265,7 @@ wpi$ms_condition.1 <- NULL
 # recode race?
 table(wpi$race.wpi) 
 table(wpi$ethnicity)
+table(wpi$birthcountry) #i'm guessing 187 is USA...
 table(wpi$countryofbirth)
 # looks like it was already recoded
 

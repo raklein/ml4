@@ -25,19 +25,14 @@ library(effsize)
 library(GPArotation)
 library(tidyverse)
 
-################################################################################
-#
-# First suppl analysis: repeat the primary meta-analyses for pro- and anti- 
-# ratings separately (as opposed to creating a difference score)
-#
-################################################################################
+# 1. Meta-analyze pro- and anti-ratings separately (as opposed to difference score) ----
 
 # This is adapted from 002_ml4analysis.R
 
 #read in deidentified aggregate dataset
 merged <- readRDS("./data/public/merged_deidentified_subset.rds")
 
-# Function for analyzing pro- and anti-ratings separately ----
+# Function for analyzing pro- and anti-ratings separately a la analyse() ----
 analyse_separately <- function(data) {
   # Make means, sds, and ns
   sumstats <- group_by(data, location, source, ms_condition) %>% 
@@ -367,7 +362,7 @@ effsize::cohen.d(data$antiauth_avg~data$ms_condition,pooled=TRUE,paired=FALSE,
                  conf.level=0.95) #this was previously incorrectly indicating a positive value? Had to manually reverse for dissertation but seems fine now
 
 
-## Analyzing how much participants liked the pro and anti authors ----
+## 2. Analyzing how much participants liked the pro and anti authors ----
 # Read in data to start from scratch
 merged <- readRDS("./data/public/merged_deidentified_subset.rds")
 
@@ -434,9 +429,8 @@ merged_excl_3_aa_ttest <- t.test(merged_excl_3_aa$pro_minus_anti~merged_excl_3_a
 merged_excl_3_aa_desc <- describeBy(merged_excl_3_aa$pro_minus_anti, group = merged_excl_3_aa$ms_condition)
 merged_excl_3_aa_effsize <- effsize::cohen.d(merged_excl_3_aa$pro_minus_anti~merged_excl_3_aa$ms_condition,pooled=TRUE,paired=FALSE,na.rm=TRUE, hedges.correction=TRUE,conf.level=0.95)
 
-############
-# Exploratory analysis without two sites where ms condition had lower sadness
-############
+
+# 3. Exploratory analysis excluding two sites where ms condition had lower sadness ----
 # Note: I think it's quite possible this result could simply be due to random
 # variation. However, as below we see including/excluding these samples has 
 # no effect on overall results

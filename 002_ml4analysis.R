@@ -48,7 +48,8 @@ merged <- readRDS("./data/processed_data/merged_subset.rds")
 # Note that you will need to adjust this script where indicated if 
 # you're using the full dataset.
 
-# Use dplyr::summarize to calculate summary stats per cell per site per exclusion rules
+# Analyse function:
+#    Use dplyr::summarize to calculate summary stats per cell per site per exclusion rules
 analyse <- function(data) {
   # Make means, sds, and ns
   sumstats <- group_by(data, location, source, ms_condition) %>% 
@@ -103,6 +104,7 @@ analyse <- function(data) {
   return(dat)
 }
 
+# Run analyse() on each exclusion set to generate summary stats per cell per site
 combinedresults0 <- filter(merged, !is.na(pro_minus_anti)) %>% 
   analyse()
 
@@ -241,14 +243,17 @@ summary(random0_ih <- meta(y=yi, v=vi, data=combinedresults0_ih))
 summary(random0_aa <- meta(y=yi, v=vi, data=combinedresults0_aa))
 summary(random1_aa <- meta(y=yi, v=vi, data=combinedresults1_aa))
 summary(random2_aa <- meta(y=yi, v=vi, data=combinedresults2_aa)) 
-# OpenMx status1 == 5
+# RESOLVED, NOT A BUG: OpenMx status1 == 5
 # "5 means that the Hessian at the solution is not convex. 
 #    There is likely a better solution, but the optimizer is stuck
 #    in a region of confusing geometry (like a saddle point)."
-summary(random2_aa <- meta(y=yi, v=vi, data=combinedresults2_aa,
-                           RE.lbound = 1e-50))
 # I think the issue is that Tau2 is estimated as very small.
-#    Doesn't seem to affect the intercept when I play w/ RE.start and RE.lbound
+#    It doesn't seem to affect the intercept when I play w/ RE.start and RE.lbound,
+#    and Tau2 will go as small as RE.lbound will allow it
+# summary(random2_aa <- meta(y=yi, v=vi, data=combinedresults2_aa,
+#                            RE.lbound = 1e-50))
+# summary(random2_aa <- meta(y=yi, v=vi, data=combinedresults2_aa,
+#                            RE.start = 1, RE.lbound = 1e-100))
 summary(random3_aa <- meta(y=yi, v=vi, data=combinedresults3_aa)) 
 
 # compare if there is a significant difference in model fit, chi square difference test
@@ -345,9 +350,9 @@ summary( meta(y = yi, v = vi, data = data))
 # funnel(rma(yi= data$yi, vi=data$vi, slab=data$location))
 
 # Aggregate participants characteristics
-# Converting to numeric
-merged$age <- as.numeric(as.character(merged$age))
-merged$gender <- as.numeric(as.character(merged$gender))
+# Converting to numeric, will lose uninterpretable codes
+merged$age <- as.numeric(as.character(merged$age)) # 60 have age as a range e.g. "18-24"
+merged$gender <- as.numeric(as.character(merged$gender)) # 10 have gender 3 or N or "non-binary"
 merged$race <- as.numeric(as.character(merged$race))
 
 # Read data
@@ -404,6 +409,8 @@ omega(anti_df)
 
 # generating demographics cross-tabs ----
 # TODO: This section is a WIP
+# FIXME: Implement demographic counting in the appropriate fashion 
+#    (pre-exclusion, post-exclusion, whatever)
 
 # Currently, demographics seem to be calculated for group after application of ER1 to expert sites
 #    (non-expert sites just get a pass on this, I guess)
