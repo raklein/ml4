@@ -361,7 +361,8 @@ upenn$msincomplete <- with(upenn,
 
 # are race and countryofbirth already recoded?
 with(upenn, table(race, countryofbirth, useNA = 'always'))
-# I guess Wharton is doing a good job recruiting Latino/Black/Native-American students?
+# FIXME: Wharton's race codes are probably nonstandard,
+#   unless they are doing very well at recruiting Native Americans not born in the USA.
 # recode upenn race and ethnicity
 upenn <- mutate(upenn,
                 race.upenn = race,
@@ -780,10 +781,10 @@ merged <- mutate(merged,
 )
 # compute primary indexes (mean of pro-US author ratings minus mean of anti-US author ratings)
 # Before we start dropping variables, let's mark which rows pass certain exclusion rules
-# FIXME: What does the prereg say about respondents skipping one of the six critical items?
-merged$proauth_avg <- rowMeans(merged[, c('prous3','prous4','prous5')], na.rm = TRUE)
-merged$antiauth_avg <- rowMeans(merged[, c('antius3','antius4','antius5')], na.rm = TRUE)
-merged$pro_minus_anti <- merged$proauth_avg - merged$antiauth_avg # primary outcome variable, higher scores = greater preference for pro-US author
+merged$proauth_avg <- rowMeans(merged[, c('prous3','prous4','prous5')])
+merged$antiauth_avg <- rowMeans(merged[, c('antius3','antius4','antius5')])
+# primary outcome variable, higher scores = greater preference for pro-US author
+merged$pro_minus_anti <- merged$proauth_avg - merged$antiauth_avg 
 # if proauth_avg is NA or antiauth_avg is NA, pro_minus_anti becomes NaN.
 #    converting that to NA instead
 merged$pro_minus_anti[is.nan(merged$pro_minus_anti)] <- NA
@@ -900,6 +901,7 @@ merged_subset <- merged_over60 %>%
            (source == "ithaca" & as.numeric(participantnum) > 97 & !is.na(participantnum))
          ) 
 # 97 was last participant run at ithaca before feb 15, 2017
+# participants 1:96 are discarded
 # Error message is due to character participantnums like "A6"
 #    They seem to be retained just fine tho because the first half of the OR evaluates to TRUE
 
@@ -910,6 +912,7 @@ merged_subset <- merged_subset %>%
            (source == "plu" & as.numeric(participantnum) > 187 & !is.na(participantnum))
          ) 
 # 187 was last participant run at plu before feb 15, 2017
+# participants 1:186 are discarded
 
 # ufl
 merged_subset <- merged_subset %>% 
@@ -917,6 +920,7 @@ merged_subset <- merged_subset %>%
            (source == "ufl" & as.numeric(X._session_id) > 9453807 & !is.na(X._session_id))
          ) 
 # 9453807 was last session number before feb 15, 2017
+# 181 participants are discarded
 
 # wesleyan_inhouse
 merged_subset <- merged_subset %>% 
@@ -924,8 +928,10 @@ merged_subset <- merged_subset %>%
            (source == "wesleyan_inhouse" & as.numeric(participantnum) > 80 & !is.na(participantnum))
          ) 
 # 80 was last participant at wesleyan_inhouse before feb 15, 2017
+# 80 participants are discarded
 
-#FIXME: looks like we went from 2123 to 1578, a loss of 545 participants ran prematurely?
+#looks like we went from 2123 to 1578, a loss of 545 participants ran prematurely?
+# 96+186+181+80 # yeah that's about right
 
 #now need to deidentify
 
