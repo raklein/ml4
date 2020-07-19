@@ -20,6 +20,7 @@
 # install.packages("psych")
 # install.packages("tidyverse")
 # install.packages("effsize")
+# install.packages("pwr")
 
 library(metafor)
 library(metaSEM)
@@ -359,10 +360,6 @@ upenn$msincomplete <- with(upenn,
                            test_msincomplete(SubtleOwnDeath1, SubtleOwnDeath2,
                                            Television1, Television2))
 
-# are race and countryofbirth already recoded?
-with(upenn, table(race, countryofbirth, useNA = 'always'))
-# FIXME: Wharton's race codes are probably nonstandard,
-#   unless they are doing very well at recruiting Native Americans not born in the USA.
 # recode upenn race and ethnicity
 upenn <- mutate(upenn,
                 race.upenn = race,
@@ -376,6 +373,14 @@ upenn <- mutate(upenn,
                                  ),
                 ethnicity = ifelse(race.upenn == 1, 2, 1)) # hispanic/latino ethnicity 
 # political ideology is just 1: left, 2: right, 3: other
+
+with(upenn, table(race.upenn, countryofbirth, useNA = 'always'))
+# FIXME: This race data seems to match neither the Qualtrics nor the desired template
+#   If it matches the Qualtrics, then I am surprised by the large hispanic
+#     representation (1) and small asian representation (5)
+#   If it matches the template, then I am surprised by the large representation of 
+#     native-americans (3) not born in the US
+
 
 # Note: One R user was having issues with some .csv files.
 # If that happens, you can uncomment the below line to simply read in the pre-processed .rds file.
@@ -737,9 +742,11 @@ merged <- mutate_at(merged,
 # an experimental condition assignment. 
 # I think this is a conservative approach that does not lose any real data, at trade-off
 # of retaining some rows with little/no information.
-merged <- subset(merged, !(is.na(merged$prous3)  & is.na(merged$prous4)  & is.na(merged$prous5)  & 
-                             is.na(merged$antius3) & is.na(merged$antius4) & is.na(merged$antius5) & 
-                             is.na(merged$ms_condition)))
+merged <- subset(merged, 
+                 !(is.na(merged$prous3)  & is.na(merged$prous4)  & is.na(merged$prous5)  & 
+                     is.na(merged$antius3) & is.na(merged$antius4) & is.na(merged$antius5) & 
+                     is.na(merged$ms_condition))
+)
 # If you skip these lines, you'll later find we have an issue with the # of levels
 # in data$ms_condition. This is a common problem where a "phantom" level with
 # zero measurements will appear in a factor. I'll demonstrate the problem and 

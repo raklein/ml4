@@ -187,29 +187,34 @@ write.csv(combinedresults3, "./data/public/combinedresults3.csv", row.names = FA
 
 # metaSEM analyses ----
 # reads in csv files from above, just to confirm we can start with those files
-combinedresults0 <- read.csv("./data/public/combinedresults0.csv")
-combinedresults1 <- read.csv("./data/public/combinedresults1.csv")
-combinedresults2 <- read.csv("./data/public/combinedresults2.csv")
-combinedresults3 <- read.csv("./data/public/combinedresults3.csv")
+# Additionally centers expert for contrast coding
+combinedresults0 <- read.csv("./data/public/combinedresults0.csv") %>% 
+  mutate(expert.ctr = ifelse(expert, 1, -1))
+combinedresults1 <- read.csv("./data/public/combinedresults1.csv") %>% 
+  mutate(expert.ctr = ifelse(expert, 1, -1))
+combinedresults2 <- read.csv("./data/public/combinedresults2.csv") %>% 
+  mutate(expert.ctr = ifelse(expert, 1, -1))
+combinedresults3 <- read.csv("./data/public/combinedresults3.csv") %>% 
+  mutate(expert.ctr = ifelse(expert, 1, -1))
 
 # analyses repeated for each set of exclusion critera
 # This was originally a three-level random-effects meta-analysis in MetaSEM
 # had OpenMX status1: 5 so we had to drop the 'cluster = location' argument (not enough datapoints per location -- max = 2, most = 1)
 # So, now it's a univariate random-effects metaanalysis
-summary( meta(y=yi, v=vi, data=combinedresults0))
-summary( meta(y=yi, v=vi, data=combinedresults1))
-summary( meta(y=yi, v=vi, data=combinedresults2))
-summary( meta(y=yi, v=vi, data=combinedresults3))
+random0 <- meta(y=yi, v=vi, data=combinedresults0)
+random1 <- meta(y=yi, v=vi, data=combinedresults1)
+random2 <- meta(y=yi, v=vi, data=combinedresults2)
+random3 <- meta(y=yi, v=vi, data=combinedresults3)
 
 #Notes: Intercept1 is the grand mean effect size. 
 # for the 3 level meta, I? for level 2 indicates the percent of total variance explained by effects within sites, and I? for level 3 indicates the percent of total variance accounted for by differences between sites. 
 # Now that it's a simple meta, all of these meta-analytic stats (tau, q, I2) refer to variablity among all effect sizes (e.g., ignores that in 3 cases these are two nested within a particular university).
 
 # a covariate of study version (in-house or expert-designed) is added to create a mixed effects model.
-summary(mixed0 <- meta(y=yi, v=vi, x=expert, data=combinedresults0))
-summary(mixed1 <- meta(y=yi, v=vi, x=expert, data=combinedresults1))
-summary(mixed2 <- meta(y=yi, v=vi, x=expert, data=combinedresults2))
-summary(mixed3 <- meta(y=yi, v=vi, x=expert, data=combinedresults3))
+mixed0 <- meta(y=yi, v=vi, x=expert, data=combinedresults0)
+mixed1 <- meta(y=yi, v=vi, x=expert, data=combinedresults1)
+mixed2 <- meta(y=yi, v=vi, x=expert, data=combinedresults2)
+mixed3 <- meta(y=yi, v=vi, x=expert, data=combinedresults3)
 
 # Notes: Intercept1 is still the grand mean estimate, 
 #    Slope1_1 represents the difference between versions
@@ -222,27 +227,24 @@ summary(mixed3 <- meta(y=yi, v=vi, x=expert, data=combinedresults3))
 # Author Advised vs In House sites. If this improves model fit for one but not the other, that suggests that model shows greater variability in effect sizes. There are likely better ways to do this.
 
 # split Author Advised from In House results
-combinedresults0_ih <- filter(combinedresults0, expert == 0)
+combinedresults1_ih <- filter(combinedresults1, expert == 0)
 
-combinedresults0_aa <- filter(combinedresults0, expert == 1)
 combinedresults1_aa <- filter(combinedresults1, expert == 1)
 combinedresults2_aa <- filter(combinedresults2, expert == 1)
 combinedresults3_aa <- filter(combinedresults3, expert == 1)
 
 # constrain the variance across sites to zero (perform fixed effects model)
-summary(fixed0_ih <- meta(y=yi, v=vi, data=combinedresults0_ih, RE.constraints=0))
+fixed1_ih <- meta(y=yi, v=vi, data=combinedresults1_ih, RE.constraints=0)
 
-summary(fixed0_aa <- meta(y=yi, v=vi, data=combinedresults0_aa, RE.constraints=0))
-summary(fixed1_aa <- meta(y=yi, v=vi, data=combinedresults1_aa, RE.constraints=0))
-summary(fixed2_aa <- meta(y=yi, v=vi, data=combinedresults2_aa, RE.constraints=0))
-summary(fixed3_aa <- meta(y=yi, v=vi, data=combinedresults3_aa, RE.constraints=0))
+fixed1_aa <- meta(y=yi, v=vi, data=combinedresults1_aa, RE.constraints=0)
+fixed2_aa <- meta(y=yi, v=vi, data=combinedresults2_aa, RE.constraints=0)
+fixed3_aa <- meta(y=yi, v=vi, data=combinedresults3_aa, RE.constraints=0)
 
 # repeat random effects model for just this subset
-summary(random0_ih <- meta(y=yi, v=vi, data=combinedresults0_ih))
+random1_ih <- meta(y=yi, v=vi, data=combinedresults1_ih)
 
-summary(random0_aa <- meta(y=yi, v=vi, data=combinedresults0_aa))
-summary(random1_aa <- meta(y=yi, v=vi, data=combinedresults1_aa))
-summary(random2_aa <- meta(y=yi, v=vi, data=combinedresults2_aa)) 
+random1_aa <- meta(y=yi, v=vi, data=combinedresults1_aa)
+random2_aa <- meta(y=yi, v=vi, data=combinedresults2_aa) 
 # RESOLVED, NOT A BUG: OpenMx status1 == 5
 # "5 means that the Hessian at the solution is not convex. 
 #    There is likely a better solution, but the optimizer is stuck
@@ -254,15 +256,14 @@ summary(random2_aa <- meta(y=yi, v=vi, data=combinedresults2_aa))
 #                            RE.lbound = 1e-50))
 # summary(random2_aa <- meta(y=yi, v=vi, data=combinedresults2_aa,
 #                            RE.start = 1, RE.lbound = 1e-100))
-summary(random3_aa <- meta(y=yi, v=vi, data=combinedresults3_aa)) 
+random3_aa <- meta(y=yi, v=vi, data=combinedresults3_aa)
 
 # compare if there is a significant difference in model fit, chi square difference test
-anova(random0_ih, fixed0_ih)
+fit_comparison_1_ih <- anova(random1_ih, fixed1_ih)
 
-anova(random0_aa, fixed0_aa)
-anova(random1_aa, fixed1_aa)
-anova(random2_aa, fixed2_aa)
-anova(random3_aa, fixed3_aa)
+fit_comparison_1_aa <- anova(random1_aa, fixed1_aa)
+fit_comparison_2_aa <- anova(random2_aa, fixed2_aa)
+fit_comparison_3_aa <- anova(random3_aa, fixed3_aa)
 
 # Repeating analyses of "expert" sites in the aggregate, ignoring site dependence ----
 # This is a simple alternative and useful for most stringent exclusion criteria which drastically reduces overall N (exclusion set 3)
@@ -419,7 +420,7 @@ merged <- readRDS("./data/processed_data/merged_subset.rds")
 demos <- filter(merged, !is.na(pro_minus_anti),
                 pass_ER1 == T | expert == 0)
 
-# is there a category for multiracial? 6? something else?
+# FIXME: is there a category for multiracial? 6? something else?
 
 demos_race <- demos %>% 
   select(race) %>% 
@@ -438,3 +439,11 @@ demos_gender <- demos %>%
 # save to file
 write_csv(demos_race, "./data/processed_data/demos_race.csv")
 write_csv(demos_gender, "./data/processed_data/demos_gender.csv")
+
+# Save all model objects to .RData for loading into 006 RMarkdown
+save(random1, random2, random3,
+     mixed1, mixed2, mixed3,
+     fixed1_ih, fixed1_aa, fixed2_aa, fixed3_aa,
+     random1_ih, random1_aa, random2_aa, random3_aa,
+     fit_comparison_1_ih, fit_comparison_1_aa, fit_comparison_2_aa, fit_comparison_3_aa,
+     file = "results.RData")

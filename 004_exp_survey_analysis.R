@@ -2,9 +2,6 @@
 # Coder: Rick Klein raklein22@gmail.com
 # OSF: https://osf.io/8ccnw/
 
-##### NOTE -- THIS SCRIPT IS POTENTIALLY OUT OF DATE. WROTE THESE ANALYSES #### 
-##### DIRECTLY INTO THE RMARKDOWN RESULTS SECTION: ml4_papaja_results.docx ####
-
 # Written in RStudio Version 1.1.463, and R version 3.5.2
 
 #The dataset is inherently sensitive so no deidentified dataset was created.
@@ -16,9 +13,7 @@
 # Otherwise, call setwd() with a path to the /ml4/ folder
 # All file paths are relative from the working directory.
 
-
 # Reading in experimenter survey, this was converted from .csv to .rds due to column names
-#    (that's a pain -- now strings are factors.)
 # Original .csv is retained in the same directory
 exp_surv <- readRDS("./data/raw_site_data/experimenter survey/exp_surv.rds") %>% 
   # mutate factors back to character
@@ -28,8 +23,12 @@ names(exp_surv)
 # Make nicer names
 names(exp_surv) <- c("Timestamp", "Site", "email", "role", "degree", "years_exp", "pubs", "citations",
                      "tmt_know", "tmt_exp", "tmt_believe", "rooting", "rep_likely", "analyzed")
-
-# 
+# Exclude responses from sites with n < 60, since they are not used in the confirmatory analysis
+exp_surv <- filter(exp_surv, !(Site %in% c("Southern Oregon University, Ashland, Oregon",
+                                           "Azusa Pacific University",
+                                           "University of Kansas (Expert)",
+                                           "Ashland University, Ashland, OH")))
+# Glance at summary stats
 select(exp_surv, years_exp:tmt_believe, rep_likely) %>% summary()
 
 # Counts and percentages of different levels of 'knowledge about TMT'
@@ -41,13 +40,13 @@ exp_knowl_alot    <- tab.exp_know[grep("A lot", dimnames(tab.exp_know)$tmt_know)
 exp_knowl_some    <- tab.exp_know[grep("Some", dimnames(tab.exp_know)$tmt_know)]
 exp_knowl_alittle <- tab.exp_know[grep("A little", dimnames(tab.exp_know)$tmt_know)]
 exp_knowl_none    <- tab.exp_know[grep("None", dimnames(tab.exp_know)$tmt_know)]
-exp_knowl_na      <- tab.exp_know[6]
+exp_knowl_na      <- tail(tab.exp_know, 1)
 exp_knowl_expert_pct  <- tab.exp_know_pct[grep("Expert", dimnames(tab.exp_know_pct)$tmt_know)]
 exp_knowl_alot_pct    <- tab.exp_know_pct[grep("A lot", dimnames(tab.exp_know_pct)$tmt_know)]
 exp_knowl_some_pct    <- tab.exp_know_pct[grep("Some", dimnames(tab.exp_know_pct)$tmt_know)]
 exp_knowl_alittle_pct <- tab.exp_know_pct[grep("A little", dimnames(tab.exp_know_pct)$tmt_know)]
 exp_knowl_none_pct    <- tab.exp_know_pct[grep("None", dimnames(tab.exp_know_pct)$tmt_know)]
-exp_knowl_na_pct      <- tab.exp_know_pct[6]
+exp_knowl_na_pct      <- tail(tab.exp_know_pct, 1)
 
 # Experimenter "rooting for success/failure" data are messy, so I'll code them here
 # Manually recording these free responses as "neither"

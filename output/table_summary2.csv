@@ -3,7 +3,7 @@
 "Ithaca College","IH",39,42,0.12,0.06,1.86,2.67,-0.03,0.9
 "Occidental College","AA",17,21,0.57,0.79,1.74,2.76,0.09,0.76
 "Pace University","AA",30,29,1.69,1.53,2.01,2.19,-0.08,0.77
-"Pace University","IH",35,24,2.28,0.11,5.86,5.33,-0.38,0.15
+"Pace University","IH",34,24,2.2,0.11,5.93,5.33,-0.36,0.17
 "Pacific Lutheran University","IH",30,30,0.32,-0.18,1.79,2.14,-0.25,0.33
 "The College of New Jersey","AA",39,58,1.27,1.68,2.21,1.74,0.21,0.34
 "University of California, Riverside","AA",6,4,0.44,2.33,0.89,1.25,1.65,0.05
@@ -12,7 +12,7 @@
 "University of Kansas","IH",40,35,1.32,1.21,3.03,3.04,-0.03,0.88
 "University of Pennsylvania","IH",45,41,-0.16,0.2,1.75,2.23,0.17,0.42
 "University of Wisconsin","AA",31,32,0.88,0.86,1.68,2.27,-0.01,0.97
-"University of Wisconsin","IH",36,34,-0.74,-0.9,2.05,1.72,-0.08,0.72
-"Virginia Commonwealth University","AA",12,28,1.22,1.48,1.13,1.97,0.14,0.61
+"University of Wisconsin","IH",36,32,-0.74,-0.93,2.05,1.77,-0.1,0.69
+"Virginia Commonwealth University","AA",12,27,1.22,1.49,1.13,2,0.15,0.59
 "Wesleyan University","IH",53,42,-0.56,-0.22,1.82,1.46,0.2,0.32
-"Worcester Polytechnic Institute","IH",71,72,0.59,0.53,1.98,1.61,-0.03,0.85
+"Worcester Polytechnic Institute","IH",70,71,0.54,0.51,1.95,1.61,-0.02,0.92

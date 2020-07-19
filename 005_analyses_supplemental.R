@@ -146,6 +146,8 @@ combinedresults_pro3 <- read.csv("./data/public/combinedresults_pro3.csv")
 # analyses repeated for each set of exclusion critera
 # three-level random-effects meta-analysis in MetaSEM
 # TODO: drop cluster=location due to OpenMX status = 5
+# TODO: refactor this code to parallel that of 002, 
+#    saving objects as fixed1_ih_pro, mixed2_aa_pro, etc
 summary( meta3(y=yi, v=vi, cluster=location, data=combinedresults_pro0))
 summary( meta3(y=yi, v=vi, cluster=location, data=combinedresults_pro1))
 summary( meta3(y=yi, v=vi, cluster=location, data=combinedresults_pro2))
@@ -174,7 +176,8 @@ anova(mixed_pro3, fixed_pro3)
 
 # TODO: I, Joe, don't know what to do with all this vvvv
 # Repeating analyses of "expert" sites in the aggregate, ignoring site dependence.
-# This is a simple alternative and useful for most stringent exclusion criteria which drastically reduces overall N (exclusion set 3)
+# This is a simple alternative and useful for most stringent exclusion criteria 
+#    which drastically reduces overall N (exclusion set 3)
 # read in .rds data
 data <- readRDS("./data/public/merged_deidentified_subset.rds")
 # selecting only expert labs

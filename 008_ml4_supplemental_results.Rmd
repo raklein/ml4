@@ -59,7 +59,7 @@ knitr::opts_chunk$set(cache.extra = knitr::rand_seed)
 
 # Primary data file with replication data aggregated across labs (deidentified should suffice)
 # Note: This file is the merged data provided by sites, produced by 001_data_cleaning.R
-merged <- readRDS("./data/public/merged_deidentified.rds")
+merged <- readRDS("./data/public/merged_deidentified_subset.rds")
 ```
 
 # Supplemental Results
