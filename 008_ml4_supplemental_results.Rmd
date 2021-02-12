@@ -36,6 +36,8 @@ classoption       : "man"
 output            : papaja::apa6_word
 ---
 
+This document presents supplementary analyses. The first supplementary analysis considers ratings of the pro-US and anti-US authors separately, rather than as a difference score as in the main text.
+
 ```{r setup, include = FALSE}
 library("papaja")
 library("metafor")
@@ -69,21 +71,15 @@ alpha_anti <- psych::alpha(select(merged, antius3, antius4, antius5))
 alpha_pro <- psych::alpha(select(merged, prous3, prous4, prous5))
 
 # Tracking exclusions:
-# 'merged_original' is all data, no exclusions, incase we need it for anything.
+# 'merged_original' is all data, no exclusions, in case we need it for anything.
 merged_original <- merged
 
-# Applying exclusion criteria 1
-# 1. Wrote something for both writing prompts
-merged <- subset(merged, (merged$msincomplete == 0 | is.na(merged$msincomplete)))
-# 2. Completed all six items evaluating the essay authors)
-merged <- subset(merged, (!is.na(merged$prous3) & !is.na(merged$prous4) & !is.na(merged$prous5) & !is.na(merged$antius3) & !is.na(merged$antius4) & !is.na(merged$antius5)))
-# 'merged' is basic exclusions (exclusion set 1 below).
-# 'merged_excl_2' further excludes participants as per exclusion set 2 (below)
-merged_excl_2 <- subset(merged, (merged$race == 1 & merged$countryofbirth == 1) | merged$expert == 0)
-
-# 'merged_excl_3' further excludes participants as per exclusion set 3 (below)
-
-merged_excl_3 <- subset(merged_excl_2, merged_excl_2$americanid >= 7 | merged_excl_2$expert == 0)
+# 'merged' is basic exclusions (exclusion set 1).
+merged <- filter(merged, !is.na(pro_minus_anti), pass_ER1 == T | expert == 0)
+# 'merged_excl_2' further excludes participants per exclusion set 2 
+merged_excl_2 <- subset(merged, pass_ER2 == T | expert == 0)
+# 'merged_excl_3' further excludes participants per exclusion set 3 
+merged_excl_3 <- subset(merged_excl_2, pass_ER3 == T | expert == 0)
 ```
 
 ## Pro-US Author Ratings and Anti-US Author Ratings separately
@@ -110,7 +106,6 @@ combinedresults_pro3 <- read.csv("./data/public/combinedresults_pro3.csv")
 
 # analyses repeated for each set of exclusion critera
 # three-level random-effects meta-analysis in MetaSEM
-# summary( meta3(y=yi, v=vi, cluster=location, data=combinedresults0)) #line not necessary, results for a subset we never use (e.g., zero exclusions)
 random_effects_pro1 <- summary(meta3(y=yi, v=vi, cluster=location, data=combinedresults_pro1))
 random_effects_pro2 <- summary(meta3(y=yi, v=vi, cluster=location, data=combinedresults_pro2))
 random_effects_pro3 <- summary(meta3(y=yi, v=vi, cluster=location, data=combinedresults_pro3))
@@ -118,11 +113,10 @@ random_effects_pro3 <- summary(meta3(y=yi, v=vi, cluster=location, data=combined
 
 # a covariate of study version (in-house or expert-designed) is added to create a three-level mixed-effects meta-analysis
 # note the openMX status, sometimes indicates a potential problem
-# summary( mixed0 <- meta3(y=yi, v=vi, cluster=location, x=expert, data=combinedresults0)) #line not necessary, results for a subset we never use (e.g., zero exclusions)
 mixed_effects_pro1 <- summary(mixed_pro1 <- meta3(y=yi, v=vi, cluster=location, x=expert, data=combinedresults_pro1))
 mixed_effects_pro2 <- summary(mixed_pro2 <- meta3(y=yi, v=vi, cluster=location, x=expert, data=combinedresults_pro2))
 mixed_effects_pro3 <- summary(mixed_pro3 <- meta3(y=yi, v=vi, cluster=location, x=expert, data=combinedresults_pro3))
-# Notes: The R? for the version predictor will be reported for both level 2 and level 3, although in this case version is a level 2 predictor so the level 3 R? will always be zero. 
+# Notes: The R^2 for the version predictor will be reported for both level 2 and level 3, although in this case version is a level 2 predictor so the level 3 R? will always be zero. 
 
 # constraining the variance to test if it significantly worsens the model
 # summary( fixed0 <- meta3(y=yi, v=vi, cluster=location, x=expert, data=combinedresults0, RE2.constraints=0, RE3.constraints=0)) #line not necessary, results for a subset we never use (e.g., zero exclusions)

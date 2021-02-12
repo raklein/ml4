@@ -143,39 +143,35 @@ combinedresults_pro1 <- read.csv("./data/public/combinedresults_pro1.csv")
 combinedresults_pro2 <- read.csv("./data/public/combinedresults_pro2.csv")
 combinedresults_pro3 <- read.csv("./data/public/combinedresults_pro3.csv")
 
-# analyses repeated for each set of exclusion critera
+# analyses repeated for each set of exclusion criteria
 # three-level random-effects meta-analysis in MetaSEM
-# TODO: drop cluster=location due to OpenMX status = 5
 # TODO: refactor this code to parallel that of 002, 
 #    saving objects as fixed1_ih_pro, mixed2_aa_pro, etc
-summary( meta3(y=yi, v=vi, cluster=location, data=combinedresults_pro0))
-summary( meta3(y=yi, v=vi, cluster=location, data=combinedresults_pro1))
-summary( meta3(y=yi, v=vi, cluster=location, data=combinedresults_pro2))
-summary( meta3(y=yi, v=vi, cluster=location, data=combinedresults_pro3))
-#Notes: I? for level 2 indicates the percent of total variance explained by effects within sites, and I? for level 3 indicates the percent of total variance accounted for by differences between sites. 
+random0_pro <- meta(y=yi, v=vi, data=combinedresults_pro0)
+random1_pro <- meta(y=yi, v=vi, data=combinedresults_pro1)
+random2_pro <- meta(y=yi, v=vi, data=combinedresults_pro2)
+random3_pro <- meta(y=yi, v=vi, data=combinedresults_pro3)
+#Notes: I^2 for level 2 indicates the percent of total variance explained by effects within sites, and I? for level 3 indicates the percent of total variance accounted for by differences between sites. 
 
 # a covariate of study version (in-house or expert-designed) is added to create a three-level mixed-effects meta-analysis
-# note the openMX status, sometimes indicates a potential problem
-summary( mixed_pro0 <- meta3(y=yi, v=vi, cluster=location, x=expert, data=combinedresults_pro0))
-summary( mixed_pro1 <- meta3(y=yi, v=vi, cluster=location, x=expert, data=combinedresults_pro1))
-summary( mixed_pro2 <- meta3(y=yi, v=vi, cluster=location, x=expert, data=combinedresults_pro2))
-summary( mixed_pro3 <- meta3(y=yi, v=vi, cluster=location, x=expert, data=combinedresults_pro3))
-# Notes: The R? for the version predictor will be reported for both level 2 and level 3, although in this case version is a level 2 predictor so the level 3 R? will always be zero. 
+mixed0_pro <- meta(y=yi, v=vi, x=expert, data=combinedresults_pro0)
+mixed1_pro <- meta(y=yi, v=vi, x=expert, data=combinedresults_pro1)
+mixed2_pro <- meta(y=yi, v=vi, x=expert, data=combinedresults_pro2)
+mixed3_pro <- meta(y=yi, v=vi, x=expert, data=combinedresults_pro3)
+# Notes: The R^2 for the version predictor will be reported for both level 2 and level 3, although in this case version is a level 2 predictor so the level 3 R^2 will always be zero. 
 
 # constraining the variance to test if it significantly worsens the model
-summary( fixed_pro0 <- meta3(y=yi, v=vi, cluster=location, x=expert, data=combinedresults_pro0, RE2.constraints=0, RE3.constraints=0))
-summary( fixed_pro1 <- meta3(y=yi, v=vi, cluster=location, x=expert, data=combinedresults_pro1, RE2.constraints=0, RE3.constraints=0))
-summary( fixed_pro2 <- meta3(y=yi, v=vi, cluster=location, x=expert, data=combinedresults_pro2, RE2.constraints=0, RE3.constraints=0))
-summary( fixed_pro3 <- meta3(y=yi, v=vi, cluster=location, x=expert, data=combinedresults_pro3, RE2.constraints=0, RE3.constraints=0))
-
+fixed0_pro <- meta3(y=yi, v=vi, x=expert, cluster = location, data=combinedresults_pro0, RE2.constraints=0, RE3.constraints=0)
+fixed1_pro <- meta3(y=yi, v=vi, x=expert, cluster = location, data=combinedresults_pro1, RE2.constraints=0, RE3.constraints=0)
+fixed2_pro <- meta3(y=yi, v=vi, x=expert, cluster = location, data=combinedresults_pro2, RE2.constraints=0, RE3.constraints=0)
+fixed3_pro <- meta3(y=yi, v=vi, x=expert, cluster = location, data=combinedresults_pro3, RE2.constraints=0, RE3.constraints=0)
 # compare if there is a significant difference in model fit, chi square difference test
-anova(mixed_pro0, fixed_pro0)
-anova(mixed_pro1, fixed_pro1)
-anova(mixed_pro2, fixed_pro2)
-anova(mixed_pro3, fixed_pro3)
+fit_comparison_0_pro <- anova(mixed0_pro, fixed0_pro)
+fit_comparison_1_pro <- anova(mixed1_pro, fixed1_pro)
+fit_comparison_2_pro <- anova(mixed2_pro, fixed2_pro)
+fit_comparison_3_pro <- anova(mixed3_pro, fixed3_pro)
 
-# TODO: I, Joe, don't know what to do with all this vvvv
-# Repeating analyses of "expert" sites in the aggregate, ignoring site dependence.
+# Repeating analyses of "expert" sites in the aggregate, ignoring site dependence ----
 # This is a simple alternative and useful for most stringent exclusion criteria 
 #    which drastically reduces overall N (exclusion set 3)
 # read in .rds data
@@ -185,7 +181,7 @@ data <- subset(data, expert==1)
 
 ###ANALYSIS 0: no exclusions###
 # t.test and descriptive statistics per condition from psych package
-t.test(data$proauth_avg~data$ms_condition)
+t.test(data$proauth_avg ~ data$ms_condition)
 describeBy(data$proauth_avg, group = data$ms_condition)
 effsize::cohen.d(data$proauth_avg~data$ms_condition,pooled=TRUE,paired=FALSE,
                  na.rm=TRUE, hedges.correction=TRUE,
@@ -208,7 +204,7 @@ t.test(data$proauth_avg~data$ms_condition)
 describeBy(data$proauth_avg, group = data$ms_condition)
 effsize::cohen.d(data$proauth_avg~data$ms_condition,pooled=TRUE,paired=FALSE,
                  na.rm=TRUE, hedges.correction=TRUE,
-                 conf.level=0.95) #this is incorrectly indicating a negative value, I'm not sure why but it should be positive from the group means
+                 conf.level=0.95)
 
 ###ANALYSIS 3: Exclusion set 3###
 data <- filter(data, pass_ER3 == T)
@@ -217,15 +213,15 @@ t.test(data$proauth_avg~data$ms_condition)
 describeBy(data$proauth_avg, group = data$ms_condition)
 effsize::cohen.d(data$proauth_avg~data$ms_condition,pooled=TRUE,paired=FALSE,
                  na.rm=TRUE, hedges.correction=TRUE,
-                 conf.level=0.95) #this is incorrectly indicating a positive value, reversing sign in the report
+                 conf.level=0.95)
 
 ###Conducting a small meta-analysis of only the in-house data to provide a summary of those results in basic form.####
 # Read in summary .csv which used basic exclusion rules, Exclusion Set 1
 data <- read.csv("./data/public/combinedresults_pro1.csv")
-# subset to in-house rows only
-data <- subset(data, expert==0)
-# conduct random effects meta-analyis
-summary( meta(y = yi, v = vi, data = data))
+# conduct random effects meta-analysis of in-house only
+filter(data, expert == 0) %>% 
+  meta(y = yi, v = vi, data = .) %>% 
+  summary()
 
 # Focused analysis of sites with "expert" or "a lot of knowledge about TMT" leads
 # Still using exclusion set 1

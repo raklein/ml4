@@ -118,7 +118,9 @@ merged_original <- merged
 merged$age <- as.numeric(as.character(merged$age))
 
 # Applying exclusion criteria 1
-# has the primary DV, (wrote something for both writing prompts OR in-house attempt)
+#    need both the pro and the anti ratings
+#    pass_ER1 was created in 001_data_cleaning.R
+#    non-expert sites are exempted
 merged <- filter(merged, !is.na(pro_minus_anti), pass_ER1 == T | expert == 0)
 
 # fetch demographics and extract values generated in 002_ml4analysis.R
