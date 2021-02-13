@@ -77,8 +77,8 @@ analyse <- function(data) {
   
   # use metafor::escalc() to add effect size and precision
   # Appends yi and vi to the data object.
-  combinedresults0 <- escalc(n1i = n_ms, n2i = n_tv, m1i = mean_ms, m2i = mean_tv, 
-                             sd1i = sd_ms, sd2i = sd_tv, data = combinedresults0, measure = "SMD", 
+  dat <- escalc(n1i = n_ms, n2i = n_tv, m1i = mean_ms, m2i = mean_tv, 
+                             sd1i = sd_ms, sd2i = sd_tv, data = dat, measure = "SMD", 
                              append = TRUE)
   
   # make pretty names per site

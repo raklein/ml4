@@ -253,9 +253,7 @@ filter(dat, expert == 0) %>%
   summary()
 
 # Focused analysis of sites with "expert" or "a lot of knowledge about TMT" leads
-# Read data, applying exclusion criteria 1
-dat <- filter(dat, pass_ER1 == T)
-# Selecting only the below sites:
+# Filtering for only the below sites:
 #University of Wisconsin, Madison, WI (in-house)
 #The College of New Jersey
 #University of Kansas (Expert)
@@ -266,15 +264,8 @@ dat <- filter(dat, pass_ER1 == T)
 grep("kansas", unique(dat$source), value = T)
 dat <- filter(dat, source %in% c("uwmadison_inhouse", "cnj", "kansas_expert", "kansas_inhouse",
                                         "pace_expert", "vcu"))
-# Applying the same levels fix as earlier, only because it caused problems in 
-# cohen.d() below. May not be necessary anymore.
-dat$ms_condition <- factor(dat$ms_condition, levels = c("ms", "tv"))
-# Analyses using that subset
-t.test(dat$proauth_avg~dat$ms_condition)
-describeBy(dat$proauth_avg, group = dat$ms_condition)
-effsize::cohen.d(dat$proauth_avg~dat$ms_condition,pooled=TRUE,paired=FALSE,
-                 na.rm=TRUE, hedges.correction=TRUE,
-                 conf.level=0.95)
+# meta-analyze
+rma(yi = yi, vi = vi, data = dat)
 
 # Analyze anti-author ratings ----
 
@@ -368,10 +359,7 @@ filter(dat, expert==0) %>%
   summary()
 
 # Focused analysis of sites with "expert" or "a lot of knowledge about TMT" leads
-# Still using exclusion set 1
-# Read data, applying exclusion criteria 1
-dat <- filter(merged, pass_ER1 == T)
-# Selecting only the below sites:
+# Filtering for only the below sites:
 #University of Wisconsin, Madison, WI (in-house)
 #The College of New Jersey
 #University of Kansas (Expert)
@@ -384,14 +372,7 @@ dat <- subset(dat, dat$source %in% c("uwmadison_inhouse", "cnj", "kansas_expert"
                                         "pace_expert", "vcu"))
 # Applying the same levels fix as earlier, only because it caused problems in 
 # cohen.d() below. May not be necessary anymore.
-dat$ms_condition <- factor(dat$ms_condition, levels = c("ms", "tv"))
-# Analyses using that subset
-t.test(dat$antiauth_avg~dat$ms_condition)
-describeBy(dat$antiauth_avg, group = dat$ms_condition)
-effsize::cohen.d(dat$antiauth_avg~dat$ms_condition,pooled=TRUE,paired=FALSE,
-                 na.rm=TRUE, hedges.correction=TRUE,
-                 conf.level=0.95)
-
+rma(yi = yi, vi = vi, data = dat)
 
 ## 2. Analyzing how much participants liked the pro and anti authors ----
 # TODO: This is not referenced in the RMD -- can it be cut? Or can someone clarify the goal?
