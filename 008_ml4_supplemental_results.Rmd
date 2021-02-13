@@ -36,8 +36,6 @@ classoption       : "man"
 output            : papaja::apa6_word
 ---
 
-This document presents supplementary analyses. The first supplementary analysis considers ratings of the pro-US and anti-US authors separately, rather than as a difference score as in the main text.
-
 ```{r setup, include = FALSE}
 library("papaja")
 library("metafor")
@@ -65,6 +63,8 @@ merged <- readRDS("./data/public/merged_deidentified_subset.rds")
 ```
 
 # Supplemental Results
+
+This document presents supplementary analyses that consider ratings of the pro-US and anti-US authors as two separate DVs, rather than as a single difference score DV as in the main text.
 
 ```{r analysis-alpha-exclusions, include = FALSE}
 alpha_anti <- psych::alpha(select(merged, antius3, antius4, antius5))
@@ -131,7 +131,7 @@ fit_comparison_pro2 <- anova(mixed_pro2, fixed_pro2)
 fit_comparison_pro3 <- anova(mixed_pro3, fixed_pro3)
 ```
 
-## PRO-US RATINGS ONLY: Research question 1: Meta-analytic results across all labs (random effects meta-analysis). 
+### PRO-US RATINGS ONLY: Research question 1: Meta-analytic results across all labs (random effects meta-analysis). 
 Some labs administered both Author Advised and In House protocols. To account for this nesting of effect sizes within labs, a three-level random-effects meta-analysis was conducted using the MetaSEM package (Cheung, 2014) in R.[^1] This analysis produces the grand mean effect size across all sites and versions.
 
 [^1]: Sample code to run this analysis is: meta3(y=es, v=var, cluster=Location, data=dataset). In this sample code, “y=es” directs the program to the column of effect sizes, “v=var” indicates the variable to be used as the sampling variance for each effect size, and the “cluster=Location” command groups the effect sizes by a location variable in the dataset (in this case, a unique identifier assigned to each replication site).
@@ -142,7 +142,7 @@ We also examined how much variation was observed among effect sizes (e.g., heter
 
 In sum, we observed no evidence for an overall effect of mortality salience on pro-us author ratings. And, overall results suggest that there was minimal or no heterogeneity in effect sizes across sites. This lack of variation suggests that it is unlikely we will observe an effect of Author Advised versus In House protocols or other moderators such as differences in samples or TMT knowledge. Even so, the plausible moderation by Author Advised/In House protocol is examined in the following section. 
 
-## PRO-US RATINGS ONLY: Research Question 2: Moderation by Author Advised/In House protocol
+### PRO-US RATINGS ONLY: Research Question 2: Moderation by Author Advised/In House protocol
 A covariate of protocol type was added to the random effects model to create a three-level mixed-effects meta-analysis. This was pre-registered as our primary analysis.[^2] 
 
 [^2]: The addition of the argument "x = version" to the prior metaSEM R code can be seen here: meta3(y=es, v=var, cluster=Location, x=version, data=dataset)
@@ -153,7 +153,7 @@ In addition, protocol version did not significantly predict replication effect s
 
 We again did not observe heterogeneity between labs, in any of the exclusion sets: exclusion set 1: *Q*(`r mixed_effects_pro1$Q.stat$Q.df`) = `r mixed_effects_pro1$Q.stat$Q`, *p* = `r mixed_effects_pro1$Q.stat$pval`; exclusion set 2: *Q*(`r mixed_effects_pro2$Q.stat$Q.df`) = `r mixed_effects_pro2$Q.stat$Q`, *p* = `r mixed_effects_pro2$Q.stat$pval`; exclusion set 3: *Q*(`r mixed_effects_pro3$Q.stat$Q.df`) = `r mixed_effects_pro3$Q.stat$Q`, *p* = `r mixed_effects_pro3$Q.stat$pval`.
 
-## PRO-US RATINGS ONLY: Research Question 3: Effect of Standardization
+### PRO-US RATINGS ONLY: Research Question 3: Effect of Standardization
 Finally, we tested whether In House protocols displayed greater variability in effect size than Author Advised protocols. To test this hypothesis, we ran the mixed-effects models but constrained the variances at both level 2 and level 3 to 0, effectively creating fixed-effects models. These models were then compared with a chi-squared differences test to assess whether the fit significantly changed. In this case, none of the three models significantly decreased in fit: Exclusion set 1: *$\chi$²* (`r fit_comparison_pro1$diffdf[2]`) = `r fit_comparison_pro1$diffLL[2]`, *p* = `r fit_comparison_pro1$p[2]`; Exclusion set 2: *$\chi$²* (`r fit_comparison_pro2$diffdf[2]`) = `r fit_comparison_pro2$diffLL[2]`, *p* = `r fit_comparison_pro2$p[2]`; Exclusion set 3: *$\chi$²* (`r fit_comparison_pro3$diffdf[2]`) = `r fit_comparison_pro3$diffLL[2]`, *p* = `r fit_comparison_pro3$p[2]`. Overall, there was no evidence that In House protocols elicited greater variability than Author Advised protocols.
 
 ```{r analysis-replication-meta-anti, include = FALSE}
@@ -204,7 +204,7 @@ fit_comparison_anti2 <- anova(mixed_anti2, fixed_anti2)
 fit_comparison_anti3 <- anova(mixed_anti3, fixed_anti3)
 ```
 
-## ANTI-US RATINGS ONLY: Research question 1: Meta-analytic results across all labs (random effects meta-analysis). 
+### ANTI-US RATINGS ONLY: Research question 1: Meta-analytic results across all labs (random effects meta-analysis). 
 Some labs administered both Author Advised and In House protocols. To account for this nesting of effect sizes within labs, a three-level random-effects meta-analysis was conducted using the MetaSEM package (Cheung, 2014) in R.[^3] This analysis produces the grand mean effect size across all sites and versions.
 
 [^3]: Sample code to run this analysis is: meta3(y=es, v=var, cluster=Location, data=dataset). In this sample code, “y=es” directs the program to the column of effect sizes, “v=var” indicates the variable to be used as the sampling variance for each effect size, and the “cluster=Location” command groups the effect sizes by a location variable in the dataset (in this case, a unique identifier assigned to each replication site).
@@ -215,7 +215,7 @@ We also examined how much variation was observed among effect sizes (e.g., heter
 
 In sum, we observed no evidence for an overall effect of mortality salience on anti-us author ratings. And, overall results suggest that there was minimal or no heterogeneity in effect sizes across sites. This lack of variation suggests that it is unlikely we will observe an effect of Author Advised versus In House protocols or other moderators such as differences in samples or TMT knowledge. Even so, the plausible moderation by Author Advised/In House protocol is examined in the following section. 
 
-## ANTI-US RATINGS ONLY: Research Question 2: Moderation by Author Advised/In House protocol
+### ANTI-US RATINGS ONLY: Research Question 2: Moderation by Author Advised/In House protocol
 A covariate of protocol type was added to the random effects model to create a three-level mixed-effects meta-analysis. This was pre-registered as our primary analysis.[^4] 
 
 [^4]: The addition of the argument "x = version" to the prior metaSEM R code can be seen here: meta3(y=es, v=var, cluster=Location, x=version, data=dataset)
@@ -226,7 +226,7 @@ In addition, protocol version did not significantly predict replication effect s
 
 We again did not observe heterogeneity between labs, in any of the exclusion sets: exclusion set 1: *Q*(`r mixed_effects_anti1$Q.stat$Q.df`) = `r mixed_effects_anti1$Q.stat$Q`, *p* = `r mixed_effects_anti1$Q.stat$pval`; exclusion set 2: *Q*(`r mixed_effects_anti2$Q.stat$Q.df`) = `r mixed_effects_anti2$Q.stat$Q`, *p* = `r mixed_effects_anti2$Q.stat$pval`; exclusion set 3: *Q*(`r mixed_effects_anti3$Q.stat$Q.df`) = `r mixed_effects_anti3$Q.stat$Q`, *p* = `r mixed_effects_anti3$Q.stat$pval`. Note: Although exclusion set 2 was near statistical significance, the effect size was trivial regardless: , Tau^2^~within\ labs~ = `r mixed_effects_anti2$coefficients["Tau2_2", "Estimate"]`, Tau^2^~between\ labs~ = `r mixed_effects_anti2$coefficients["Tau2_3", "Estimate"]`
 
-## ANTI-US RATINGS ONLY: Research Question 3: Effect of Standardization
+### ANTI-US RATINGS ONLY: Research Question 3: Effect of Standardization
 Finally, we tested whether In House protocols displayed greater variability in effect size than Author Advised protocols. To test this hypothesis, we ran the mixed-effects models but constrained the variances at both level 2 and level 3 to 0, effectively creating fixed-effects models. These models were then compared with a chi-squared differences test to assess whether the fit significantly changed. In this case, none of the three models significantly decreased in fit: Exclusion set 1: *$\chi$²* (`r fit_comparison_anti1$diffdf[2]`) = `r fit_comparison_anti1$diffLL[2]`, *p* = `r fit_comparison_anti1$p[2]`; Exclusion set 2: *$\chi$²* (`r fit_comparison_anti2$diffdf[2]`) = `r fit_comparison_anti2$diffLL[2]`, *p* = `r fit_comparison_anti2$p[2]`; Exclusion set 3: *$\chi$²* (`r fit_comparison_anti3$diffdf[2]`) = `r fit_comparison_anti3$diffLL[2]`, *p* = `r fit_comparison_anti3$p[2]`. Overall, there was no evidence that In House protocols elicited greater variability than Author Advised protocols.
 
 \begingroup
