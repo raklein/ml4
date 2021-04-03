@@ -35,12 +35,12 @@ select(exp_surv, years_exp:tmt_believe, rep_likely) %>% summary()
 exp_surv$tmt_know <- ifelse(exp_surv$tmt_know == "", NA, exp_surv$tmt_know) # set "" to NA
 tab.exp_know <- with(exp_surv, table(tmt_know, useNA = 'ifany'))
 tab.exp_know_pct  <- prop.table(tab.exp_know)*100
-exp_knowl_expert  <- tab.exp_know[grep("Expert", dimnames(tab.exp_know)$tmt_know)]
-exp_knowl_alot    <- tab.exp_know[grep("A lot", dimnames(tab.exp_know)$tmt_know)]
-exp_knowl_some    <- tab.exp_know[grep("Some", dimnames(tab.exp_know)$tmt_know)]
-exp_knowl_alittle <- tab.exp_know[grep("A little", dimnames(tab.exp_know)$tmt_know)]
-exp_knowl_none    <- tab.exp_know[grep("None", dimnames(tab.exp_know)$tmt_know)]
-exp_knowl_na      <- tail(tab.exp_know, 1)
+exp_knowl_expert      <- tab.exp_know[grep("Expert", dimnames(tab.exp_know)$tmt_know)]
+exp_knowl_alot        <- tab.exp_know[grep("A lot", dimnames(tab.exp_know)$tmt_know)]
+exp_knowl_some        <- tab.exp_know[grep("Some", dimnames(tab.exp_know)$tmt_know)]
+exp_knowl_alittle     <- tab.exp_know[grep("A little", dimnames(tab.exp_know)$tmt_know)]
+exp_knowl_none        <- tab.exp_know[grep("None", dimnames(tab.exp_know)$tmt_know)]
+exp_knowl_na          <- tail(tab.exp_know, 1)
 exp_knowl_expert_pct  <- tab.exp_know_pct[grep("Expert", dimnames(tab.exp_know_pct)$tmt_know)]
 exp_knowl_alot_pct    <- tab.exp_know_pct[grep("A lot", dimnames(tab.exp_know_pct)$tmt_know)]
 exp_knowl_some_pct    <- tab.exp_know_pct[grep("Some", dimnames(tab.exp_know_pct)$tmt_know)]
@@ -74,3 +74,4 @@ with(exp_surv, table(tmt_know, useNA = 'ifany'))
 filter(exp_surv, analyzed == "No") %>% 
   summarize(mean = mean(rep_likely, na.rm = T),
             sd = sd(rep_likely, na.rm = T))
+

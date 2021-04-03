@@ -62,8 +62,10 @@ analyse <- function(data) {
     unite(name, name, ms_condition) %>% 
     pivot_wider(names_from = name,
                 values_from = value) %>% 
-    # TODO: check about denominator for d given unequal cell sizes
-    mutate(d_diff = (mean_ms - mean_tv)/ sqrt((sd_ms^2+sd_tv^2)/2)) #computes Cohen's D effect size
+    # Calculate Cohen's d given unequal effect sizes (Borenstein et al. 2009, p 26, formulae 4.18 & 4.19)
+    mutate(s_within = sqrt(((n_ms - 1)*sd_ms^2 + (n_tv-1)*sd_tv^2) / (n_ms + n_tv - 2)), #pooled SD
+           d_diff = (mean_ms - mean_tv)/s_within # effect size of difference
+           ) 
   
   # Make t, df, and pval
   # NOTE: p-value is two-tailed
@@ -144,7 +146,7 @@ combinedresults2 <- read.csv("./data/public/combinedresults2.csv") %>%
 combinedresults3 <- read.csv("./data/public/combinedresults3.csv") %>% 
   mutate(expert.ctr = ifelse(expert, 1, -1))
 
-# analyses repeated for each set of exclusion critera
+# analyses repeated for each set of exclusion criteria
 # This was originally a three-level random-effects meta-analysis in MetaSEM
 # had OpenMX status1: 5 so we had to drop the 'cluster = location' argument (not enough datapoints per location -- max = 2, most = 1)
 # So, now it's a univariate random-effects metaanalysis
@@ -158,10 +160,10 @@ random3 <- meta(y=yi, v=vi, data=combinedresults3)
 # Now that it's a simple meta, all of these meta-analytic stats (tau, q, I2) refer to variability among all effect sizes (e.g., ignores that in 3 cases these are two nested within a particular university).
 
 # a covariate of study version (in-house or expert-designed) is added to create a mixed effects model.
-mixed0 <- meta(y=yi, v=vi, x=expert, data=combinedresults0)
-mixed1 <- meta(y=yi, v=vi, x=expert, data=combinedresults1)
-mixed2 <- meta(y=yi, v=vi, x=expert, data=combinedresults2)
-mixed3 <- meta(y=yi, v=vi, x=expert, data=combinedresults3)
+mixed0 <- meta(y=yi, v=vi, x=expert.ctr, data=combinedresults0)
+mixed1 <- meta(y=yi, v=vi, x=expert.ctr, data=combinedresults1)
+mixed2 <- meta(y=yi, v=vi, x=expert.ctr, data=combinedresults2)
+mixed3 <- meta(y=yi, v=vi, x=expert.ctr, data=combinedresults3)
 
 # Notes: Intercept1 is still the grand mean estimate, 
 #    Slope1_1 represents the difference between versions
@@ -205,6 +207,9 @@ random2_aa <- meta(y=yi, v=vi, data=combinedresults2_aa)
 #                            RE.lbound = 1e-50))
 # summary(random2_aa <- meta(y=yi, v=vi, data=combinedresults2_aa,
 #                            RE.start = 1, RE.lbound = 1e-100))
+# I have decided to report the results as they are, ignoring the error code,
+#  because the results are that Tau2_1_1 is basically zero,
+#  and the error code does not influence the estimate of the intercept
 random3_aa <- meta(y=yi, v=vi, data=combinedresults3_aa)
 
 # compare if there is a significant difference in model fit, chi square difference test
@@ -315,7 +320,7 @@ with(dat, table(gender), useNA = 'always')
 # get counts per race (1 = white, 2 = black / AfrAm, 3 = Native American, 4 = Asian, 
 #                      5 = Native Hawaiian or Pacific Islander, 6 = something else)
 with(dat, table(race), useNA = 'always')
-# create percentaes
+# create percentages
 with(dat, table(race), useNA = 'always') %>% 
   prop.table() * 100
 
@@ -339,7 +344,9 @@ t.test(dat$pro_minus_anti~dat$ms_condition)
 describeBy(dat$pro_minus_anti, group = dat$ms_condition)
 effsize::cohen.d(dat$pro_minus_anti~dat$ms_condition,pooled=TRUE,paired=FALSE,
                  na.rm=TRUE, hedges.correction=TRUE,
-                 conf.level=0.95) #this was previously incorrectly indicating a positive value? Had to manually reverse for dissertation but seems fine now
+                 conf.level=0.95) 
+#this was previously incorrectly indicating a positive value? 
+#   Had to manually reverse for dissertation but seems fine now
 
 # Computing alpha for the essay author ratings, basic exclusions ----
 # Read data

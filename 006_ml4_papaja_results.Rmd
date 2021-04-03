@@ -209,7 +209,9 @@ When asked what outcome they wanted to happen, `r tab.rooting["For TMT"]` (`r ro
 
 load("Results.RData")
 
-# Notes: Intercept1 is still the grand mean estimate, Slope1_1 represents the difference between versions
+# Notes: Intercept1 is still the grand mean estimate, 
+# Slope1_1 represents the effect of expertise
+# Tau2_1_1 is the heterogeneity estimate
 ```
 
 ## Deviations from Pre-registered Analytic Plan  

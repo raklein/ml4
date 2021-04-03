@@ -360,26 +360,22 @@ upenn$msincomplete <- with(upenn,
                            test_msincomplete(SubtleOwnDeath1, SubtleOwnDeath2,
                                            Television1, Television2))
 
-# recode upenn race and ethnicity
+# recode upenn race and ethnicity given the provided readme.txt
+# the data must have been recoded after qualtrics
+# 1: White, 2: Black/AfrAm, 3: Asian/PacIsl, 4: Hispanic/Latino, 5: Other
 upenn <- mutate(upenn,
                 race.upenn = race,
-                race = case_when(race.upenn == 1 ~ NA_character_, #don't know "race" of latino
+                race = case_when(race.upenn == 1 ~ "1", # White
                                  race.upenn == 2 ~ "2", # Black/AfrAm
-                                 race.upenn == 3 ~ "1", # White
-                                 race.upenn == 4 ~ "3", # Native American
-                                 race.upenn == 5 ~ "4", # Asian / Pacific Islander
-                                 race.upenn == 6 ~ "6", # MidEast goes to "other"
-                                 race.upenn == 7 ~ "6"  # "other" goes to "other"
+                                 race.upenn == 3 ~ "4", # Asian / Pacific Islander
+                                 race.upenn == 4 ~ NA_character_, #don't know "race" of latino
+                                 race.upenn == 5 ~ "6"  # "other" goes to "other"
                                  ),
-                ethnicity = ifelse(race.upenn == 1, 2, 1)) # hispanic/latino ethnicity 
+                ethnicity = ifelse(race.upenn == 4, 2, 1)) # hispanic/latino ethnicity 
 # political ideology is just 1: left, 2: right, 3: other
 
 with(upenn, table(race.upenn, countryofbirth, useNA = 'always'))
-# FIXME: This race data seems to match neither the Qualtrics nor the desired template
-#   If it matches the Qualtrics, then I am surprised by the large hispanic
-#     representation (1) and small asian representation (5)
-#   If it matches the template, then I am surprised by the large representation of 
-#     native-americans (3) not born in the US
+
 
 
 # Note: One R user was having issues with some .csv files.
@@ -888,7 +884,7 @@ source_ns <- merged %>%
 ### Under 60: 
 # definitely: ashland, azusa, kansas_expert, sou_inhouse
 # maybe: pace_inhouse hovers right around 60. Glancing over the 
-#   raw data, there appear to be over 60 respondants, but that drops below 60 
+#   raw data, there appear to be over 60 respondents, but that drops below 60 
 #   after applying the lowest exclusion criteria. For now, I've left them included.
 
 merged_over60 <- left_join(merged, source_ns, by = "source") %>% 
@@ -899,7 +895,7 @@ merged_over60 <- left_join(merged, source_ns, by = "source") %>%
 # occurs in: azusa, ithaca, plu, sou_inhouse, ufl, wesleyan_inhouse
 # azusa and sou_inhouse already filtered out due to < 60 N.
 
-# Note: dates are not in a standard format across labs, so I'm heisitant
+# Note: dates are not in a standard format across labs, so I'm hesitant
 # to deal with them through POSIXlt
 
 # ithaca

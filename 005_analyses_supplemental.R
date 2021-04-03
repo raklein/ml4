@@ -80,15 +80,8 @@ analyse_separately <- function(data) {
   # combine stats
   dat <- left_join(sumstats, nhst, by = c("source", "outcome"))
   
-  # # pivot it around to make it easier to calculate ESes
-  # dat <- sumstats %>% 
-  #   # gather columns and separate pro-author from anti-author
-  #   pivot_longer(n_pro_ms:sd_anti_tv) %>% 
-  #   separate(name, into = c("stat", "outcome", "condition"), sep = "_", extra = "merge") %>%
-  #   unite(col = "stat", stat, condition) %>% 
-  #   pivot_wider(names_from = stat, values_from = value)
-  # 
   # use metafor::escalc() to add effect size and precision
+  # Appends yi and vi to the data object
   dat <- escalc(n1i = n_ms, n2i = n_tv, m1i = mean_ms, m2i = mean_tv,
                 sd1i = sd_ms, sd2i = sd_tv, data = dat, measure = "SMD",
                 append = TRUE)
@@ -127,17 +120,22 @@ analyse_separately <- function(data) {
 
 
 # Create the datasets under each exclusion rule ----
+# Additionally centers expert for contrast coding
 combinedresults_sep0 <- filter(merged, !is.na(pro_minus_anti)) %>% 
-  analyse_separately()
+  analyse_separately() %>% 
+  mutate(expert.ctr = ifelse(expert == 1, 1, -1))
 combinedresults_sep1 <- filter(merged, !is.na(pro_minus_anti),
                                pass_ER1 == T | expert == 0) %>% 
-  analyse_separately()
+  analyse_separately() %>% 
+  mutate(expert.ctr = ifelse(expert == 1, 1, -1))
 combinedresults_sep2 <- filter(merged, !is.na(pro_minus_anti),
                                pass_ER2 == T | expert == 0) %>% 
-  analyse_separately()
+  analyse_separately() %>% 
+  mutate(expert.ctr = ifelse(expert == 1, 1, -1))
 combinedresults_sep3 <- filter(merged, !is.na(pro_minus_anti),
                                pass_ER3 == T | expert == 0) %>%  
-  analyse_separately()
+  analyse_separately() %>% 
+  mutate(expert.ctr = ifelse(expert == 1, 1, -1))
 
 # separate into "pro" and "anti" datasets.
 combinedresults_pro0 <- filter(combinedresults_sep0, outcome == "pro")
@@ -179,22 +177,31 @@ random3_pro <- meta(y=yi, v=vi, data=combinedresults_pro3)
 #Notes: I^2 for level 2 indicates the percent of total variance explained by effects within sites, and I? for level 3 indicates the percent of total variance accounted for by differences between sites. 
 
 # a covariate of study version (in-house or expert-designed) is added to create a three-level mixed-effects meta-analysis
-mixed0_pro <- meta(y=yi, v=vi, x=expert, data=combinedresults_pro0)
-mixed1_pro <- meta(y=yi, v=vi, x=expert, data=combinedresults_pro1)
-mixed2_pro <- meta(y=yi, v=vi, x=expert, data=combinedresults_pro2)
-mixed3_pro <- meta(y=yi, v=vi, x=expert, data=combinedresults_pro3)
-# Notes: The R^2 for the version predictor will be reported for both level 2 and level 3, although in this case version is a level 2 predictor so the level 3 R^2 will always be zero. 
+mixed0_pro <- meta(y=yi, v=vi, x=expert.ctr, data=combinedresults_pro0)
+mixed1_pro <- meta(y=yi, v=vi, x=expert.ctr, data=combinedresults_pro1)
+mixed2_pro <- meta(y=yi, v=vi, x=expert.ctr, data=combinedresults_pro2)
+mixed3_pro <- meta(y=yi, v=vi, x=expert.ctr, data=combinedresults_pro3)
 
 # constraining the variance to test if it significantly worsens the model
-fixed0_pro <- meta3(y=yi, v=vi, x=expert, cluster = location, data=combinedresults_pro0, RE2.constraints=0, RE3.constraints=0)
-fixed1_pro <- meta3(y=yi, v=vi, x=expert, cluster = location, data=combinedresults_pro1, RE2.constraints=0, RE3.constraints=0)
-fixed2_pro <- meta3(y=yi, v=vi, x=expert, cluster = location, data=combinedresults_pro2, RE2.constraints=0, RE3.constraints=0)
-fixed3_pro <- meta3(y=yi, v=vi, x=expert, cluster = location, data=combinedresults_pro3, RE2.constraints=0, RE3.constraints=0)
+fixed0_pro <- meta(y=yi, v=vi, x=expert.ctr, data=combinedresults_pro0, RE.constraints=0)
+fixed1_pro <- meta(y=yi, v=vi, x=expert.ctr, data=combinedresults_pro1, RE.constraints=0)
+fixed2_pro <- meta(y=yi, v=vi, x=expert.ctr, data=combinedresults_pro2, RE.constraints=0)
+fixed3_pro <- meta(y=yi, v=vi, x=expert.ctr, data=combinedresults_pro3, RE.constraints=0)
 # compare if there is a significant difference in model fit, chi square difference test
 fit_comparison_0_pro <- anova(mixed0_pro, fixed0_pro)
 fit_comparison_1_pro <- anova(mixed1_pro, fixed1_pro)
 fit_comparison_2_pro <- anova(mixed2_pro, fixed2_pro)
 fit_comparison_3_pro <- anova(mixed3_pro, fixed3_pro)
+
+# TODO: Do I need to repeat this for in-house and author-advised, separately?
+
+
+
+
+
+
+
+
 
 # Repeating analyses of "expert" sites in the aggregate, ignoring site dependence ----
 # This is a simple alternative and useful for most stringent exclusion criteria 
@@ -256,12 +263,10 @@ filter(dat, expert == 0) %>%
 # Filtering for only the below sites:
 #University of Wisconsin, Madison, WI (in-house)
 #The College of New Jersey
-#University of Kansas (Expert)
+#University of Kansas (Expert) # Excluded for insufficient N; see bottom of 001_data_cleaning.R
 #University of Kansas (in-house)
 #Pace University (expert)
 #Virginia Commonwealth University, Richmond, VA
-# TODO: Why isn't Kansas in the data at this point?
-grep("kansas", unique(dat$source), value = T)
 dat <- filter(dat, source %in% c("uwmadison_inhouse", "cnj", "kansas_expert", "kansas_inhouse",
                                         "pace_expert", "vcu"))
 # meta-analyze
@@ -289,24 +294,24 @@ random3_anti <- meta(y=yi, v=vi, data=combinedresults_anti3)
 #   and I? for level 3 indicates the percent of total variance accounted for by differences between sites. 
 
 # a covariate of study version (in-house or expert-designed) is added to create a mixed-effects meta-analysis
-mixed0_anti <- meta(y=yi, v=vi, x=expert, data=combinedresults_anti0)
-mixed1_anti <- meta(y=yi, v=vi, x=expert, data=combinedresults_anti1)
-mixed2_anti <- meta(y=yi, v=vi, x=expert, data=combinedresults_anti2)
-mixed3_anti <- meta(y=yi, v=vi, x=expert, data=combinedresults_anti3)
+mixed0_anti <- meta(y=yi, v=vi, x=expert.ctr, data=combinedresults_anti0)
+mixed1_anti <- meta(y=yi, v=vi, x=expert.ctr, data=combinedresults_anti1)
+mixed2_anti <- meta(y=yi, v=vi, x=expert.ctr, data=combinedresults_anti2)
+mixed3_anti <- meta(y=yi, v=vi, x=expert.ctr, data=combinedresults_anti3)
 # Notes: The R? for the version predictor will be reported for both level 2 and level 3, 
 #   although in this case version is a level 2 predictor so the level 3 R? will always be zero. 
 
 # constraining the variance to test if it significantly worsens the model
-summary( fixed0_anti <- meta(y=yi, v=vi, x=expert, data=combinedresults_anti0, RE.constraints=0))
-summary( fixed1_anti <- meta(y=yi, v=vi, x=expert, data=combinedresults_anti1, RE.constraints=0))
-summary( fixed2_anti <- meta(y=yi, v=vi, x=expert, data=combinedresults_anti2, RE.constraints=0))
-summary( fixed3_anti <- meta(y=yi, v=vi, x=expert, data=combinedresults_anti3, RE.constraints=0))
+summary( fixed0_anti <- meta(y=yi, v=vi, x=expert.ctr, data=combinedresults_anti0, RE.constraints=0))
+summary( fixed1_anti <- meta(y=yi, v=vi, x=expert.ctr, data=combinedresults_anti1, RE.constraints=0))
+summary( fixed2_anti <- meta(y=yi, v=vi, x=expert.ctr, data=combinedresults_anti2, RE.constraints=0))
+summary( fixed3_anti <- meta(y=yi, v=vi, x=expert.ctr, data=combinedresults_anti3, RE.constraints=0))
 
 # compare if there is a significant difference in model fit, chi square difference test
-anova(mixed0_anti, fixed0_anti)
-anova(mixed1_anti, fixed1_anti)
-anova(mixed2_anti, fixed2_anti)
-anova(mixed3_anti, fixed3_anti)
+fit_comparison_0_anti <- anova(mixed0_anti, fixed0_anti)
+fit_comparison_1_anti <- anova(mixed1_anti, fixed1_anti)
+fit_comparison_2_anti <- anova(mixed2_anti, fixed2_anti)
+fit_comparison_3_anti <- anova(mixed3_anti, fixed3_anti)
 
 # Repeating analyses of "expert" sites in the aggregate, ignoring site dependence. ----
 # This is a simple alternative and useful for most stringent exclusion criteria which drastically reduces overall N (exclusion set 3)
@@ -362,17 +367,29 @@ filter(dat, expert==0) %>%
 # Filtering for only the below sites:
 #University of Wisconsin, Madison, WI (in-house)
 #The College of New Jersey
-#University of Kansas (Expert)
+#University of Kansas (Expert) # Again, was excluded for insufficient N given prereg
 #University of Kansas (in-house)
 #Pace University (expert)
 #Virginia Commonwealth University, Richmond, VA
-# TODO: kansas again absent from data frame
-grep("kansas", unique(dat$source), ignore.case = T, value = T)
 dat <- subset(dat, dat$source %in% c("uwmadison_inhouse", "cnj", "kansas_expert", "kansas_inhouse",
                                         "pace_expert", "vcu"))
 # Applying the same levels fix as earlier, only because it caused problems in 
 # cohen.d() below. May not be necessary anymore.
 rma(yi = yi, vi = vi, data = dat)
+
+
+# Save all model objects to .RData for loading into 008 RMarkdown ----
+
+save(random1_pro, random2_pro, random3_pro,
+     mixed1_pro, mixed2_pro, mixed3_pro,
+     fixed1_pro, fixed2_pro, fixed3_pro,
+     # no in-house vs. author-advised stuff here
+     random1_anti, random2_anti, random3_anti,
+     mixed1_anti, mixed2_anti, mixed3_anti,
+     fixed1_anti, fixed2_anti, fixed3_anti,
+     # no in-house vs. author-advised stuff here
+     file = "supplementary_results.RData"
+)
 
 ## 2. Analyzing how much participants liked the pro and anti authors ----
 # TODO: This is not referenced in the RMD -- can it be cut? Or can someone clarify the goal?
@@ -423,7 +440,7 @@ pct_nofav_aa <- (n_nofav_aa/(n_profav_aa+n_antifav_aa+n_nofav_aa))*100
 # and examine if that finds the effect. Repeat for 3 exclusion sets.
 # Datasets:
 # merged_aa is basic exclusions
-merged_aa <- filter(merged, )
+merged_aa <- filter(merged, expert == 1)
 # merged_excl_2_aa is exclusion set 2
 merged_excl_2_aa <- filter(merged_excl_2, expert == 1)
 # merged_excl_3_aa is exclusion set 3
