@@ -87,51 +87,16 @@ The primary finding of interest from Greenberg et al., (1994) was that participa
 
 ```{r analysis-replication-meta-pro, include = FALSE}
 
-# In 005_analysis_supplemental.R I generate results per site, treating anti- and pro- author ratings separately. Like the main manuscript, these are identical but repeated for each of the three exclusion rules. Those are output to:
+# TODO: Rip all this out and just read the objects as created by 005_analyses_supplemental.R
 
-# ./data/public/combinedresults_pro1.csv
-# ./data/public/combinedresults_pro2.csv
-# ./data/public/combinedresults_pro3.csv
+load("Results.RData")
 
-# ./data/public/combinedresults_anti1.csv
-# ./data/public/combinedresults_anti2.csv
-# ./data/public/combinedresults_anti3.csv
-
-# Here I'll read in those files, but if you're error checking you'll also
-# want to review the code in 005_analysis_supplemental.R (which re-uses code from 002_ml4analysis.R)
-
-combinedresults_pro1 <- read.csv("./data/public/combinedresults_pro1.csv")
-combinedresults_pro2 <- read.csv("./data/public/combinedresults_pro2.csv")
-combinedresults_pro3 <- read.csv("./data/public/combinedresults_pro3.csv")
-
-# analyses repeated for each set of exclusion critera
-# three-level random-effects meta-analysis in MetaSEM
-random_effects_pro1 <- summary(meta3(y=yi, v=vi, cluster=location, data=combinedresults_pro1))
-random_effects_pro2 <- summary(meta3(y=yi, v=vi, cluster=location, data=combinedresults_pro2))
-random_effects_pro3 <- summary(meta3(y=yi, v=vi, cluster=location, data=combinedresults_pro3))
-#Notes: Q statistic is for sig test for heterogeneity among all effect sizes. I2 for level 2 indicates the percent of total variance explained by effects within sites, and I2 for level 3 indicates the percent of total variance accounted for by differences between sites. Intercept is the avg population effect. 
-
-# a covariate of study version (in-house or expert-designed) is added to create a three-level mixed-effects meta-analysis
-# note the openMX status, sometimes indicates a potential problem
-mixed_effects_pro1 <- summary(mixed_pro1 <- meta3(y=yi, v=vi, cluster=location, x=expert, data=combinedresults_pro1))
-mixed_effects_pro2 <- summary(mixed_pro2 <- meta3(y=yi, v=vi, cluster=location, x=expert, data=combinedresults_pro2))
-mixed_effects_pro3 <- summary(mixed_pro3 <- meta3(y=yi, v=vi, cluster=location, x=expert, data=combinedresults_pro3))
-# Notes: The R^2 for the version predictor will be reported for both level 2 and level 3, although in this case version is a level 2 predictor so the level 3 R? will always be zero. 
-
-# constraining the variance to test if it significantly worsens the model
-# summary( fixed0 <- meta3(y=yi, v=vi, cluster=location, x=expert, data=combinedresults0, RE2.constraints=0, RE3.constraints=0)) #line not necessary, results for a subset we never use (e.g., zero exclusions)
-constrained_pro1 <- summary(fixed_pro1 <- meta3(y=yi, v=vi, cluster=location, x=expert, data=combinedresults_pro1, RE2.constraints=0, RE3.constraints=0))
-constrained_pro2 <- summary(fixed_pro2 <- meta3(y=yi, v=vi, cluster=location, x=expert, data=combinedresults_pro2, RE2.constraints=0, RE3.constraints=0))
-constrained_pro3 <- summary(fixed_pro3 <- meta3(y=yi, v=vi, cluster=location, x=expert, data=combinedresults_pro3, RE2.constraints=0, RE3.constraints=0))
-
-# compare if there is a significant difference in model fit, chi square difference test
-# anova(mixed0, fixed0)
-fit_comparison_pro1 <- anova(mixed_pro1, fixed_pro1)
-fit_comparison_pro2 <- anova(mixed_pro2, fixed_pro2)
-fit_comparison_pro3 <- anova(mixed_pro3, fixed_pro3)
+# Notes: Intercept1 is still the grand mean estimate, 
+# Slope1_1 represents the effect of expertise
+# Tau2_1_1 is the heterogeneity estimate
 ```
 
-### PRO-US RATINGS ONLY: Research question 1: Meta-analytic results across all labs (random effects meta-analysis). 
+### PRO-US RATINGS ONLY: Research question 1: Meta-analytic results across all labs (random effects meta-analysis) 
 Some labs administered both Author Advised and In House protocols. To account for this nesting of effect sizes within labs, a three-level random-effects meta-analysis was conducted using the MetaSEM package (Cheung, 2014) in R.[^1] This analysis produces the grand mean effect size across all sites and versions.
 
 [^1]: Sample code to run this analysis is: meta3(y=es, v=var, cluster=Location, data=dataset). In this sample code, “y=es” directs the program to the column of effect sizes, “v=var” indicates the variable to be used as the sampling variance for each effect size, and the “cluster=Location” command groups the effect sizes by a location variable in the dataset (in this case, a unique identifier assigned to each replication site).
