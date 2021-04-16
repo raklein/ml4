@@ -379,14 +379,17 @@ rma(yi = yi, vi = vi, data = dat)
 
 
 # Save all model objects to .RData for loading into 008 RMarkdown ----
-
 save(random1_pro, random2_pro, random3_pro,
      mixed1_pro, mixed2_pro, mixed3_pro,
      fixed1_pro, fixed2_pro, fixed3_pro,
+     fit_comparison_0_pro, fit_comparison_1_pro,
+     fit_comparison_2_pro, fit_comparison_3_pro,
      # no in-house vs. author-advised stuff here
      random1_anti, random2_anti, random3_anti,
      mixed1_anti, mixed2_anti, mixed3_anti,
      fixed1_anti, fixed2_anti, fixed3_anti,
+     fit_comparison_0_anti, fit_comparison_1_anti,
+     fit_comparison_2_anti, fit_comparison_3_anti,
      # no in-house vs. author-advised stuff here
      file = "supplementary_results.RData"
 )
