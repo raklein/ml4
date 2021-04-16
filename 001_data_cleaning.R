@@ -705,6 +705,9 @@ for (i in 1:length(allsitedata)) {
   allsitedata[[i]] <- data.frame(lapply(allsitedata[[i]], as.character), stringsAsFactors=FALSE)
 }
 
+# convert template columns to character for easier merging
+template <- data.frame(lapply(template, as.character), stringsAsFactors=FALSE)
+
 # merge data frames vertically
 merged <- bind_rows(template, allsitedata)
 
