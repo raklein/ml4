@@ -61,9 +61,6 @@ knitr::opts_chunk$set(cache.extra = knitr::rand_seed)
 # Note: This file is the merged data provided by sites, produced by 001_data_cleaning.R
 merged <- readRDS("./data/public/merged_deidentified_subset.rds")
 
-
-# TODO: Rip all this out and just read the objects as created by 005_analyses_supplemental.R
-
 load("Results.RData")
 load("supplementary_results.RData")
 
@@ -108,17 +105,6 @@ This document presents supplementary analyses that consider ratings of the pro-U
 ```{r analysis-alpha-exclusions, include = FALSE}
 alpha_anti <- psych::alpha(select(merged, antius3, antius4, antius5))
 alpha_pro <- psych::alpha(select(merged, prous3, prous4, prous5))
-
-# Tracking exclusions:
-# 'merged_original' is all data, no exclusions, in case we need it for anything.
-merged_original <- merged
-
-# 'merged' is basic exclusions (exclusion set 1).
-merged <- filter(merged, !is.na(pro_minus_anti), pass_ER1 == T | expert == 0)
-# 'merged_excl_2' further excludes participants per exclusion set 2 
-merged_excl_2 <- subset(merged, pass_ER2 == T | expert == 0)
-# 'merged_excl_3' further excludes participants per exclusion set 3 
-merged_excl_3 <- subset(merged_excl_2, pass_ER3 == T | expert == 0)
 ```
 
 ## Pro-US Author Ratings and Anti-US Author Ratings separately

@@ -82,6 +82,8 @@ analyse <- function(data) {
   dat <- escalc(n1i = n_ms, n2i = n_tv, m1i = mean_ms, m2i = mean_tv, 
                              sd1i = sd_ms, sd2i = sd_tv, data = dat, measure = "SMD", 
                              append = TRUE)
+  # Remove "ni" and "measure" attrs from yi to prevent crashes in meta()
+  dat$yi = as.numeric(dat$yi)
   
   # make pretty names per site
   dat <- mutate(dat, 
@@ -107,6 +109,10 @@ analyse <- function(data) {
                                              source == "pace_inhouse" ~ "Pace University",
                                              source == "pace_expert" ~ "Pace University")
   )
+  
+  # check for NAs in critical columns
+  if (sum(is.na(dat$yi)) > 0) warning("NAs created in effect size!")
+  if (sum(is.na(dat$vi)) > 0) warning("NAs created in variance of effect size!")
   
   # return analysed dataset
   return(dat)
@@ -219,91 +225,6 @@ fit_comparison_1_aa <- anova(random1_aa, fixed1_aa)
 fit_comparison_2_aa <- anova(random2_aa, fixed2_aa)
 fit_comparison_3_aa <- anova(random3_aa, fixed3_aa)
 
-# Repeating analyses of "expert" sites in the aggregate, ignoring site dependence ----
-# This is a simple alternative and useful for most stringent exclusion criteria which drastically reduces overall N (exclusion set 3)
-# read in .rds data
-dat <- readRDS("./data/public/merged_deidentified_subset.rds") # can also choose to use merged_deidentified_full
-# selecting only expert labs
-dat <- subset(dat, expert==1)
-
-###ANALYSIS 0: no special exclusions###
-dat <- subset(dat, !is.na(dat$pro_minus_anti))
-# t.test and descriptive statistics per condition from psych package
-t.test(dat$pro_minus_anti~dat$ms_condition)
-describeBy(dat$pro_minus_anti, group = dat$ms_condition)
-effsize::cohen.d(dat$pro_minus_anti~dat$ms_condition,pooled=TRUE,paired=FALSE,
-                 na.rm=TRUE, hedges.correction=TRUE,
-                 conf.level=0.95)
-
-
-
-###ANALYSIS 1: Exclusion set 1###
-# 1. Wrote something for both writing prompts
-# 2. Completed all six items evaluating the essay authors)
-dat <- subset(dat, pass_ER1 == T) 
-# t.test and descriptive statistics per condition from psych package
-t.test(dat$pro_minus_anti~dat$ms_condition)
-describeBy(dat$pro_minus_anti, group = dat$ms_condition)
-effsize::cohen.d(dat$pro_minus_anti~dat$ms_condition,pooled=TRUE,paired=FALSE,
-                 na.rm=TRUE, hedges.correction=TRUE,
-                 conf.level=0.95)
-
-###ANALYSIS 2: Exclusion set 2###
-# 1. Wrote something for both writing prompts
-# 2. Completed all six items evaluating the essay authors
-# 3. Identify as White (race == 1)
-# 4. Born in USA (countryofbirth == 1)
-dat <- subset(dat, pass_ER2 == T)
-# t.test and descriptive statistics per condition from psych package
-t.test(dat$pro_minus_anti~dat$ms_condition)
-describeBy(dat$pro_minus_anti, group = dat$ms_condition)
-effsize::cohen.d(dat$pro_minus_anti~dat$ms_condition,pooled=TRUE,paired=FALSE,
-                 na.rm=TRUE, hedges.correction=TRUE,
-                 conf.level=0.95) #this is incorrectly indicating a negative value, I'm not sure why but it should be positive from the group means
-
-###ANALYSIS 3: Exclusion set 3###
-# 1. Wrote something for both writing prompts
-# 2. Completed all six items evaluating the essay authors
-# 3. Identify as White
-# 4. Born in USA
-# 5. Score a 7 or higher on the American Identity item
-dat <- subset(dat, pass_ER3 == T)
-# t.test and descriptive statistics per condition from psych package
-t.test(dat$pro_minus_anti~dat$ms_condition)
-describeBy(dat$pro_minus_anti, group = dat$ms_condition)
-effsize::cohen.d(dat$pro_minus_anti~dat$ms_condition,pooled=TRUE,paired=FALSE,
-                 na.rm=TRUE, hedges.correction=TRUE,
-                 conf.level=0.95) #this is incorrectly indicating a positive value, reversing sign in the report
-
-###Conducting a small meta-analysis of only the in-house data to provide a summary of those results in basic form.####
-# Read in summary .csv which used basic exclusion rules, Exclusion Set 1
-dat <- read.csv("./data/public/combinedresults1.csv")
-# subset to in-house rows only
-dat <- subset(dat, expert==0)
-# conduct random effects meta-analyis
-summary( meta(y = yi, v = vi, data = dat))
-
-# # forest plot
-# dev.off()
-# par(mar=c(4,4,1,4)) #decreasing margins
-# forest(x= dat$yi, vi=dat$vi, slab=dat$location)
-# par(cex=1, font=2)#bold font
-# text(-3.3, 13, "Location",  pos=4) #adds location label using x, y coord
-# text(3.8, 13, "SMD [95% CI]", pos=2) #adds standardized mean diff label using x y coord
-# 
-# # same forst plot, but using rma so it plots the aggregate
-# dev.off()
-# png("./output/inhousemeta.png", type='cairo')
-# par(mar=c(4,4,1,4)) #decreasing margins
-# forest(rma(yi= dat$yi, vi=dat$vi, slab=dat$location))
-# par(cex=1, font=2) #bold font
-# text(-3.3, 13, "Location",  pos=4) #adds location label using x, y coord
-# text(3.8, 13, "SMD [95% CI]", pos=2) #adds standardized mean diff label using x y coord
-# dev.off()
-
-# sample funnel plot 
-# funnel(rma(yi= dat$yi, vi=dat$vi, slab=dat$location))
-
 # Aggregate participants characteristics
 # Converting to numeric, will lose uninterpretable codes
 merged$age <- as.numeric(as.character(merged$age)) # 60 have age as a range e.g. "18-24"
@@ -324,8 +245,7 @@ with(dat, table(race), useNA = 'always')
 with(dat, table(race), useNA = 'always') %>% 
   prop.table() * 100
 
-# Focused analysis of sites with "expert" or "a lot of knowledge about TMT" leads
-# Still using exclusion set 1
+# Exploratory analysis: sites with "expert" or "a lot" of knowledge about TMT ----
 # Selecting only the below sites:
 #University of Wisconsin, Madison, WI (in-house)
 #The College of New Jersey
@@ -333,20 +253,45 @@ with(dat, table(race), useNA = 'always') %>%
 #University of Kansas (in-house)
 #Pace University (expert)
 #Virginia Commonwealth University, Richmond, VA
-# Note: not all of these exist in the subsetted dataset
-dat <- subset(dat, source %in% c("uwmadison_inhouse", "cnj", "kansas_expert",
-                                   "kansas_inhouse", "pace_expert", "vcu"))
-# Applying the same levels fix as earlier, only because it caused problems in 
-# cohen.d() below. May not be necessary anymore.
-dat$ms_condition <- factor(dat$ms_condition, levels = c("ms", "tv"))
-# Analyses using that subset
-t.test(dat$pro_minus_anti~dat$ms_condition)
-describeBy(dat$pro_minus_anti, group = dat$ms_condition)
-effsize::cohen.d(dat$pro_minus_anti~dat$ms_condition,pooled=TRUE,paired=FALSE,
-                 na.rm=TRUE, hedges.correction=TRUE,
-                 conf.level=0.95) 
-#this was previously incorrectly indicating a positive value? 
-#   Had to manually reverse for dissertation but seems fine now
+# Note: not all of these exist in the subsetted dataset; kansas_expert was dropped for insufficient N
+# Note: This consists of a combination of in-house and author-advised protocols
+experienced_sites <- c("uwmadison_inhouse", "cnj", "kansas_expert",
+                       "kansas_inhouse", "pace_expert", "vcu")
+combinedresults_TMTexperienced1 <- filter(merged, !is.na(pro_minus_anti), 
+                                          source %in% experienced_sites,
+                                          pass_ER1 == T | expert == 0) %>% 
+  analyse()
+combinedresults_TMTexperienced2 <- filter(merged, !is.na(pro_minus_anti),
+                                          source %in% experienced_sites,
+                                          pass_ER2 == T | expert == 0) %>% 
+  analyse()
+combinedresults_TMTexperienced3 <- filter(merged, !is.na(pro_minus_anti),
+                                          source %in% experienced_sites,
+                                          pass_ER3 == T | expert == 0) %>% 
+  analyse()
+
+random1_TMTexperienced <- meta(y = yi, v = vi, data = combinedresults_TMTexperienced1)
+random2_TMTexperienced <- meta(y = yi, v = vi, data = combinedresults_TMTexperienced2)
+random3_TMTexperienced <- meta(y = yi, v = vi, data = combinedresults_TMTexperienced3)
+
+# Analysis of only participants who favored the pro-US author over the anti-US ----
+# NOTE: Restricted to Author Advised per the results section text
+combinedresults_proUSonly1 <- filter(merged, !is.na(pro_minus_anti), pro_minus_anti > 0,
+                                     pass_ER1 == T, expert == 1) %>% 
+  analyse()
+combinedresults_proUSonly2 <- filter(merged, !is.na(pro_minus_anti), pro_minus_anti > 0,
+                                     pass_ER2 == T, expert == 1) %>% 
+  analyse()
+combinedresults_proUSonly3 <- filter(merged, !is.na(pro_minus_anti), pro_minus_anti > 0,
+                                     pass_ER3 == T, expert == 1) %>% 
+  analyse()
+
+# WARNING: These don't converge. 
+#    Notice also that their SEs are smaller than those from metafor::rma()
+#    What is the difference between metaSEM::meta() and metafor::rma()?
+random1_proUSonly <- meta(y = yi, v = vi, data = combinedresults_proUSonly1)
+random2_proUSonly <- meta(y = yi, v = vi, data = combinedresults_proUSonly2)
+random3_proUSonly <- meta(y = yi, v = vi, data = combinedresults_proUSonly3)
 
 # Computing alpha for the essay author ratings, basic exclusions ----
 # Read data
@@ -402,4 +347,6 @@ save(random1, random2, random3,
      fixed1_ih, fixed1_aa, fixed2_aa, fixed3_aa,
      random1_ih, random1_aa, random2_aa, random3_aa,
      fit_comparison_1_ih, fit_comparison_1_aa, fit_comparison_2_aa, fit_comparison_3_aa,
+     random1_TMTexperienced, random2_TMTexperienced, random3_TMTexperienced,
+     random1_proUSonly, random2_proUSonly, random3_proUSonly,
      file = "results.RData")
