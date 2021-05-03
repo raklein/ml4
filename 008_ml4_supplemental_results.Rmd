@@ -142,8 +142,6 @@ In addition, protocol version did not significantly predict replication effect s
 Exclusion set 2: `r report_meta(mixed2_pro, "Slope1_1", label = "*b*")`;
 Exclusion set 3: `r report_meta(mixed3_pro, "Slope1_1", label = "*b*")`.
 
-**[NOTE: You may want to note that is the strongest result for the theory: Exclusion rule 3, author-advised sites only, pro-US author ratings only: `r filter(combinedresults_pro3, expert == 1) %>% meta(y=yi, v=vi, data=.) %>% report_meta(., "Intercept1")`]**
-
 We again did not observe heterogeneity between labs in any of the exclusion sets: exclusion set 1: `r report_q(mixed1_pro)`; 
 exclusion set 2: `r report_q(mixed2_pro)`; 
 exclusion set 3: `r report_q(mixed3_pro)`.

@@ -13,6 +13,8 @@
 # Otherwise, call setwd() with a path to the /ml4/ folder
 # All file paths are relative from the working directory.
 
+library(tidyverse)
+
 # Reading in experimenter survey, this was converted from .csv to .rds due to column names
 # Original .csv is retained in the same directory
 exp_surv <- readRDS("./data/raw_site_data/experimenter survey/exp_surv.rds") %>% 
