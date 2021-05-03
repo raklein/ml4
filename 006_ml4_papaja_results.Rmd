@@ -286,6 +286,9 @@ with(merged, table(author_pref))
 tab_authorpref <- with(merged, table(author_pref, expert))
 authorpref_test <- chisq.test(tab_authorpref)
 
+# Proportions of pro-US preference, in-house designs
+merged_ih <- filter(merged, expert == 0)
+
 n_profav_ih  <- sum(merged_ih$pro_minus_anti > 0)
 n_antifav_ih <- sum(merged_ih$pro_minus_anti < 0)
 n_nofav_ih   <- sum(merged_ih$pro_minus_anti == 0)
@@ -294,7 +297,9 @@ pct_profav_ih  <- n_profav_ih  / (n_profav_ih + n_antifav_ih + n_nofav_ih) * 100
 pct_antifav_ih <- n_antifav_ih / (n_profav_ih + n_antifav_ih + n_nofav_ih) * 100
 pct_nofav_ih   <- n_nofav_ih   / (n_profav_ih + n_antifav_ih + n_nofav_ih) * 100
 
-# Author Advised
+# Porportions of pro-US preference, Author Advised designs
+merged_aa <- filter(merged, expert == 1)
+
 n_profav_aa <- sum(merged_aa$pro_minus_anti > 0)
 n_antifav_aa <- sum(merged_aa$pro_minus_anti < 0)
 n_nofav_aa <- sum(merged_aa$pro_minus_anti == 0)
