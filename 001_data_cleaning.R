@@ -20,6 +20,7 @@
 # install.packages("psych")
 # install.packages("tidyverse")
 # install.packages("effsize")
+# install.packages("pwr")
 
 library(metafor)
 library(metaSEM)
@@ -31,6 +32,36 @@ library(effsize)
 # load some custom helper functions
 source("./sources/race_text_to_num.R") # for converting text responses to numeric codes for race
 source("./sources/test_msincomplete.R") # for generating msincomplete based on text response to prompt
+
+usa_synonyms <- function(countryofbirth) {
+  ifelse(tolower(countryofbirth) %in% 
+           c("united states ", "united states", "america",
+             "us", "usa", "america ", "united states of america",
+             "united states of america ", "the united states of america.",
+             "u.s", "u.s.a", "united state"), 1, 2) 
+  }
+
+code_race <- function(racetext) {
+  case_when(grepl("white|caucasian|italian|causian|russian", racetext, ignore.case = T)             
+              ~ "1",
+            #grepl("caucasian", racetext) ~ 1,
+            grepl("african|black|afro", racetext, ignore.case = T)               
+              ~ "2",
+            grepl("asia|chinese|japanese|thai", racetext, ignore.case = T) 
+              ~ "4",
+            grepl("mix", racetext, ignore.case = T) 
+              ~ "6",
+            is.na(racetext) | grepl("latin.|hispanic", racetext, ignore.case = T) 
+              ~ NA_character_, # "latinx/hispanic" is not a race category
+            T
+              ~ as.character(racetext)
+  )
+}
+# test vector for code_race()
+# coderacetest <- c("white", "white/caucasian", "caucasian", "black", "african-american",
+#   "thai", "chinese", "asian/japanese", "afro-caribbean")
+# table(coderacetest, code_race(coderacetest))
+
 
 # Save information about package versions to a file, may help others 
 # reproduce results.
@@ -132,8 +163,11 @@ uwmadison_expert$location <- "uwmadison"
 # recoding gender
 uwmadison_expert$gender[uwmadison_expert$gender=="F"] <- 1
 uwmadison_expert$gender[uwmadison_expert$gender=="M"] <- 2
-# TODO: Waiting to hear from UWMadison group whether there were/weren't incomplete MS responses
-# uwmadison_expert$msincomplete <- 0
+
+# We decided to treat UWMadison expert as having all participants pass the msincomplete check
+# Rather than impute 0s here, this is handled via exception when creating pass_ER1.
+# See commit log 03dc9ccf for details
+
 # Note: One R user was having issues with some .csv files.
 # If that happens, you can uncomment the below line to simply read in the pre-processed .rds file.
 # uwmadison_expert <- readRDS("./data/raw_site_data/UWmadison expert/uwmadison_expert.rds")
@@ -202,6 +236,12 @@ ithaca$expert <- 0
 ithaca$source <- "ithaca"
 # add location, usually identical to source
 ithaca$location <- "ithaca"
+
+# recover race data
+# QSF has race as set of tick-boxes
+table(ithaca$race) # looks like they already recoded it before submission
+table(ithaca$ethnicity)
+
 # Note: One R user was having issues with some .csv files.
 # If that happens, you can uncomment the below line to simply read in the pre-processed .rds file.
 # ithaca <- readRDS("./data/raw_site_data/ithaca inhouse/ithaca.rds")
@@ -219,9 +259,19 @@ names(wpi)[names(wpi) == 'race'] <- 'race.wpi'
 # politicalid.wpi may be coded differently from template
 names(wpi)[names(wpi) == 'politicalid'] <- 'politicalid.wpi'
 # change some variable names to match template
-names(wpi)[names(wpi) == 'countryofbirth (187 = US)'] <- 'countryofbirth'
+names(wpi)[names(wpi) == 'countryofbirth..187...US.'] <- 'countryofbirth'
 # remove redundant ms_condition.1 column
 wpi$ms_condition.1 <- NULL
+
+# recode race?
+table(wpi$race.wpi) 
+table(wpi$ethnicity)
+table(wpi$birthcountry) #i'm guessing 187 is USA...
+table(wpi$countryofbirth)
+# looks like it was already recoded
+
+
+
 # Note: One R user was having issues with some .csv files.
 # If that happens, you can uncomment the below line to simply read in the pre-processed .rds file.
 # wpi <- readRDS("./data/raw_site_data/wpi inhouse/wpi.rds")
@@ -273,6 +323,25 @@ illinois$source <- "illinois"
 illinois$location <- "illinois"
 names(illinois)[names(illinois) == 'dv.order'] <- 'dv_order'
 names(illinois)[names(illinois) == 'msincomplete..1...incomplete..0...complete.'] <- 'msincomplete'
+# rename some awkward columns
+illinois$ethnicity.illinois <- illinois$ethnicity..1...White.Caucasian..2...Middle.Eastern..3...Asian.Pacific.Islander..4...African.American.Black..5...Hispanic.Latino..6...Indigenous.Aboriginal..7...Would.Rather.Not.Say..8...Other
+# recode race and ethnicity
+illinois <- mutate(illinois,
+                   race = case_when(ethnicity.illinois == "1" ~ "1", # white
+                                    ethnicity.illinois == "2" ~ "6", # middle east
+                                    ethnicity.illinois == "3" ~ "4", # asian / pac island
+                                    ethnicity.illinois == "4" ~ "2", # black / afr-am
+                                    ethnicity.illinois == "5" ~ NA_character_,  # hispanic / latino
+                                    ethnicity.illinois == "6" ~ "3", # native american
+                                    T                    ~ "6"  # multiracial as category 6
+                                    ),
+                   ethnicity = case_when(ethnicity.illinois == "5" ~ "2", #hispanic / latino
+                                         T                    ~ "1"))
+# code country of birth
+illinois$countrytext <- illinois$countryofbirth
+illinois$countryofbirth <- usa_synonyms(illinois$countrytext)
+with(illinois, table(countrytext, countryofbirth))
+
 # Note: One R user was having issues with some .csv files.
 # If that happens, you can uncomment the below line to simply read in the pre-processed .rds file.
 # illinois <- readRDS("./data/raw_site_data/universityillinois inhouse/illinois.rds")
@@ -290,6 +359,25 @@ upenn$location <- "upenn"
 upenn$msincomplete <- with(upenn,
                            test_msincomplete(SubtleOwnDeath1, SubtleOwnDeath2,
                                            Television1, Television2))
+
+# recode upenn race and ethnicity given the provided readme.txt
+# the data must have been recoded after qualtrics
+# 1: White, 2: Black/AfrAm, 3: Asian/PacIsl, 4: Hispanic/Latino, 5: Other
+upenn <- mutate(upenn,
+                race.upenn = race,
+                race = case_when(race.upenn == 1 ~ "1", # White
+                                 race.upenn == 2 ~ "2", # Black/AfrAm
+                                 race.upenn == 3 ~ "4", # Asian / Pacific Islander
+                                 race.upenn == 4 ~ NA_character_, #don't know "race" of latino
+                                 race.upenn == 5 ~ "6"  # "other" goes to "other"
+                                 ),
+                ethnicity = ifelse(race.upenn == 4, 2, 1)) # hispanic/latino ethnicity 
+# political ideology is just 1: left, 2: right, 3: other
+
+with(upenn, table(race.upenn, countryofbirth, useNA = 'always'))
+
+
+
 # Note: One R user was having issues with some .csv files.
 # If that happens, you can uncomment the below line to simply read in the pre-processed .rds file.
 # upenn <- readRDS("./data/raw_site_data/upenn inhouse/upenn.rds")
@@ -327,7 +415,8 @@ uwmadison_inhouse <- rename(uwmadison_inhouse,
                             control1 = X.Please.briefly.describe.the.emotions.that.the.thought.of.watching.television.arouses.in.you.,
                             control2 = Jot.down..as.specifically.as.you.can..what.you.think.happens.to.you.as.you.watch.television.and.o...,
                             control3 = The.one.thing.I.fear.most.about.television.is.,
-                            control4 = My.scariest.thoughts.about.television.are.
+                            control4 = My.scariest.thoughts.about.television.are.,
+                            ethnicity = What.is.your.ethnicity.
                             )
 # no condition variable exists, so creating one based on whether they responded to the tv or ms prompt
 uwmadison_inhouse <- mutate(uwmadison_inhouse,
@@ -339,10 +428,20 @@ uwmadison_inhouse <- mutate(uwmadison_inhouse,
                                                      # all other cases fall through to NA
                                                      T ~ NA_character_),
                             # did they fully complete prompts 1 and 2?
-                            # TODO: decide whether to test all four prompts
                             msincomplete = test_msincomplete(MS1, MS2,
                                                              control1, control2)
                             )
+
+# recode race from What.is.your.race., minding difference in category labels
+uwmadison_inhouse <- mutate(uwmadison_inhouse,
+                            race = case_when(What.is.your.race. == "1" ~ 2,
+                                             What.is.your.race. == "2" ~ 1,
+                                             What.is.your.race. == "3" ~ 3,
+                                             What.is.your.race. == "5" ~ 6,
+                                             T                         ~ NA_real_),
+                            
+)
+
 # Note: One R user was having issues with some .csv files.
 # If that happens, you can uncomment the below line to simply read in the pre-processed .rds file.
 # uwmadison_inhouse <- readRDS("./data/raw_site_data/UWmadison inhouse/uwmadison_inhouse.rds")
@@ -356,6 +455,20 @@ kansas_inhouse$expert <- 0
 kansas_inhouse$source <- "kansas_inhouse"
 # add location, usually identical to source
 kansas_inhouse$location <- "kansas"
+
+# recode race from open text
+kansas_inhouse <- mutate(kansas_inhouse,
+                         racetext = tolower(race),
+                         race = code_race(racetext),
+                         ethnicity = case_when(grepl("hispanic", racetext) ~ 2,
+                                               grepl("latin.", racetext)   ~ 2,
+                                               T                           ~ 1)
+)
+
+# check my work
+with(kansas_inhouse, table(racetext, race))
+with(kansas_inhouse, table(racetext, ethnicity))
+
 # Note: One R user was having issues with some .csv files.
 # If that happens, you can uncomment the below line to simply read in the pre-processed .rds file.
 # kansas_inhouse <- readRDS("./data/raw_site_data/kansas inhouse/kansas_inhouse.rds")
@@ -369,6 +482,9 @@ pace_expert$expert <- 1
 pace_expert$source <- "pace_expert"
 # add location, usually identical to source
 pace_expert$location <- "pace"
+
+
+
 # Note: One R user was having issues with some .csv files.
 # If that happens, you can uncomment the below line to simply read in the pre-processed .rds file.
 # pace_expert <- readRDS("./data/raw_site_data/pace expert/pace_expert.rds")
@@ -383,6 +499,11 @@ wesleyan_inhouse$expert <- 0
 wesleyan_inhouse$source <- "wesleyan_inhouse"
 # add location, usually identical to source
 wesleyan_inhouse$location <- "wesleyan"
+
+# it looks like race and ethnicity were already recoded from text
+with(wesleyan_inhouse, table(race))
+with(wesleyan_inhouse, table(ethnicity))
+
 # Note: One R user was having issues with some .csv files.
 # If that happens, you can uncomment the below line to simply read in the pre-processed .rds file.
 # wesleyan_inhouse <- readRDS("./data/raw_site_data/wesleyan inhouse/wesleyan_inhouse.rds")
@@ -394,6 +515,19 @@ sou_inhouse$expert <- 0
 # add site identifier
 sou_inhouse$source <- "sou_inhouse"
 sou_inhouse$location <- "sou"
+
+# race and ethnicity data seems to have been recoded already
+with(sou_inhouse, table(race))
+with(sou_inhouse, table(ethnicity))
+
+# turn "prefer not to answer" to NA
+sou_inhouse <- mutate(sou_inhouse,
+                      ethnicity = case_when(ethnicity == 3 ~ NA_integer_,
+                                            T              ~ ethnicity)
+                      )
+
+
+
 # Note: One R user was having issues with some .csv files.
 # If that happens, you can uncomment the below line to simply read in the pre-processed .rds file.
 # sou_inhouse <- readRDS("./data/raw_site_data/sou inhouse/sou_inhouse.rds")
@@ -428,6 +562,19 @@ plu$expert <- 0
 # add site identifier
 plu$source <- "plu"
 plu$location <- "plu"
+
+# recode race data
+# not sure what to do with multiracial, putting it into category 6 I guess
+plu <- mutate(plu,
+              racemulti = race,
+              race = case_when(grepl(",", racemulti) ~ "6", #multiracial to category 6
+                               racemulti == ""       ~ NA_character_,
+                               T                     ~ racemulti)
+              )
+              
+# I think the other categories are already correct
+table(plu$race, useNA = 'always')
+
 # Note: One R user was having issues with some .csv files.
 # If that happens, you can uncomment the below line to simply read in the pre-processed .rds file.
 # plu <- readRDS("./data/raw_site_data/plu/plu.rds")
@@ -481,6 +628,7 @@ pace_inhouse$location <- "pace"
 # change column names to match template
 # author A is always anti-us and author P is always pro-us
 pace_inhouse <- rename(pace_inhouse,
+                       participantnum = Respondent.ID,
                        prous4 = How.much.do.you.like.Author.P.,                      
                        prous3 = How.intelligent.is.Author.P.,                        
                        prous5 = How.knowledgeable.about.America.is.Author.P.,        
@@ -496,7 +644,16 @@ pace_inhouse <- rename(pace_inhouse,
                        MS1 = Please.briefly.describe.the.emotions.that.the.thought.of.your.own.death.arouses.in.you.,
                        MS2 = Jot.down..as.specifically.as.you.can..what.you.think.will.happen.to.you.physically.as.you.die.and.once.you.are.physically.dead.,
                        control1 = Please.briefly.describe.the.emotions.that.the.thought.of.watching.television.arouses.in.you.,
-                       control2 = Jot.down..as.specifically.as.you.can..what.you.think.happens.to.you.as.you.watch.television..and.once.you.have.physically.watched.television.
+                       control2 = Jot.down..as.specifically.as.you.can..what.you.think.happens.to.you.as.you.watch.television..and.once.you.have.physically.watched.television.,
+                       countryofbirth = In.what.country.were.you.born.,
+                       race = What.is.your.race.ethnicity.)
+# process race and countryofbirth variables
+pace_inhouse <- mutate(pace_inhouse,
+                       countrytext = countryofbirth,
+                       countryofbirth = usa_synonyms(countrytext),
+                       race = tolower(race),
+                       racetext = race,
+                       race = code_race(racetext)
                        )
 # create condition & msincomplete variables
 pace_inhouse <- mutate(pace_inhouse,
@@ -509,7 +666,11 @@ pace_inhouse <- mutate(pace_inhouse,
                        # make msincomplete based on whether they did both prompts
                        msincomplete = test_msincomplete(MS1, MS2, control1, control2)
 )
-# TODO: zap row with NA participantnum and strange values of DV
+
+# check the recoding on race
+with(pace_inhouse, table(racetext, race, useNA = 'always'))
+
+
 # For users having trouble with .csv: can uncomment below line and read processed .rds
 # pace_inhouse <- readRDS("./data/raw_site_data/pace_inhouse/TMT.rds")
 
@@ -558,14 +719,20 @@ merged <- mutate_at(merged,
                     .funs = as.numeric)
 
 # convert in-house open text for race to numeric code
-merged$race <- race_text_to_num(merged$race)
+merged$race_backup <- race_text_to_num(merged$race)
+# save all race & ethnicity data to a column, then replace non-codes with NA
+merged$race <- ifelse(merged$race_backup %in% c("1", "2", "3", "4", "5", "6"), 
+                      merged$race_backup, 
+                      NA)
+merged$ethnicity <- ifelse(merged$ethnicity %in% c(1, 2),
+                           merged$ethnicity,
+                           NA)
+
 
 # some of these were treated as numeric, I believe they are factor
-# TODO: check number of factor levels
-# TODO: handle text-response data for hispanic ethnicity
 merged <- mutate_at(merged, 
                     .vars = vars(ms_condition, msincomplete, 
-                                 countryofbirth,ethnicity, race), 
+                                 countryofbirth, ethnicity, race), 
                     .funs = as.factor)
 
 # We appear to have some entirely NA rows, except meta data. To address this I'm
@@ -574,9 +741,11 @@ merged <- mutate_at(merged,
 # an experimental condition assignment. 
 # I think this is a conservative approach that does not lose any real data, at trade-off
 # of retaining some rows with little/no information.
-merged <- subset(merged, !(is.na(merged$prous3)  & is.na(merged$prous4)  & is.na(merged$prous5)  & 
-                             is.na(merged$antius3) & is.na(merged$antius4) & is.na(merged$antius5) & 
-                             is.na(merged$ms_condition)))
+merged <- subset(merged, 
+                 !(is.na(merged$prous3)  & is.na(merged$prous4)  & is.na(merged$prous5)  & 
+                     is.na(merged$antius3) & is.na(merged$antius4) & is.na(merged$antius5) & 
+                     is.na(merged$ms_condition))
+)
 # If you skip these lines, you'll later find we have an issue with the # of levels
 # in data$ms_condition. This is a common problem where a "phantom" level with
 # zero measurements will appear in a factor. I'll demonstrate the problem and 
@@ -591,18 +760,18 @@ merged <- filter(merged, ms_condition == "ms" | ms_condition == "tv")
 # compute exclusion rules
 merged <- mutate(merged, 
                  # Exclusion rule 1:
-                 #1. Wrote something for both writing prompts
-                 #2. Completed all six items evaluating the essay authors)
-                 pass_ER1 = (msincomplete == 0 & !is.na(msincomplete)) | source == "uwmadison_expert" &
-                   # and wrote something for the MS prompts OR source is uwmadison_expert.
-                   # NOTE: uwmadison_expert left the msincomplete variable NA instead of coding "0" or "1". We noticed this 
-                   # late, and can't be 100% certain whether they did the coding. However, they took
-                   # detailed notes and reported that no responses were abnormal. In addition,
-                   # at the other expert sites, none reported a case where a participant left both responses
-                   # blank. So, it seems a safe assumption that all or nearly all of these participants
-                   # did in fact complete the ms prompts.
-                   !is.na(prous3) & !is.na(prous4) & !is.na(prous5) &  # P provided all 3 ratings of pro-us essay
-                   !is.na(antius3) & !is.na(antius4) & !is.na(antius5),# P provided all 3 ratings of anti-us
+                 # 1. Wrote something for both writing prompts OR source is uwmadison_expert.
+                 # NOTE: uwmadison_expert left the msincomplete variable NA instead of coding "0" or "1". 
+                 # We noticed this late, and can't be 100% certain whether they did the coding. 
+                 # However, they took detailed notes and reported that no responses were abnormal. 
+                 # In addition, at the other expert sites, none reported a case where a participant 
+                 # left both responses blank. So, it seems a safe assumption that all or nearly all 
+                 # of these participants did in fact complete the ms prompts.
+                 pass_ER1 = (msincomplete == 0 & !is.na(msincomplete)) | 
+                   source == "uwmadison_expert" &
+                   #2. Completed all six items evaluating the essay authors)
+                   (!is.na(prous3) & !is.na(prous4) & !is.na(prous5) &  # P provided all 3 ratings of pro-us essay
+                      !is.na(antius3) & !is.na(antius4) & !is.na(antius5)),# P provided all 3 ratings of anti-us
                  # Exclusion rule 2:
                  # as above, plus
                  #3. Identify as White (race == 1)
@@ -618,10 +787,10 @@ merged <- mutate(merged,
 )
 # compute primary indexes (mean of pro-US author ratings minus mean of anti-US author ratings)
 # Before we start dropping variables, let's mark which rows pass certain exclusion rules
-# TODO: Consider/justify use of na.rm here.
-merged$proauth_avg <- rowMeans(merged[, c('prous3','prous4','prous5')], na.rm = TRUE)
-merged$antiauth_avg <- rowMeans(merged[, c('antius3','antius4','antius5')], na.rm = TRUE)
-merged$pro_minus_anti <- merged$proauth_avg - merged$antiauth_avg # primary outcome variable, higher scores = greater preference for pro-US author
+merged$proauth_avg <- rowMeans(merged[, c('prous3','prous4','prous5')])
+merged$antiauth_avg <- rowMeans(merged[, c('antius3','antius4','antius5')])
+# primary outcome variable, higher scores = greater preference for pro-US author
+merged$pro_minus_anti <- merged$proauth_avg - merged$antiauth_avg 
 # if proauth_avg is NA or antiauth_avg is NA, pro_minus_anti becomes NaN.
 #    converting that to NA instead
 merged$pro_minus_anti[is.nan(merged$pro_minus_anti)] <- NA
@@ -663,7 +832,6 @@ identifying_vars <- c("MS1", "MS2", "MS3", "MS4",
                       "IP.Address",
                       # dropping what may be ID numbers of some kind
                       "WBL_ID",
-                      "Respondent.ID",
                       "Collector.ID",
                       # dropping potentially triangulating data
                       "age",
@@ -675,7 +843,6 @@ identifying_vars <- c("MS1", "MS2", "MS3", "MS4",
                       "politicalid.wpi",
                       "politicalview..1.Republican..2...Democrat..3...Independent..4...Other..5...No.Preference.",
                       "politicalparty..1...Republican..2...Democrat..3...Libertarian..4...Green..5...Constitution..6...Independent..7...I.don.t.identify.with.a.political.party..8...Other.",
-                      "countryofbirth..187...US.",
                       "birthcountry",
                       "raceombmulti",
                       "In.what.country.were.you.born.",
@@ -720,7 +887,7 @@ source_ns <- merged %>%
 ### Under 60: 
 # definitely: ashland, azusa, kansas_expert, sou_inhouse
 # maybe: pace_inhouse hovers right around 60. Glancing over the 
-#   raw data, there appear to be over 60 respondants, but that drops below 60 
+#   raw data, there appear to be over 60 respondents, but that drops below 60 
 #   after applying the lowest exclusion criteria. For now, I've left them included.
 
 merged_over60 <- left_join(merged, source_ns, by = "source") %>% 
@@ -731,28 +898,46 @@ merged_over60 <- left_join(merged, source_ns, by = "source") %>%
 # occurs in: azusa, ithaca, plu, sou_inhouse, ufl, wesleyan_inhouse
 # azusa and sou_inhouse already filtered out due to < 60 N.
 
-# Note: dates are not in a standard format across labs, so I'm heisitant
+# Note: dates are not in a standard format across labs, so I'm hesitant
 # to deal with them through POSIXlt
 
 # ithaca
 merged_subset <- merged_over60 %>% 
-  filter(source != "ithaca" | (source == "ithaca" & as.numeric(participantnum) > 97 & !is.na(participantnum))) 
+  filter(source != "ithaca" | 
+           (source == "ithaca" & as.numeric(participantnum) > 97 & !is.na(participantnum))
+         ) 
 # 97 was last participant run at ithaca before feb 15, 2017
+# participants 1:96 are discarded
+# Error message is due to character participantnums like "A6"
+#    They seem to be retained just fine tho because the first half of the OR evaluates to TRUE
+
 
 # plu
 merged_subset <- merged_subset %>% 
-  filter(source != "plu" | (source == "plu" & as.numeric(participantnum) > 187 & !is.na(participantnum))) 
+  filter(source != "plu" | 
+           (source == "plu" & as.numeric(participantnum) > 187 & !is.na(participantnum))
+         ) 
 # 187 was last participant run at plu before feb 15, 2017
+# participants 1:186 are discarded
 
 # ufl
 merged_subset <- merged_subset %>% 
-  filter(source != "ufl" | (source == "ufl" & as.numeric(X._session_id) > 9453807 & !is.na(X._session_id))) 
+  filter(source != "ufl" | 
+           (source == "ufl" & as.numeric(X._session_id) > 9453807 & !is.na(X._session_id))
+         ) 
 # 9453807 was last session number before feb 15, 2017
+# 181 participants are discarded
 
 # wesleyan_inhouse
 merged_subset <- merged_subset %>% 
-  filter(source != "wesleyan_inhouse" | (source == "wesleyan_inhouse" & as.numeric(participantnum) > 80 & !is.na(participantnum))) 
+  filter(source != "wesleyan_inhouse" | 
+           (source == "wesleyan_inhouse" & as.numeric(participantnum) > 80 & !is.na(participantnum))
+         ) 
 # 80 was last participant at wesleyan_inhouse before feb 15, 2017
+# 80 participants are discarded
+
+#looks like we went from 2123 to 1578, a loss of 545 participants ran prematurely?
+# 96+186+181+80 # yeah that's about right
 
 #now need to deidentify
 

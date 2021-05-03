@@ -1,22 +1,18 @@
 "Location","Author Advised (AA) or In House (IH)","N (TV)","N (MS)","Mean (TV)","Mean (MS)","SD (TV)","SD (MS)","Hedges' g","p"
-"Ashland University","AA",18,14,2.43,1.76,1.85,2.29,-0.32,0.39
-"Azusa Pacific University","IH",15,15,0.22,0.09,1.01,1.54,-0.1,0.78
-"Brigham Young University <U+0096> Idaho","AA",28,31,1.89,2.69,2.23,1.99,0.37,0.15
-"Ithaca College","IH",87,90,-0.41,-0.53,2.14,2.78,-0.05,0.76
-"Occidental College","AA",6,14,0.5,2.1,1.38,3.42,0.51,0.21
-"Pace University","AA",17,19,2,2.21,2.21,2.16,0.09,0.79
+"Brigham Young University - Idaho","AA",28,31,1.89,2.69,2.23,1.99,0.37,0.15
+"Ithaca College","IH",39,42,0.12,0.06,1.86,2.67,-0.03,0.9
+"Occidental College","AA",6,10,0.5,2.1,1.38,3.42,0.53,0.21
+"Pace University","AA",16,16,2,2.21,2.21,2.16,0.09,0.79
 "Pace University","IH",34,24,2.2,0.11,5.93,5.33,-0.36,0.17
-"Pacific Lutheran University","IH",125,121,0.37,0.36,1.85,1.97,-0.01,0.96
-"Southern Oregon University","IH",14,15,-1.02,-0.18,1.68,1.25,0.56,0.14
-"The College of New Jersey","AA",23,32,1.98,1.74,2.31,1.66,-0.12,0.69
-"University of California, Riverside","AA",10,8,1,2.33,0.88,1.53,1.05,0.28
-"University of Florida","IH",107,145,0.99,0.76,1.47,1.23,-0.17,0.19
-"University of Illinois","IH",44,43,-0.78,0.64,1.8,2.01,0.74,0
-"University of Kansas","AA",6,11,2.89,0.67,2.79,2.22,-0.87,0.13
+"Pacific Lutheran University","IH",30,30,0.32,-0.18,1.79,2.14,-0.25,0.33
+"The College of New Jersey","AA",21,30,1.98,1.74,2.31,1.66,-0.12,0.69
+"University of California, Riverside","AA",3,3,1,2.33,0.88,1.53,0.85,0.28
+"University of Florida","IH",38,60,0.87,0.92,1.24,1.18,0.04,0.83
+"University of Illinois","IH",45,44,-0.79,0.61,1.78,2,0.73,0
 "University of Kansas","IH",40,35,1.32,1.21,3.03,3.04,-0.03,0.88
 "University of Pennsylvania","IH",45,41,-0.16,0.2,1.75,2.23,0.17,0.42
-"University of Wisconsin","AA",19,23,1.18,1.44,1.65,2.28,0.13,0.67
+"University of Wisconsin","AA",19,21,1.18,1.44,1.65,2.28,0.13,0.67
 "University of Wisconsin","IH",36,32,-0.74,-0.93,2.05,1.77,-0.1,0.69
-"Virginia Commonwealth University","AA",7,16,1.62,2.19,1.22,1.88,0.32,0.41
-"Wesleyan University","IH",97,77,-0.2,-0.09,1.81,1.78,0.06,0.67
-"Worcester Polytechnic Institute","IH",68,71,0.53,0.51,1.96,1.61,-0.01,0.95
+"Virginia Commonwealth University","AA",7,14,1.62,2.19,1.22,1.88,0.32,0.41
+"Wesleyan University","IH",53,42,-0.56,-0.22,1.82,1.46,0.2,0.32
+"Worcester Polytechnic Institute","IH",70,71,0.54,0.51,1.95,1.61,-0.02,0.92
