@@ -215,8 +215,7 @@ load("Results.RData")
 ```
 
 ## Deviations from Pre-registered Analytic Plan  
-Our pre-registered analytic plan specifies the use of a three-level meta-analysis, conducted in the MetaSEM R package (Cheung, 2014), to control for the clustering of effect sizes when independent teams ran both In House and Author Advised versions of the protocol at the same university. However, during data analysis we discovered that these models failed to converge because we did not have enough data within each cluster, as most sites conducted only one study. As such, we had to drop the clustering variable. The results reported below are thus a more common univariate meta-analysis conducted in the same package, which is the model that most closely mirrors our originally planned analysis. The entire results section and analysis code written to report the originally planned three-level model are available on the OSF (https://osf.io/8ccnw/), and no conclusions substantively change between the current model and the three-level model.
-<!-- TODO: Check that. -->
+Our pre-registered analytic plan specifies the use of a three-level meta-analysis, conducted in the MetaSEM R package (Cheung, 2014), to control for the clustering of effect sizes when independent teams ran both In House and Author Advised versions of the protocol at the same university. However, during data analysis we discovered that these models failed to converge because we did not have enough data within each cluster, as most sites conducted only one study. As such, we had to drop the clustering variable. The results reported below are thus a more common univariate meta-analysis conducted in the same package, which is the model that most closely mirrors our originally planned analysis.
 
 ## Research Question 1: Meta-analytic results across all labs (random effects meta-analysis). 
 The most basic question is whether we observed the predicted effect of mortality salience on preference for pro- vs anti- American essay authors. To assess this we conducted a random-effects meta-analysis. This analysis produces the grand mean effect size across all sites and versions. Regardless of which exclusion criteria were used, we did not observe the predicted effect, and the confidence interval was quite narrow: 
@@ -318,7 +317,7 @@ Exclusion Set 1: `r report_meta(fixed1_proUSonly, "Intercept1")`;
 Exclusion Set 2: `r report_meta(fixed2_proUSonly, "Intercept1")`; 
 Exclusion Set 3: `r report_meta(fixed3_proUSonly, "Intercept1")`.[^2] 
 
-[^2]: The random-effects meta-analysis failed to converge. The heterogeneity parameter, $\tau$, was estimated as too small to estimate. To encourage the model to converge, we restricted $\tau$ to zero, creating a fixed-effects meta-analysis.
+[^2]: The random-effects meta-analysis failed to converge because the heterogeneity parameter, $\tau$, was estimated as very, very small. To get the model to converge, we restricted $\tau$ to zero, creating a fixed-effects meta-analysis.
 
 
 \begingroup

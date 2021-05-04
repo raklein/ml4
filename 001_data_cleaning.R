@@ -214,7 +214,7 @@ azusa$ethnicity <- ifelse(azusa$race.azusa == 3, 2, 1)
 # 1 = ms 2 = tv
 azusa$ms_condition[azusa$ms_condition==2] <- "tv"
 azusa$ms_condition[azusa$ms_condition==1] <- "ms"
-# coding msincomplete: subject must write at least 10char for each of their prompts
+# coding msincomplete: subject must write at least 1char for each of their prompts
 azusa$msincomplete <- with(azusa,
                            test_msincomplete(MS1, MS2, control1, control2))
 # recoding gender

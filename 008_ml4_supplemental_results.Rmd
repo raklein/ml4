@@ -102,6 +102,8 @@ report_q <- function(object) {
 
 This document presents supplementary analyses that consider ratings of the pro-US and anti-US authors as two separate DVs, rather than as a single difference score DV as in the main text.
 
+The preregistered three-level meta-analyses frequently failed to converge because most sites ran only one study. In a divergence from the preregistration, we fit random-effects meta-analyses instead.
+
 ```{r analysis-alpha-exclusions, include = FALSE}
 alpha_anti <- psych::alpha(select(merged, antius3, antius4, antius5))
 alpha_pro <- psych::alpha(select(merged, prous3, prous4, prous5))
