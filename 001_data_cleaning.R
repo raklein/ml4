@@ -214,7 +214,7 @@ azusa$ethnicity <- ifelse(azusa$race.azusa == 3, 2, 1)
 # 1 = ms 2 = tv
 azusa$ms_condition[azusa$ms_condition==2] <- "tv"
 azusa$ms_condition[azusa$ms_condition==1] <- "ms"
-# coding msincomplete: subject must write at least 10char for each of their prompts
+# coding msincomplete: subject must write at least 1char for each of their prompts
 azusa$msincomplete <- with(azusa,
                            test_msincomplete(MS1, MS2, control1, control2))
 # recoding gender
@@ -254,23 +254,10 @@ wpi$expert <- 0
 wpi$source <- "wpi"
 # add location, usually identical to source
 wpi$location <- "wpi"
-# race.wpi may be coded differently from template
-names(wpi)[names(wpi) == 'race'] <- 'race.wpi'
-# politicalid.wpi may be coded differently from template
-names(wpi)[names(wpi) == 'politicalid'] <- 'politicalid.wpi'
 # change some variable names to match template
 names(wpi)[names(wpi) == 'countryofbirth..187...US.'] <- 'countryofbirth'
 # remove redundant ms_condition.1 column
 wpi$ms_condition.1 <- NULL
-
-# recode race?
-table(wpi$race.wpi) 
-table(wpi$ethnicity)
-table(wpi$birthcountry) #i'm guessing 187 is USA...
-table(wpi$countryofbirth)
-# looks like it was already recoded
-
-
 
 # Note: One R user was having issues with some .csv files.
 # If that happens, you can uncomment the below line to simply read in the pre-processed .rds file.
@@ -308,6 +295,20 @@ ufl$ms_condition[ufl$ms_condition=="2"] <- "ms"
 ufl$msincomplete <- with(ufl,
                          test_msincomplete(mortalityresponse1, mortalityresponse2,
                                          controlresponse1, controlresponse2))
+# original coding is stored as ufl$raceomb and ufl$raceombmulti
+# recode race data to match template
+# recode race to match template
+ufl <- mutate(ufl,
+              race = case_when(raceomb == "1" ~ "3", # native american, alaska native
+                               raceomb %in% c("2", "3") ~ "4", # south & east asian -> asian
+                               raceomb == "4" ~ "5", # native hawaiian or pacific islander
+                               raceomb == "5" ~ "2", # black / afr-am
+                               raceomb == "6" ~ "1", # white
+                               raceomb == "7" ~ "6", # something else
+                               raceombmulti != "" ~ "6", # multiracial as category 6
+                               T ~ NA_character_))    # all other cases go to NA
+# Doesn't seem to be any column for hispanic/latino ethnicity
+
 # Note: One R user was having issues with some .csv files.
 # If that happens, you can uncomment the below line to simply read in the pre-processed .rds file.
 # ufl <- readRDS("./data/raw_site_data/ufl inhouse/ufl.rds")
@@ -840,14 +841,12 @@ identifying_vars <- c("MS1", "MS2", "MS3", "MS4",
                       "ethnicity",
                       "ethnicity..1...White.Caucasian..2...Middle.Eastern..3...Asian.Pacific.Islander..4...African.American.Black..5...Hispanic.Latino..6...Indigenous.Aboriginal..7...Would.Rather.Not.Say..8...Other",
                       "politicalid",
-                      "politicalid.wpi",
                       "politicalview..1.Republican..2...Democrat..3...Independent..4...Other..5...No.Preference.",
                       "politicalparty..1...Republican..2...Democrat..3...Libertarian..4...Green..5...Constitution..6...Independent..7...I.don.t.identify.with.a.political.party..8...Other.",
                       "birthcountry",
                       "raceombmulti",
                       "In.what.country.were.you.born.",
                       "race.azusa",
-                      "race.wpi",
                       "raceomb")
 
 # Create deidentified dataset by dropping the following variables:

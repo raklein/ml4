@@ -293,6 +293,15 @@ random1_proUSonly <- meta(y = yi, v = vi, data = combinedresults_proUSonly1)
 random2_proUSonly <- meta(y = yi, v = vi, data = combinedresults_proUSonly2)
 random3_proUSonly <- meta(y = yi, v = vi, data = combinedresults_proUSonly3)
 
+# Because they don't converge & estimate tau as super tiny,
+#    we need to run the fixed-effects models
+fixed1_proUSonly <- meta(y = yi, v = vi, data = combinedresults_proUSonly1,
+                         RE.constraints = 0)
+fixed2_proUSonly <- meta(y = yi, v = vi, data = combinedresults_proUSonly2,
+                         RE.constraints = 0)
+fixed3_proUSonly <- meta(y = yi, v = vi, data = combinedresults_proUSonly3,
+                         RE.constraints = 0)
+
 # Computing alpha for the essay author ratings, basic exclusions ----
 # Read data
 dat <- merged
@@ -310,10 +319,6 @@ psych::alpha(anti_df)
 omega(anti_df)
 
 # generating demographics cross-tabs ----
-# TODO: This section is a WIP
-# FIXME: Implement demographic counting in the appropriate fashion 
-#    (pre-exclusion, post-exclusion, whatever)
-
 # Currently, demographics seem to be calculated for group after application of ER1 to expert sites
 #    (non-expert sites just get a pass on this, I guess)
 merged <- readRDS("./data/processed_data/merged_subset.rds")
@@ -321,7 +326,7 @@ merged <- readRDS("./data/processed_data/merged_subset.rds")
 demos <- filter(merged, !is.na(pro_minus_anti),
                 pass_ER1 == T | expert == 0)
 
-# FIXME: is there a category for multiracial? 6? something else?
+# Multiracial has been coded as category 6 "something else"
 
 demos_race <- demos %>% 
   select(race) %>% 
@@ -348,5 +353,6 @@ save(random1, random2, random3,
      random1_ih, random1_aa, random2_aa, random3_aa,
      fit_comparison_1_ih, fit_comparison_1_aa, fit_comparison_2_aa, fit_comparison_3_aa,
      random1_TMTexperienced, random2_TMTexperienced, random3_TMTexperienced,
+     fixed1_proUSonly, fixed2_proUSonly, fixed3_proUSonly,
      random1_proUSonly, random2_proUSonly, random3_proUSonly,
      file = "results.RData")

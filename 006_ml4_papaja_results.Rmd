@@ -201,9 +201,9 @@ One researcher indicated that they were an expert in TMT, but their site did not
 <!-- TMT expert must have been excluded due to n<60.
 r firstup(numbers2words(exp_knowl_expert)) (r round(exp_knowl_expert_pct)%) researcher indicated they were an expert in TMT, -->
 
-When asked what outcome they wanted to happen, `r numbers2words(tab.rooting["For TMT"])` (`r round(tab.rooting_pct["For TMT"])`%) indicated that they hoped for the project to successfully replicate the TMT effect, `r numbers2words(tab.rooting["Neither"])` (`r round(tab.rooting_pct["Neither"])`%) indicated no preference, and `r numbers2words(tab.rooting["Against TMT"])` (`r round(tab.rooting_pct["Against TMT"])`%) hoped the project would result in a failure to replicate, with `r numbers2words(tab.rooting[4])` (`r round(tab.rooting_pct[4])`%) researchers leaving the question blank. On average, the teams estimated a `r round(mean(exp_surv$rep_likely, na.rm = TRUE))`% chance of successful replication with a wide range of estimates from `r min(exp_surv$rep_likely, na.rm = TRUE)`% to `r max(exp_surv$rep_likely, na.rm = TRUE)`% (*SD* = `r sd(exp_surv$rep_likely, na.rm = TRUE)`).[^3]
+When asked what outcome they wanted to happen, `r numbers2words(tab.rooting["For TMT"])` (`r round(tab.rooting_pct["For TMT"])`%) indicated that they hoped for the project to successfully replicate the TMT effect, `r numbers2words(tab.rooting["Neither"])` (`r round(tab.rooting_pct["Neither"])`%) indicated no preference, and `r numbers2words(tab.rooting["Against TMT"])` (`r round(tab.rooting_pct["Against TMT"])`%) hoped the project would result in a failure to replicate, with `r numbers2words(tab.rooting[4])` (`r round(tab.rooting_pct[4])`%) researchers leaving the question blank. On average, the teams estimated a `r round(mean(exp_surv$rep_likely, na.rm = TRUE))`% chance of successful replication with a wide range of estimates from `r min(exp_surv$rep_likely, na.rm = TRUE)`% to `r max(exp_surv$rep_likely, na.rm = TRUE)`% (*SD* = `r sd(exp_surv$rep_likely, na.rm = TRUE)`).[^1]
 
-[^3]: Including only sites that had not looked at any data, researchers estimated a `r round(mean(exp_surv$rep_likely[exp_surv$analyzed == "No"], na.rm = T))`% chance of successful replication.
+[^1]: Including only sites that had not looked at any data, researchers estimated a `r round(mean(exp_surv$rep_likely[exp_surv$analyzed == "No"], na.rm = T))`% chance of successful replication.
 
 ```{r analysis-replication-meta, include = FALSE}
 
@@ -215,8 +215,7 @@ load("Results.RData")
 ```
 
 ## Deviations from Pre-registered Analytic Plan  
-Our pre-registered analytic plan specifies the use of a three-level meta-analysis, conducted in the MetaSEM R package (Cheung, 2014), to control for the clustering of effect sizes when independent teams ran both In House and Author Advised versions of the protocol at the same university. However, during data analysis we discovered that these models failed to converge because we did not have enough data within each cluster, as most sites conducted only one study. As such, we had to drop the clustering variable. The results reported below are thus a more common univariate meta-analysis conducted in the same package, which is the model that most closely mirrors our originally planned analysis. The entire results section and analysis code written to report the originally planned three-level model are available on the OSF (https://osf.io/8ccnw/), and no conclusions substantively change between the current model and the three-level model.
-<!-- TODO: Check that. -->
+Our pre-registered analytic plan specifies the use of a three-level meta-analysis, conducted in the MetaSEM R package (Cheung, 2014), to control for the clustering of effect sizes when independent teams ran both In House and Author Advised versions of the protocol at the same university. However, during data analysis we discovered that these models failed to converge because we did not have enough data within each cluster, as most sites conducted only one study. As such, we had to drop the clustering variable. The results reported below are thus a more common univariate meta-analysis conducted in the same package, which is the model that most closely mirrors our originally planned analysis.
 
 ## Research Question 1: Meta-analytic results across all labs (random effects meta-analysis). 
 The most basic question is whether we observed the predicted effect of mortality salience on preference for pro- vs anti- American essay authors. To assess this we conducted a random-effects meta-analysis. This analysis produces the grand mean effect size across all sites and versions. Regardless of which exclusion criteria were used, we did not observe the predicted effect, and the confidence interval was quite narrow: 
@@ -286,6 +285,9 @@ with(merged, table(author_pref))
 tab_authorpref <- with(merged, table(author_pref, expert))
 authorpref_test <- chisq.test(tab_authorpref)
 
+# Proportions of pro-US preference, in-house designs
+merged_ih <- filter(merged, expert == 0)
+
 n_profav_ih  <- sum(merged_ih$pro_minus_anti > 0)
 n_antifav_ih <- sum(merged_ih$pro_minus_anti < 0)
 n_nofav_ih   <- sum(merged_ih$pro_minus_anti == 0)
@@ -294,7 +296,9 @@ pct_profav_ih  <- n_profav_ih  / (n_profav_ih + n_antifav_ih + n_nofav_ih) * 100
 pct_antifav_ih <- n_antifav_ih / (n_profav_ih + n_antifav_ih + n_nofav_ih) * 100
 pct_nofav_ih   <- n_nofav_ih   / (n_profav_ih + n_antifav_ih + n_nofav_ih) * 100
 
-# Author Advised
+# Porportions of pro-US preference, Author Advised designs
+merged_aa <- filter(merged, expert == 1)
+
 n_profav_aa <- sum(merged_aa$pro_minus_anti > 0)
 n_antifav_aa <- sum(merged_aa$pro_minus_anti < 0)
 n_nofav_aa <- sum(merged_aa$pro_minus_anti == 0)
@@ -308,10 +312,12 @@ pct_nofav_aa <- (n_nofav_aa/(n_profav_aa+n_antifav_aa+n_nofav_aa))*100
 
 This did successfully increase participant preferences for the pro-US author over the anti-US author among Author Advised replications as compared to In House replications, $\chi^2$(`r authorpref_test$parameter`) = `r round(authorpref_test$statistic, digits = 2)`, `r printp(authorpref_test$p.value)`. Among In House replications, `r round(pct_profav_ih, digits = 0)`% of participants preferred the pro-US essay author, `r round(pct_antifav_ih, digits = 0)`% preferred the anti-US essay author, and `r round(pct_nofav_ih, digits = 0)`% had no preference. Among Author Advised replications, `r round(pct_profav_aa, digits = 0)`% of participants preferred the pro-US essay author, `r round(pct_antifav_aa, digits = 0)`% preferred the anti-US essay author, and `r round(pct_nofav_aa, digits = 0)`% had no preference. 
 
-Is the anticipated effect stronger among participants who preferred the pro-US author? When restricting the analysis to only participants at Author Advised sites who preferred the pro-US author and using only the first exclusion rule, the mortality salience and control groups significantly differed in their levels of preference for the pro-US author over the anti-US author: `r report_meta(random1_proUSonly, "Intercept1")`. However, this test was not significant when using the second or third exclusion rule:
-Exclusion Set 2: `r report_meta(random2_proUSonly, "Intercept1")`; 
-Exclusion Set 3: `r report_meta(random3_proUSonly, "Intercept1")`. 
-**[Note: the above analyses do not converge (OpenMX status: 5), perhaps because the heterogeneity is estimated as very small, nearly zero. metafor::rma() does not have such an error. If I run a fixed-effects model in metaSEM then I get the same results across metaSEM::meta and metafor::rma. The SEs and some p values' significances is sensitive to this!]**
+Is the anticipated effect stronger among participants who preferred the pro-US author? We restricted the analysis to only participants at Author Advised sites who preferred the pro-US author. Under this restriction, there was still no significant difference between the mortality salience and control groups in their preference for the pro-US author over the anti-US author. 
+Exclusion Set 1: `r report_meta(fixed1_proUSonly, "Intercept1")`; 
+Exclusion Set 2: `r report_meta(fixed2_proUSonly, "Intercept1")`; 
+Exclusion Set 3: `r report_meta(fixed3_proUSonly, "Intercept1")`.[^2] 
+
+[^2]: The random-effects meta-analysis failed to converge because the heterogeneity parameter, $\tau$, was estimated as very, very small. To get the model to converge, we restricted $\tau$ to zero, creating a fixed-effects meta-analysis.
 
 
 \begingroup

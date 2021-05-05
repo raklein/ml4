@@ -102,6 +102,8 @@ report_q <- function(object) {
 
 This document presents supplementary analyses that consider ratings of the pro-US and anti-US authors as two separate DVs, rather than as a single difference score DV as in the main text.
 
+The preregistered three-level meta-analyses frequently failed to converge because most sites ran only one study. In a divergence from the preregistration, we fit random-effects meta-analyses instead.
+
 ```{r analysis-alpha-exclusions, include = FALSE}
 alpha_anti <- psych::alpha(select(merged, antius3, antius4, antius5))
 alpha_pro <- psych::alpha(select(merged, prous3, prous4, prous5))
@@ -141,8 +143,6 @@ Exclusion set 3: `r report_meta(mixed3_pro, "Intercept1")`.
 In addition, protocol version did not significantly predict replication effect size. Exclusion set 1: `r report_meta(mixed1_pro, "Slope1_1", label = "*b*")`;
 Exclusion set 2: `r report_meta(mixed2_pro, "Slope1_1", label = "*b*")`;
 Exclusion set 3: `r report_meta(mixed3_pro, "Slope1_1", label = "*b*")`.
-
-**[NOTE: You may want to note that is the strongest result for the theory: Exclusion rule 3, author-advised sites only, pro-US author ratings only: `r filter(combinedresults_pro3, expert == 1) %>% meta(y=yi, v=vi, data=.) %>% report_meta(., "Intercept1")`]**
 
 We again did not observe heterogeneity between labs in any of the exclusion sets: exclusion set 1: `r report_q(mixed1_pro)`; 
 exclusion set 2: `r report_q(mixed2_pro)`; 
