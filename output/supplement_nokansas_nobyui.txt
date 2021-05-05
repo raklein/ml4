@@ -1,0 +1,78 @@
+
+Call:
+meta(y = yi, v = vi, data = filter(combinedresults1, source != 
+    "kansas_expert" & source != "byui"))
+
+95% confidence intervals: z statistic approximation (robust=FALSE)
+Coefficients:
+              Estimate   Std.Error      lbound      ubound z value Pr(>|z|)
+Intercept1  4.9676e-02  5.2790e-02 -5.3790e-02  1.5314e-01   0.941   0.3467
+Tau2_1_1    1.0000e-10  1.8230e-02 -3.5730e-02  3.5730e-02   0.000   1.0000
+
+Q statistic on the homogeneity of effect sizes: 16.74761
+Degrees of freedom of the Q statistic: 15
+P value of the Q statistic: 0.3341748
+
+Heterogeneity indices (based on the estimated Tau2):
+                             Estimate
+Intercept1: I2 (Q statistic)        0
+
+Number of studies (or clusters): 16
+Number of observed statistics: 16
+Number of estimated parameters: 2
+Degrees of freedom: 14
+-2 log likelihood: -3.238755 
+OpenMx status1: 0 ("0" or "1": The optimization is considered fine.
+Other values may indicate problems.)
+
+Call:
+meta(y = yi, v = vi, data = filter(combinedresults2, source != 
+    "kansas_expert" & source != "byui"))
+
+95% confidence intervals: z statistic approximation (robust=FALSE)
+Coefficients:
+             Estimate  Std.Error     lbound     ubound z value Pr(>|z|)
+Intercept1  0.0747406  0.0630465 -0.0488282  0.1983095  1.1855   0.2358
+Tau2_1_1    0.0058515  0.0221657 -0.0375925  0.0492954  0.2640   0.7918
+
+Q statistic on the homogeneity of effect sizes: 20.32088
+Degrees of freedom of the Q statistic: 15
+P value of the Q statistic: 0.1599658
+
+Heterogeneity indices (based on the estimated Tau2):
+                             Estimate
+Intercept1: I2 (Q statistic)   0.0924
+
+Number of studies (or clusters): 16
+Number of observed statistics: 16
+Number of estimated parameters: 2
+Degrees of freedom: 14
+-2 log likelihood: 6.058453 
+OpenMx status1: 0 ("0" or "1": The optimization is considered fine.
+Other values may indicate problems.)
+
+Call:
+meta(y = yi, v = vi, data = filter(combinedresults3, source != 
+    "kansas_expert" & source != "byui"))
+
+95% confidence intervals: z statistic approximation (robust=FALSE)
+Coefficients:
+            Estimate Std.Error    lbound    ubound z value Pr(>|z|)
+Intercept1  0.071172  0.069795 -0.065624  0.207968  1.0197   0.3079
+Tau2_1_1    0.010674  0.025019 -0.038361  0.059710  0.4267   0.6696
+
+Q statistic on the homogeneity of effect sizes: 17.32189
+Degrees of freedom of the Q statistic: 15
+P value of the Q statistic: 0.2999887
+
+Heterogeneity indices (based on the estimated Tau2):
+                             Estimate
+Intercept1: I2 (Q statistic)   0.1397
+
+Number of studies (or clusters): 16
+Number of observed statistics: 16
+Number of estimated parameters: 2
+Degrees of freedom: 14
+-2 log likelihood: 6.420653 
+OpenMx status1: 0 ("0" or "1": The optimization is considered fine.
+Other values may indicate problems.)

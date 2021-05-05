@@ -2,7 +2,7 @@
 # Coder: Rick Klein raklein22@gmail.com
 # OSF: https://osf.io/8ccnw/
 
-# Originally written in RStudio Version 1.1.463, and R version 3.5.2
+# Written in RStudio Version 1.4.1106, and R version 4.0.5
 
 #ANALYSIS SCRIPT
 
