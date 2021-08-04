@@ -49,7 +49,7 @@ library("GPArotation")
 library("tidyverse")
 library("pwr")
 
-# source functions locally
+# source functions stored locally
 source("sources/numbers2words.r")
 
 firstup <- function(x) {
@@ -158,11 +158,12 @@ source("004_exp_survey_analysis.R")
 ```
 
 ## Participants
-Twenty-one data collection efforts from 18 unique sites collected data from a total of 2,281 participants.
-In line with our preregistration, data from four labs were discarded for collecting fewer than 60 samples pre-exclusions. This excluded about 160 participants. <!-- exact number 158 -->
-Some In House sites collected data before the trial's registration; that data was discarded from this confirmatory test, in line with the pre-registration. This excluded a further 545 participants. 
+Twenty-one labs from 18 universities participated in the project and collected data from a total of 2,281 participants.
+Several exclusions were made, each as specified by our preregistration (https://osf.io/4xx6w). First, data from four labs were excluded for collecting fewer than 60 participants. This excluded 158 participants. Next, some In House sites began data collection before the analysis plan was pre-registered due to their own deadlines. Data collected before the pre-registration were excluded from the confirmatory tests reported in this manuscript. This excluded a further 545 participants. 
 
-A total of `r length(unique(merged_original$source))` labs participated and provided a total sample of `r formatCC(nrow(merged_original))` participants. In accordance with the pre-registration (https://osf.io/4xx6w), we excluded from all analyses participants who either failed to complete all 6 ratings of the essay authors, or who failed to complete both writing prompts within the mortality salience or control conditions (e.g., the between-subjects manipulation). The latter exclusion criteria applied only to participants from Author Advised sites, because the necessary data was not always available for In House sites. Thus, the usable sample included `r formatCC(nrow(merged))` participants (see Table 1 for a summary of sites). `r formatCC(n_woman)` participants (`r n_woman_pct`%) reported being female and `r formatCC(n_man)` participants (`r n_man_pct`%) reported being male; the remaining participants did not respond to the item, were asked about gender in a non-standard way, or chose a different response. The mean age was `r mean(merged$age, na.rm=TRUE)` years (*SD* = `r sd(merged$age, na.rm=TRUE)`). Participant reported race was `r n_white` (`r n_white_pct`%) White, `r n_asian` (`r n_asian_pct`%) Asian, `r n_black` (`r n_black_pct`%) Black or African American, `r n_aian` (`r n_aian_pct`%) American Indian or Alaska Native, `r n_haw` (`r n_haw_pct`%) Native Hawaiian or Pacific Islander, and `r n_other` (`r n_other_pct`%) another category. The remaining participants did not report their race or their responses were not easily recoded to match these categories.
+From the remaining `r length(unique(merged_original$source))` labs and `r formatCC(nrow(merged_original))` participants, in adherence to our pre-registration, we excluded from all analyses participants who either failed to complete all 6 ratings of the essay authors, or who failed to complete both writing prompts within the mortality salience or control conditions (e.g., the between-subjects manipulation). The latter exclusion criteria applied only to participants from Author Advised sites, because the necessary data was not always available for In House sites. Thus, the usable sample included `r formatCC(nrow(merged))` participants (see Table 1 for a breakdown by lab).
+
+`r formatCC(n_woman)` participants (`r n_woman_pct`%) reported being female and `r formatCC(n_man)` participants (`r n_man_pct`%) reported being male; the remaining participants did not respond to the item, were asked about gender in a non-standard way, or chose a different response. The mean age was `r mean(merged$age, na.rm=TRUE)` years (*SD* = `r sd(merged$age, na.rm=TRUE)`). Participant reported race was `r n_white` (`r n_white_pct`%) White, `r n_asian` (`r n_asian_pct`%) Asian, `r n_black` (`r n_black_pct`%) Black or African American, `r n_aian` (`r n_aian_pct`%) American Indian or Alaska Native, `r n_haw` (`r n_haw_pct`%) Native Hawaiian or Pacific Islander, and `r n_other` (`r n_other_pct`%) another category. The remaining participants did not report their race or their responses were not easily recoded to match these categories.
 
 
 ```{r analysis-alpha-exclusions, include = FALSE}
@@ -203,7 +204,7 @@ r firstup(numbers2words(exp_knowl_expert)) (r round(exp_knowl_expert_pct)%) rese
 
 When asked what outcome they wanted to happen, `r numbers2words(tab.rooting["For TMT"])` (`r round(tab.rooting_pct["For TMT"])`%) indicated that they hoped for the project to successfully replicate the TMT effect, `r numbers2words(tab.rooting["Neither"])` (`r round(tab.rooting_pct["Neither"])`%) indicated no preference, and `r numbers2words(tab.rooting["Against TMT"])` (`r round(tab.rooting_pct["Against TMT"])`%) hoped the project would result in a failure to replicate, with `r numbers2words(tab.rooting[4])` (`r round(tab.rooting_pct[4])`%) researchers leaving the question blank. On average, the teams estimated a `r round(mean(exp_surv$rep_likely, na.rm = TRUE))`% chance of successful replication with a wide range of estimates from `r min(exp_surv$rep_likely, na.rm = TRUE)`% to `r max(exp_surv$rep_likely, na.rm = TRUE)`% (*SD* = `r sd(exp_surv$rep_likely, na.rm = TRUE)`).[^1]
 
-[^1]: Including only sites that had not looked at any data, researchers estimated a `r round(mean(exp_surv$rep_likely[exp_surv$analyzed == "No"], na.rm = T))`% chance of successful replication.
+[^1]: Including only sites that had not looked at any data, researchers still estimated a `r round(mean(exp_surv$rep_likely[exp_surv$analyzed == "No"], na.rm = T))`% chance of successful replication.
 
 ```{r analysis-replication-meta, include = FALSE}
 
@@ -215,7 +216,7 @@ load("Results.RData")
 ```
 
 ## Deviations from Pre-registered Analytic Plan  
-Our pre-registered analytic plan specifies the use of a three-level meta-analysis, conducted in the MetaSEM R package (Cheung, 2014), to control for the clustering of effect sizes when independent teams ran both In House and Author Advised versions of the protocol at the same university. However, during data analysis we discovered that these models failed to converge because we did not have enough data within each cluster, as most sites conducted only one study. As such, we had to drop the clustering variable. The results reported below are thus a more common univariate meta-analysis conducted in the same package, which is the model that most closely mirrors our originally planned analysis.
+Our pre-registered analytic plan specifies the use of a three-level meta-analysis, conducted in the MetaSEM R package (Cheung, 2014), to control for the clustering of effect sizes when independent teams ran both In House and Author Advised versions of the protocol at the same university. However, during data analysis we discovered that these models failed to converge because we did not have enough data within each cluster, as most sites conducted only one study. As such, we had to drop the clustering variable. The results reported below are thus a more common univariate meta-analysis, which is the model that most closely mirrors our originally planned analysis.
 
 ## Research Question 1: Meta-analytic results across all labs (random effects meta-analysis). 
 The most basic question is whether we observed the predicted effect of mortality salience on preference for pro- vs anti- American essay authors. To assess this we conducted a random-effects meta-analysis. This analysis produces the grand mean effect size across all sites and versions. Regardless of which exclusion criteria were used, we did not observe the predicted effect, and the confidence interval was quite narrow: 
