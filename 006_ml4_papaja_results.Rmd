@@ -220,12 +220,13 @@ The most basic question is whether we observed the predicted effect of mortality
 Exclusion Set 1: `r report_meta(random1, "Intercept1")`. 
 Exclusion Set 2: `r report_meta(random2, "Intercept1")`. 
 Exclusion Set 3: `r report_meta(random3, "Intercept1")`. 
-Forest plots showing the effects for individual sites and the aggregate are available in Figure 1 for Exclusion Set 1. (See https://osf.io/8ccnw/ for the other two Exclusion Sets.)
+Forest plots showing the effects for individual sites and the aggregate are available in Figure 1 for Exclusion Set 1. (See https://osf.io/8ccnw/ for the other two Exclusion Sets.) These results indicate that, in the aggregate, we failed to replicate the predicted mortality salience effect.
 
 There may have been a mortality salience effect at some sites and not others, so we next examined how much variation was observed among effect sizes (e.g., heterogeneity). This sort of variation did not exceed variation expected by chance (e.g., sampling variance) regardless of exclusion rule: 
 Exclusion Set 1: `r report_q(random1)`; 
 Exclusion Set 2: `r report_q(random2)`; 
 Exclusion Set 3: `r report_q(random3)`. 
+This result suggests that any observed differences in effect size between sites are likely due to random noise, as opposed to true differences in underlying effect size.
 
 In sum, we observed little evidence for an overall effect of mortality salience in these replications. Additionally, overall results suggest that there was little or no heterogeneity in effect sizes across sites. This lack of variation suggests that it is unlikely we will observe an effect of Author Advised versus In House protocols or other moderators such as differences in samples or TMT knowledge. Even so, the plausible moderation by Author Advised/In House protocol is examined in the following section. 
 
@@ -241,6 +242,7 @@ Again, significant heterogeneity was not observed:
 Exclusion Set 1, `r report_q(mixed1)`; 
 Exclusion Set 2, `r report_q(mixed2)`; 
 Exclusion Set 3, `r report_q(mixed3)`.
+This again suggests that any observed differences in effect size between sites are likely due to random noise, as opposed to true differences in effect size.
 
 Critically, protocol version did not significantly predict replication effect size regardless of which exclusion criteria were used. 
 Exclusion Set 1: `r report_meta(mixed1, "Slope1_1", label = "*b*")`; 
