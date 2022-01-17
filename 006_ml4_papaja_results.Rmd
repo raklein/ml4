@@ -199,7 +199,7 @@ Therefore, analyses were repeated for each of the three exclusion sets for Autho
 
 All data handling, exclusions, and computation of results within sites followed our pre-registered (prior to data collection) analysis plan on the OSF (https://osf.io/4xx6w). All results are reported with two-tailed tests of significance.[^signote]
 
-[^signote]: We did not specifically pre-register whether tests would be one- or two-tailed, and some have argued that one-tailed tests would be more appropriate (e.g., Chatard, Hirschberger, & Pyszczynski, 2020). However, we had always intended to use two-tailed tests and this is consistent with both prior Many Labs projects (Klein et al., 2014; 2018, Ebersole et al., 2016) and the pre-registered sample analysis code (https://osf.io/4xx6w).
+[^signote]: We did not specifically pre-register whether tests would be one- or two-tailed, and some have argued that one-tailed tests would be more appropriate (e.g., Chatard, Hirschberger, & Pyszczynski, 2020). However, we had always intended to use two-tailed tests and this is consistent with all prior Many Labs projects (Klein et al., 2014; 2018, Ebersole et al., 2016; 2020) and the pre-registered sample analysis code (https://osf.io/4xx6w).
 
 # Results
 
@@ -216,7 +216,7 @@ load("Results.RData")
 Our pre-registered analytic plan specifies the use of a three-level meta-analysis, conducted in the MetaSEM R package (Cheung, 2014), to control for the clustering of effect sizes when independent teams ran both In House and Author Advised versions of the protocol at the same university. However, during data analysis we discovered that these models failed to converge because we did not have enough data within each cluster, as most sites conducted only one study. As such, we had to drop the clustering variable. The results reported below are thus a more common univariate meta-analysis, which is the model that most closely mirrors our originally planned analysis.
 
 ## Research Question 1: Meta-analytic results across all labs (random effects meta-analysis). 
-The most basic question is whether we observed the predicted effect of mortality salience on preference for pro- vs anti- American essay authors. To assess this we conducted a random-effects meta-analysis. This analysis produces the grand mean effect size across all sites and versions. Regardless of which exclusion criteria were used, we did not observe the predicted effect, and the confidence interval was quite narrow: 
+The most basic question is whether we observed the predicted effect of mortality salience on preference for pro- vs anti- American essay authors. To assess this, we conducted a random-effects meta-analysis. This analysis produces the grand mean effect size across all sites and versions. Regardless of which exclusion criteria were used, we did not observe the predicted effect, and the confidence interval was quite narrow: 
 Exclusion Set 1: `r report_meta(random1, "Intercept1")`. 
 Exclusion Set 2: `r report_meta(random2, "Intercept1")`. 
 Exclusion Set 3: `r report_meta(random3, "Intercept1")`. 
