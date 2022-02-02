@@ -18,9 +18,9 @@ Heterogeneity indices (based on the estimated Tau2):
 Intercept1: I2 (Q statistic)        0
 
 Number of studies (or clusters): 16
-Number of observed statistics: 16
+Number of observed statistics: 2
 Number of estimated parameters: 2
-Degrees of freedom: 14
+Degrees of freedom: 0
 -2 log likelihood: -3.238755 
 OpenMx status1: 0 ("0" or "1": The optimization is considered fine.
 Other values may indicate problems.)
@@ -44,9 +44,9 @@ Heterogeneity indices (based on the estimated Tau2):
 Intercept1: I2 (Q statistic)   0.0924
 
 Number of studies (or clusters): 16
-Number of observed statistics: 16
+Number of observed statistics: 2
 Number of estimated parameters: 2
-Degrees of freedom: 14
+Degrees of freedom: 0
 -2 log likelihood: 6.058453 
 OpenMx status1: 0 ("0" or "1": The optimization is considered fine.
 Other values may indicate problems.)
@@ -70,9 +70,9 @@ Heterogeneity indices (based on the estimated Tau2):
 Intercept1: I2 (Q statistic)   0.1397
 
 Number of studies (or clusters): 16
-Number of observed statistics: 16
+Number of observed statistics: 2
 Number of estimated parameters: 2
-Degrees of freedom: 14
+Degrees of freedom: 0
 -2 log likelihood: 6.420653 
 OpenMx status1: 0 ("0" or "1": The optimization is considered fine.
 Other values may indicate problems.)
