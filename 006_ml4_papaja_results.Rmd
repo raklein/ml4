@@ -108,6 +108,13 @@ merged <- readRDS("./data/processed_data/merged_subset.rds")
 # sections that require sensitive data.
 #merged <- readRDS("./data/public/merged_deidentified.rds")
 
+# The above files include the exclusions identified after the first submission:
+## Exclude samples with N < 60 
+## Exclude data collected before the pre-reg was registered (February 15, 2017).
+# If you want to instead include these subjects, call the full dataset
+#merged <- readRDS("./data/processed_data/merged_full.rds")
+#merged <- readRDS("./data/public/merged_full_deidentified.rds")
+
 # Read in data from experimenter survey (Google Form - private due to sensitive info)
 exp_surv <- readRDS("./data/raw_site_data/experimenter survey/exp_surv.rds")
 ```
@@ -215,7 +222,7 @@ load("Results.RData")
 ```
 
 ## Deviations from Pre-registered Analytic Plan  
-Our pre-registered analytic plan specifies the use of a three-level meta-analysis, conducted in the MetaSEM R package (Cheung, 2014), to control for the clustering of effect sizes when independent teams ran both In House and Author Advised versions of the protocol at the same university. However, during data analysis we discovered that these models failed to converge because we did not have enough data within each cluster, as most sites conducted only one study. As such, we had to drop the clustering variable. The results reported below are thus a more common univariate meta-analysis, which is the model that most closely mirrors our originally planned analysis.
+Our pre-registered analytic plan specifies the use of a three-level meta-analysis, conducted in the MetaSEM R package (Cheung, 2014), to control for the clustering of effect sizes when independent teams ran both In House and Author Advised versions of the protocol at the same university. However, during data analysis we discovered that these models failed to optimize to a solution (OpenMX status1 = 5) which means that their output cannot be interpreted (see https://openmx.ssri.psu.edu/wiki/errors). This is likely because we did not have enough data within each cluster, as almost all sites ended up conducting only one study (e.g., administering only the Author Advised or In House protocol, not both). As such, we had to drop the clustering variable. The results reported below are thus a more common univariate meta-analysis, which is the model that most closely mirrors our originally planned analysis.
 
 ## Research Question 1: Meta-analytic results across all labs (random effects meta-analysis). 
 The most basic question is whether we observed the predicted effect of mortality salience on preference for pro- vs anti- American essay authors. To assess this, we conducted a random-effects meta-analysis. This analysis produces the grand mean effect size across all sites and versions. Regardless of which exclusion criteria were used, we did not observe the predicted effect, and the confidence interval was quite narrow: 
@@ -281,14 +288,16 @@ When asked what outcome they wanted to happen, `r numbers2words(tab.rooting["For
 
 **Results for expert-only protocols.** To provide a test of the replicability and average effect size of TMT under ideal circumstances, one could focus only on the effect size within author-advised protocols. Effect sizes are descriptively larger among these sites but still not statistically significant. 
 Exclusion rule 1: `r report_meta(random1_aa, "Intercept1")`;
-Exclusion rule 2: `r report_meta(random2_aa, "Intercept1")`;
-Exclusion rule 3: `r report_meta(random3_aa, "Intercept1")`.
+Exclusion rule 2: `r report_meta(fixed2_aa, "Intercept1")`;
+Exclusion rule 3: `r report_meta(random3_aa, "Intercept1")`.[^random2_aa_converg]
 
 **Results for TMT-knowledgeable sites.** Five principal investigators indicated having “a lot” of knowledge about TMT. One might expect that these locations would have greater success at replicating the mortality salience effect. 
 However, in all exclusion sets, when restricting analyses to these five sites, results were not statistically significant:
 Exclusion rule 1: `r report_meta(random1_TMTexperienced, "Intercept1")`;
 Exclusion rule 2: `r report_meta(random2_TMTexperienced, "Intercept1")`;
 Exclusion rule 3: `r report_meta(random3_TMTexperienced, "Intercept1")`.
+
+[^random2_aa_converg]: For Exclusion rules 1 and 3 we report the random effects model. We report the fixed effects model for Exclusion rule 2 because the optimizer could not reach a solution for the random effects model (OpenMX error code = 5, indicating that the result should not be interpreted).
 
 ```{r analysis-exploratory-preferpro, include = FALSE}
 # Investigating only participants who reported preference for the pro-US author.

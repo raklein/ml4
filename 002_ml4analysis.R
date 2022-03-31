@@ -216,6 +216,9 @@ random2_aa <- meta(y=yi, v=vi, data=combinedresults2_aa)
 # I have decided to report the results as they are, ignoring the error code,
 #  because the results are that Tau2_1_1 is basically zero,
 #  and the error code does not influence the estimate of the intercept
+# Update: see https://openmx.ssri.psu.edu//node/4722
+# results with open mx error code 5 should not be trusted, so I will add
+# a footnote.
 random3_aa <- meta(y=yi, v=vi, data=combinedresults3_aa)
 
 # compare if there is a significant difference in model fit, chi square difference test
