@@ -162,6 +162,11 @@ n_other_pct <- filter(demos_race, race == 6) %>% select(pct)  %>% as.numeric
 
 # load results of experimenter survey
 source("004_exp_survey_analysis.R")
+
+# Average liking of pro- and anti-US authors 
+# Provided as a manipulation check of sorts
+#   Helpful to show people that yes, we can observe some effects.
+author_liking <- with(merged, t.test(proauth_avg, antiauth_avg, paired = T))
 ```
 
 ## Participants
@@ -220,6 +225,9 @@ load("Results.RData")
 # Slope1_1 represents the effect of expertise
 # Tau2_1_1 is the heterogeneity estimate
 ```
+
+## Evaluations of pro- and anti-US authors
+Overall, participants gave higher ratings to the pro-US author (*M* = `r merged$proauth_avg %>% mean(na.rm = T) %>% formatC(3)`, *SD* = `r merged$proauth_avg %>% sd(na.rm = T) %>% formatC(3)` than the anti-US author (*M* = `r merged$antiauth_avg %>% mean(na.rm = T) %>% formatC(3)`, *SD* = `r merged$antiauth_avg %>% mean(na.rm = T) %>% formatC(3)`). This difference was statistically significant, `r apa_print(author_liking)$statistic`.
 
 ## Deviations from Pre-registered Analytic Plan  
 Our pre-registered analytic plan specifies the use of a three-level meta-analysis, conducted in the MetaSEM R package (Cheung, 2014), to control for the clustering of effect sizes when independent teams ran both In House and Author Advised versions of the protocol at the same university. However, during data analysis we discovered that these models failed to optimize to a solution (OpenMX status1 = 5) which means that their output cannot be interpreted (see https://openmx.ssri.psu.edu/wiki/errors). This is likely because we did not have enough data within each cluster, as almost all sites ended up conducting only one study (e.g., administering only the Author Advised or In House protocol, not both). As such, we had to drop the clustering variable. The results reported below are thus a more common univariate meta-analysis, which is the model that most closely mirrors our originally planned analysis.
