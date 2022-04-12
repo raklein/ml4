@@ -226,9 +226,6 @@ load("Results.RData")
 # Tau2_1_1 is the heterogeneity estimate
 ```
 
-## Evaluations of pro- and anti-US authors
-Overall, participants gave higher ratings to the pro-US author (*M* = `r merged$proauth_avg %>% mean(na.rm = T) %>% formatC(3)`, *SD* = `r merged$proauth_avg %>% sd(na.rm = T) %>% formatC(3)` than the anti-US author (*M* = `r merged$antiauth_avg %>% mean(na.rm = T) %>% formatC(3)`, *SD* = `r merged$antiauth_avg %>% mean(na.rm = T) %>% formatC(3)`). This difference was statistically significant, `r apa_print(author_liking)$statistic`.
-
 ## Deviations from Pre-registered Analytic Plan  
 Our pre-registered analytic plan specifies the use of a three-level meta-analysis, conducted in the MetaSEM R package (Cheung, 2014), to control for the clustering of effect sizes when independent teams ran both In House and Author Advised versions of the protocol at the same university. However, during data analysis we discovered that these models failed to optimize to a solution (OpenMX status1 = 5) which means that their output cannot be interpreted (see https://openmx.ssri.psu.edu/wiki/errors). This is likely because we did not have enough data within each cluster, as almost all sites ended up conducting only one study (e.g., administering only the Author Advised or In House protocol, not both). As such, we had to drop the clustering variable. The results reported below are thus a more common univariate meta-analysis, which is the model that most closely mirrors our originally planned analysis.
 
@@ -305,6 +302,8 @@ Exclusion rule 1: `r report_meta(random1_TMTexperienced, "Intercept1")`;
 Exclusion rule 2: `r report_meta(random2_TMTexperienced, "Intercept1")`;
 Exclusion rule 3: `r report_meta(random3_TMTexperienced, "Intercept1")`.
 
+**Evaluations of pro- and anti-US authors.** Overall, participants preferred the pro-US author (*M* = `r merged$proauth_avg %>% mean(na.rm = T) %>% formatC(3)`, *SD* = `r merged$proauth_avg %>% sd(na.rm = T) %>% formatC(3)`) to the anti-US author (*M* = `r merged$antiauth_avg %>% mean(na.rm = T) %>% formatC(3)`, *SD* = `r merged$antiauth_avg %>% mean(na.rm = T) %>% formatC(3)`). This difference was statistically significant, `r apa_print(author_liking)$statistic`.
+
 [^random2_aa_converg]: For Exclusion rules 1 and 3 we report the random effects model. We report the fixed effects model for Exclusion rule 2 because the optimizer could not reach a solution for the random effects model (OpenMX error code = 5, indicating that the result should not be interpreted).
 
 ```{r analysis-exploratory-preferpro, include = FALSE}
@@ -344,7 +343,7 @@ pct_nofav_aa <- (n_nofav_aa/(n_profav_aa+n_antifav_aa+n_nofav_aa))*100
 
 This did successfully increase participant preferences for the pro-US author over the anti-US author among Author Advised replications as compared to In House replications, $\chi^2$(`r authorpref_test$parameter`) = `r round(authorpref_test$statistic, digits = 2)`, `r printp(authorpref_test$p.value)`. Among In House replications, `r round(pct_profav_ih, digits = 0)`% of participants preferred the pro-US essay author, `r round(pct_antifav_ih, digits = 0)`% preferred the anti-US essay author, and `r round(pct_nofav_ih, digits = 0)`% had no preference. Among Author Advised replications, `r round(pct_profav_aa, digits = 0)`% of participants preferred the pro-US essay author, `r round(pct_antifav_aa, digits = 0)`% preferred the anti-US essay author, and `r round(pct_nofav_aa, digits = 0)`% had no preference. 
 
-Is the anticipated effect stronger among participants who preferred the pro-US author? We restricted the analysis to only participants at Author Advised sites who preferred the pro-US author. Under this restriction, there was still no significant difference between the mortality salience and control groups in their preference for the pro-US author over the anti-US author. 
+**Is the anticipated effect stronger among participants who preferred the pro-US author?** We restricted the analysis to only participants at Author Advised sites who preferred the pro-US author. Under this restriction, there was still no significant difference between the mortality salience and control groups in their preference for the pro-US author over the anti-US author. 
 Exclusion Set 1: `r report_meta(fixed1_proUSonly, "Intercept1")`; 
 Exclusion Set 2: `r report_meta(fixed2_proUSonly, "Intercept1")`; 
 Exclusion Set 3: `r report_meta(fixed3_proUSonly, "Intercept1")`.[^2] 
