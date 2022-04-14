@@ -234,7 +234,7 @@ The most basic question is whether we observed the predicted effect of mortality
 Exclusion Set 1: `r report_meta(random1, "Intercept1")`. 
 Exclusion Set 2: `r report_meta(random2, "Intercept1")`. 
 Exclusion Set 3: `r report_meta(random3, "Intercept1")`. 
-Forest plots showing the effects for individual sites and the aggregate are available in Figure 1 for Exclusion Set 1. (See https://osf.io/8ccnw/ for the other two Exclusion Sets.) These results indicate that, in the aggregate, we failed to replicate the predicted mortality salience effect.
+Forest plots showing the effects for individual sites and the aggregate are available in Figures 1, 2, and 3 for Exclusion Sets 1, 2, and 3, respectively. These results indicate that, in the aggregate, we failed to replicate the predicted mortality salience effect.
 
 There may have been a mortality salience effect at some sites and not others, so we next examined how much variation was observed among effect sizes (e.g., heterogeneity). This sort of variation did not exceed variation expected by chance (e.g., sampling variance) regardless of exclusion rule: 
 Exclusion Set 1: `r report_q(random1)`; 
